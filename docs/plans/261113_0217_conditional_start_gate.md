@@ -1,7 +1,7 @@
 # Owner gates: условный старт-гейт (модель предков)
 
 **Plan ID:** 261113_0217
-**Status:** Merged
+**Status:** Done
 **Created:** 2026-11-13
 **Owner gates:** merge (`In review` → `Merged`); вопросы `to=Owner` — по мере возникновения
 
@@ -456,3 +456,4 @@ Observations:
 <!-- owner: coder/planner при CENSOR; незакрытые хвосты: <описание> — why: <почему сейчас не в скоупе>; обязательна запись `NO FOLLOW-UPS — why: <код_причины>` при отсутствии -->
 
 - Машинный qa-lint открытости Q&A (пары Q→A) — why: Solution п.7 — план не вводит новых линт-проверок, открытость проверяет перечитывание Manager'а; кандидат v2 (Out of scope), промоушен — отдельное решение Architect.
+- 2026-11-13 14:10:26 — Manager (по указанию Owner, пересборка публичной истории): closeout — merge-коммит fdef7a2 `feat(261113_0217): conditional owner start gate` (история пересобрана с санитизацией 2026-11-13; хэш — новой истории); `## Follow-ups` — без незакрытых хвостов (conveyor-хвосты живут в docs/followups/backlog.md); статус Done. Хвостовые правки объединены с пост-пересборочным chore-коммитом по прямому указанию Owner.
