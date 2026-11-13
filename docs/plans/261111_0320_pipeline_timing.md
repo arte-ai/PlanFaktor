@@ -1,7 +1,7 @@
 # Замер времени прохождения задач через конвейер
 
 **Plan ID:** 261111_0320
-**Status:** Merged
+**Status:** Done
 **Created:** 2026-11-11
 **Owner gates:** старт кодинга (`Ready for Coder`), merge (`In review` → `Merged`)
 
@@ -499,6 +499,7 @@ docs/decisions.md; `A` для docs/plans/261111_0320_pipeline_timing.md
   - Fixes: ничего — дефектов своей зоны, требующих правки, не найдено.
   - Final censor verdict: OK
 - 2026-11-11 04:25:30 — Manager: review Round 2 валиден (Risk pass, Contracts pass, Итог pass; Round 1 помечен superseded — сверено чтением артефакта docs/reviews/261111_0320_review.md). Merge-гейт пройден по предаторизации Owner'ом (Q&A log, первая запись, status=closed). Переход In review → Merged; merge-коммит `feat(261111_0320): add HH:MM:SS timing marks and phase durations` делается сразу после этой записи (запись до события, без хеша — принятый trade-off, review Round 2 minor №2).
+- 2026-11-11 04:27:40 — Manager: merge-коммит 782971a (`feat(261111_0320): add HH:MM:SS timing marks and phase durations`, 11 файлов) выполнен; сверено git log. Closeout: ## Follow-ups заполнен (хвосты review Round 2 minor №1/№2 + S1); переход Merged → Done. Запись Done каузально вне merge-коммита — принятый trade-off (review Round 2 minor №2).
 
 ## Q&A log (chronological, append-only)
 <!-- owner: все роли; intake: `Intake (<дата>): AGENTS.md@<8hex> <role>.md@<8hex>` + NO QUESTIONS / NO SUGGESTIONS / NO OBJECTIONS; вопросы `Q(<роль>): ... to=Owner, blocker: yes|no, needs_owner: yes|no, status=open`; закрытие `A(<кто>): ... status=closed, перенесено в <секция>` -->
@@ -586,3 +587,8 @@ docs/decisions.md; `A` для docs/plans/261111_0320_pipeline_timing.md
 
 ## Follow-ups (deferred)
 <!-- owner: coder/planner при CENSOR; незакрытые хвосты: <описание> — why: <почему сейчас не в скоупе>; обязательна запись `NO FOLLOW-UPS — why: <код_причины>` при отсутствии -->
+
+- Квантификатор «последняя» для review-фазы в шаге 5 /planfaktor-status (после needs-fix две строки завершения Coder'а) — why: review Round 2 minor №1, вне вердиктного порога; целостное чтение шага неоднозначность снимает (docs/reviews/261111_0320_review.md, Round 2).
+- Остаточные trade-off'ы merge-механики: closeout-запись Done каузально вне merge-коммита; запись о merge-коммите до события без хеша — why: review Round 2 minor №2,Accepted trade-off; требует решения уровня Architect (порядок событий и commits), не Coder.
+- S1: агрегация длительностей фаз по Done-планам (узкие места конвейера) — why: бриф Owner ограничивает активным планом; Suggestions log S1.
+- (Manager, closeout 2026-11-11 04:27): заполнено Manager'ом при closeout — CENSOR Coder'а Follow-ups не заполнил; хвосты взяты дословно из review-артефакта Round 2 и Suggestions log.
