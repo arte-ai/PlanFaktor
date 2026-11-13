@@ -1,7 +1,7 @@
 # Hardening конвейера по итогам ночного dogfood
 
 **Plan ID:** 261111_1455
-**Status:** Merged
+**Status:** Done
 **Created:** 2026-11-11
 **Owner gates:** старт кодинга (`Ready for Coder`), merge (`In review` → `Merged`)
 
@@ -1255,6 +1255,11 @@ Observations:
 - 2026-11-11 22:29:48 — Manager: merge-коммит
   `feat(261111_1455): harden corpus after night dogfood` (git add -A;
   Evidence-записи гейта и статус Merged входят в коммит).
+- 2026-11-11 22:33:10 — Manager: closeout — Follow-ups заполнен (хвост S1
+  от Planner'а; два non-gating хвоста Round 2 перенесены из Evidence
+  17:56:19 по указанию Owner на closeout: hex-опечатка Tests-цитаты T4 и
+  risk-minor edge оговорки «Всегда»); статус Done.
+
 
 
 ## Q&A log (chronological, append-only)
@@ -1446,3 +1451,19 @@ Observations:
   масштабируется на очередь; требуется отдельная дизайн-задача (какие
   метрики и по каким якорям). Запись Planner'а 2026-11-11 по решению
   Architect'а (Solution п.8: «кандидат в Follow-ups этого плана»).
+- Hex-опечатка `@a2c2faf8` в Tests-цитате блока коррекции T4 (верное
+  значение `a2c2faf9` — Evidence 17:25:18 и D13; вывод блока «файл не
+  менялся» пересчитан ревьюером и верен) — why: minor, non-gating (Round 2
+  Contracts строка 5), на вердикт и проверки не влияет; правка одной
+  литеры в Tests-факте — зона Coder'а, логичнее первой правкой следующего
+  плана, трогающего Tests (append-only, историю не переписываем).
+  Перенесено Manager'ом из Evidence 17:56:19 по указанию Owner на
+  closeout (2026-11-11).
+- Risk-minor edge оговорки «Всегда» (/planfaktor-run.md:97–103): протухший
+  intake-digest, записанный ролью ПОСЛЕ зафиксированной планом смены
+  контракта (нарушение §3 п.7 «актуальные digest'ы»), текстом команды не
+  ловится — до Round 2 ловился безусловным стопом — why: класс узкий,
+  живых прецедентов в корпусе нет (risk Round 2, 17:45:07); кандидат
+  отдельным планом на ужесточение §3/«Всегда». Перенесено Manager'ом из
+  Evidence 17:56:19 по указанию Owner на closeout (2026-11-11).
+
