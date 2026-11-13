@@ -1,0 +1,17 @@
+# Corpus lint — машинная проверка инвариантов конвейера Planfaktor.
+# Ремоута нет: файл добавлен вперёд, активируется сам при появлении
+# удалённого репозитория (план 261111_2243, Solution п.4).
+name: corpus-lint
+
+on: [push, pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Corpus lint
+        run: scripts/check_corpus.sh
+      - name: Corpus lint selftest
+        run: scripts/check_corpus.sh --selftest
