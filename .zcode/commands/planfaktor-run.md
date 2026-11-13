@@ -70,6 +70,34 @@ Objections log; после 2 FAIL подряд — Owner (стоп-матриц�
 Пропущенный CENSOR (`Censor hint: skip (why=...)`) допустим, но не чаще
 2 подряд — проверь grep'ом.
 
+**Usage-учёт (конституция §1(f)).** После получения результата каждого
+диспатча роли и каждого CENSOR-прохода немедленно допиши usage-строку
+в `## Token usage` плана (append-only, §5), dispatch-форма:
+
+```
+- YYYY-MM-DD HH:MM:SS — usage: <роль>.<pass> <N> tokens — <dispatch|sendmessage|unknown>
+```
+
+`<роль>` ∈ {architect, planner, coder, reviewer-risk,
+reviewer-contracts}; `<pass>` ∈ {work, censor, r1, r2, …} (work —
+основная фаза, censor — CENSOR-проход, rN — все диспатчи needs-fix-раунда
+N); `N` — `subagent_tokens` из tool-результата харнесса, не из слов роли
+(notice ≠ mutation truth); источник `dispatch` (Agent-вызов) или
+`sendmessage` (CENSOR SendMessage); `unknown` — происхождение числа
+определить нельзя: usage получен не из прямого результата одного вызова
+(сводка харнесса за несколько вызовов, восстановление по логу сессии).
+Харнесс не вернул usage — вместо числа пиши `unknown (why=<причина>)`;
+пропуск строки запрещён. На
+Owner-гейтях и в финальном отчёте дополнительно записывай чекпоинт
+best-effort (если харнесс показывает остаток бюджета сессии):
+
+```
+- YYYY-MM-DD HH:MM:SS — usage: manager-context checkpoint ~<N> tokens-left — approximate
+```
+
+Чекпоинты в dispatch-суммы не входят. Канон форматов — комментарий секции
+`docs/plans/_template.md` (линт — C11 `scripts/check_corpus.sh`).
+
 ## 4. Ревью (In review)
 
 1. Убедись: Coder CENSOR OK (шаг 3).

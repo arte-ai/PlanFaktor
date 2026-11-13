@@ -1,7 +1,9 @@
 #!/bin/sh
 # check_corpus.sh — corpus lint v1: машинная проверка инвариантов конвейера
 # Planfaktor. Источник решений: docs/plans/261111_2243_corpus_lint_ci.md
-# (Solution п.1–8, проверки C1–C10, cutoff C4/C5).
+# (Solution п.1–8, проверки C1–C10, cutoff C4/C5) + docs/plans/
+# 261112_0111_route_token_accounting.md (C11 — usage-строки, cutoff
+# C3/C8 — секционная версионность).
 #
 # Это dev-инфраструктура репо, НЕ рантайм конвейера: роли не обязаны звать
 # его для маршрутизации, Manager от него не зависит.
@@ -12,15 +14,15 @@
 #
 # Обычный прогон (из корня репо или по абсолютному пути):
 #   scripts/check_corpus.sh
-#   вывод: `OK Cn <имя>` на проверку (C4/C5 печатают `excluded`-планы),
+#   вывод: `OK Cn <имя>` на проверку (C4/C5/C11 печатают `excluded`-планы),
 #   `FAIL Cn <имя>: <детали>` при дефекте, итог `corpus: clean` либо
 #   `corpus: N failures`; exit 0 только при clean.
 #
 # Selftest:
 #   scripts/check_corpus.sh --selftest
 #   строит в ${TMPDIR:-/tmp} копии корпуса, подсаживает по одному дефекту
-#   на каждый класс C1–C10 и проверяет, что каждая проверка ловит свой
-#   дефект; итог `selftest: N/10 caught`; exit 0 только при 10/10.
+#   на каждый класс C1–C11 и проверяет, что каждая проверка ловит свой
+#   дефект; итог `selftest: N/12 caught`; exit 0 только при 12/12.
 
 set -u
 
@@ -29,6 +31,41 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 # Cutoff форматов C4/C5/C7-шапки: до 261111_1455 правила были другими,
 # а append-only (конституция §5) запрещает правку истории.
 CUTOFF=261111_1455
+
+# Cutoff секции `## Token usage` и формата usage-строк C11: секция введена
+# планом 261112_0111, более ранние планы её не имеют и не обязаны.
+USAGE_CUTOFF=261112_0111
+
+# Канонические формы usage-строк (план 261112_0111, Solution п.1/п.4).
+# Детектор в C11 — с якорем `^- <TS> — usage: `: без якоря ловятся
+# примеры формата в прозе/комментариях.
+USAGE_DISPATCH_RE='^- [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} — usage: (architect|planner|coder|reviewer-risk|reviewer-contracts)\.(work|censor|r[0-9]+) ([0-9]+|unknown \(why=[^)]*\)) tokens — (dispatch|sendmessage|unknown)$'
+USAGE_CHECKPOINT_RE='^- [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} — usage: manager-context checkpoint ~[0-9]+ tokens-left — approximate$'
+
+# Замороженный список обязательных секций плана: 13 секций шаблона
+# docs/plans/_template.md на момент плана 261111_2243 (cutoff-версионность
+# C3/C8, план 261112_0111). Обязательны ВСЕМ планам независимо от возраста;
+# живой шаблон не источник обязательности — только индикатор
+# консистентности (см. check_c3).
+FROZEN_SECTIONS='## Как я понял задачу
+## Problem
+## Solution / Decisions
+## Scope
+## Out of scope
+## Acceptance criteria / DoD
+## Tests / Commands
+## Changes (by area)
+## Evidence (chronological, append-only)
+## Q&A log (chronological, append-only)
+## Suggestions log (chronological, append-only)
+## Objections log (chronological, append-only)
+## Follow-ups (deferred)'
+
+# Секции, добавленные в шаблон ПОЗЖЕ замороженного списка: запись
+# `<заголовок>|<Plan ID вводящего плана>`; секция обязательна только
+# планам с Plan ID >= cutoff. Новые секции шаблона вносятся сюда —
+# иначе check_c3 FAIL (шаблон без записи = рассинхрон носителя и линта).
+SECTION_CUTOFF='## Token usage (append-only)|261112_0111'
 
 # ---------------------------------------------------------------- helpers
 
@@ -61,15 +98,27 @@ plan_prefix() {
     printf '%s_%s' "$_pp_a" "$_pp_b"
 }
 
-# post_cutoff_plan_with <corpus> <ERE> — первый план с префиксом >= CUTOFF,
-# в котором есть строка, матчащая <ERE>.
+# post_cutoff_plan_with <corpus> <cutoff> <ERE> — первый план с префиксом
+# >= <cutoff>, в котором есть строка, матчащая <ERE>.
 post_cutoff_plan_with() {
     for _pc_f in "$1"/docs/plans/[0-9]*.md; do
         [ -f "$_pc_f" ] || continue
         _pc_pid=$(plan_prefix "$(basename "$_pc_f")")
-        if [ "$_pc_pid" \< "$CUTOFF" ]; then continue; fi
-        if grep -qE "$2" "$_pc_f"; then printf '%s\n' "$_pc_f"; return 0; fi
+        if [ "$_pc_pid" \< "$2" ]; then continue; fi
+        if grep -qE "$3" "$_pc_f"; then printf '%s\n' "$_pc_f"; return 0; fi
     done
+    return 1
+}
+
+# section_cutoff_of <header> — cutoff Plan ID секции из SECTION_CUTOFF
+# (stdout) либо rc=1, если секция не в таблице.
+section_cutoff_of() {
+    while IFS='|' read -r _sc_hdr _sc_cut; do
+        [ -n "$_sc_hdr" ] || continue
+        if [ "$_sc_hdr" = "$1" ]; then printf '%s\n' "$_sc_cut"; return 0; fi
+    done <<EOF
+$SECTION_CUTOFF
+EOF
     return 1
 }
 
@@ -121,8 +170,18 @@ check_c2() {
     return $_c2_rc
 }
 
-# C3: все `##`-секции шаблона _template.md присутствуют в каждом плане
-# (fixed-string, по списку из шаблона).
+# C3: обязательные секции планов — cutoff-версионность (план 261112_0111):
+# каждому плану обязателен замороженный список FROZEN_SECTIONS (13 секций
+# шаблона на момент 261111_2243) плюс секции SECTION_CUTOFF, чей cutoff
+# <= Plan ID плана («замороженный список ⊇ + per-section cutoff», а не
+# равенство живому шаблону). Заголовок обязательной секции матчится
+# ТОЧНОЙ строкой (`grep -qxF`, якорь всей строки): упоминание заголовка
+# в prose/код-спанах проверку не удовлетворяет (review 261112_0111
+# Round 1, finding 1). Консистентность носителя и линта: шаблон
+# обязан содержать все замороженные секции; каждая секция шаблона сверх
+# замороженного списка обязана иметь запись в SECTION_CUTOFF; записи
+# SECTION_CUTOFF обязаны существовать в шаблоне (иначе проверка молча
+# деградирует при расширении шаблона).
 check_c3() {
     _c3_corpus=$1
     _c3_rc=0
@@ -131,18 +190,62 @@ check_c3() {
         printf 'docs/plans/_template.md: missing\n'
         return 1
     fi
-    _c3_secs=$(grep '^## ' "$_c3_tmpl")
+    # 1) шаблон ⊇ замороженный список.
+    while IFS= read -r _c3_sec; do
+        [ -n "$_c3_sec" ] || continue
+        if ! grep -qxF "$_c3_sec" "$_c3_tmpl"; then
+            printf 'docs/plans/_template.md: frozen section missing from template: %s\n' "$_c3_sec"
+            _c3_rc=1
+        fi
+    done <<EOF
+$FROZEN_SECTIONS
+EOF
+    # 2) каждая запись SECTION_CUTOFF существует в шаблоне.
+    while IFS='|' read -r _c3_hdr _c3_cut; do
+        [ -n "$_c3_hdr" ] || continue
+        if ! grep -qxF "$_c3_hdr" "$_c3_tmpl"; then
+            printf 'docs/plans/_template.md: SECTION_CUTOFF record without template section: %s\n' "$_c3_hdr"
+            _c3_rc=1
+        fi
+    done <<EOF
+$SECTION_CUTOFF
+EOF
+    # 3) каждая секция шаблона — замороженная либо с записью cutoff.
+    while IFS= read -r _c3_tsec; do
+        [ -n "$_c3_tsec" ] || continue
+        if printf '%s\n' "$FROZEN_SECTIONS" | grep -qxF "$_c3_tsec"; then
+            continue
+        fi
+        if ! section_cutoff_of "$_c3_tsec" > /dev/null; then
+            printf 'docs/plans/_template.md: template section outside frozen list lacks SECTION_CUTOFF record: %s\n' "$_c3_tsec"
+            _c3_rc=1
+        fi
+    done <<EOF
+$(grep '^## ' "$_c3_tmpl")
+EOF
+    # 4) планам — обязательные секции по возрасту (точная строка, якорь).
     for _c3_f in "$_c3_corpus"/docs/plans/[0-9]*.md; do
         [ -f "$_c3_f" ] || continue
+        _c3_pid=$(plan_prefix "$(basename "$_c3_f")")
+        _c3_req=$FROZEN_SECTIONS
+        while IFS='|' read -r _c3_hdr _c3_cut; do
+            [ -n "$_c3_hdr" ] || continue
+            if ! [ "$_c3_pid" \< "$_c3_cut" ]; then
+                _c3_req="$_c3_req
+$_c3_hdr"
+            fi
+        done <<EOF
+$SECTION_CUTOFF
+EOF
         while IFS= read -r _c3_sec; do
             [ -n "$_c3_sec" ] || continue
-            if ! grep -qF "$_c3_sec" "$_c3_f"; then
+            if ! grep -qxF "$_c3_sec" "$_c3_f"; then
                 printf '%s: missing template section: %s\n' \
                     "${_c3_f#$_c3_corpus/}" "$_c3_sec"
                 _c3_rc=1
             fi
         done <<EOF
-$_c3_secs
+$_c3_req
 EOF
     done
     return $_c3_rc
@@ -342,28 +445,52 @@ EOF
 
 # C8: каждая `##`-секция несёт `<!-- owner:` на следующей строке —
 # в обоих шаблонах (структура) и в планах (фактические файлы).
+# Cutoff-версионность (план 261112_0111), симметрично C3: секция
+# SECTION_CUTOFF, чей cutoff > Plan ID плана, этому плану не обязательна
+# (ни наличием — C3, ни owner-меткой — C8); прочие секции планов и все
+# секции шаблонов метку несут обязательно (строгость не ниже прежней).
 check_c8() {
     _c8_corpus=$1
     _c8_rc=0
     for _c8_f in "$_c8_corpus"/docs/plans/_template.md \
-                 "$_c8_corpus"/docs/reviews/_template_review.md \
-                 "$_c8_corpus"/docs/plans/[0-9]*.md
+                 "$_c8_corpus"/docs/reviews/_template_review.md
     do
         [ -f "$_c8_f" ] || continue
-        for _c8_ln in $(grep -n '^## ' "$_c8_f" | cut -d: -f1); do
-            _c8_next=$(sed -n "$((_c8_ln + 1))p" "$_c8_f")
-            case $_c8_next in
-                '<!-- owner:'*) ;;
-                *)
-                    printf '%s: section at line %s lacks owner marker: %s\n' \
-                        "${_c8_f#$_c8_corpus/}" "$_c8_ln" \
-                        "$(sed -n "${_c8_ln}p" "$_c8_f")"
-                    _c8_rc=1
-                    ;;
-            esac
-        done
+        _c8_check_one "$_c8_corpus" "$_c8_f" '' || _c8_rc=1
+    done
+    for _c8_f in "$_c8_corpus"/docs/plans/[0-9]*.md; do
+        [ -f "$_c8_f" ] || continue
+        _c8_pid=$(plan_prefix "$(basename "$_c8_f")")
+        _c8_check_one "$_c8_corpus" "$_c8_f" "$_c8_pid" || _c8_rc=1
     done
     return $_c8_rc
+}
+
+# _c8_check_one <corpus> <file> <pid|''> — owner-метки всех секций файла;
+# <pid> пуст для шаблонов (без cutoff-пропуска); печатает все нарушения.
+_c8_check_one() {
+    _c8o_corpus=$1
+    _c8o_f=$2
+    _c8o_pid=$3
+    _c8o_rc=0
+    for _c8o_ln in $(grep -n '^## ' "$_c8o_f" | cut -d: -f1); do
+        _c8o_next=$(sed -n "$((_c8o_ln + 1))p" "$_c8o_f")
+        case $_c8o_next in
+            '<!-- owner:'*) continue ;;
+        esac
+        if [ -n "$_c8o_pid" ]; then
+            _c8o_hdr=$(sed -n "${_c8o_ln}p" "$_c8o_f")
+            if _c8o_cut=$(section_cutoff_of "$_c8o_hdr") \
+               && [ "$_c8o_pid" \< "$_c8o_cut" ]; then
+                continue
+            fi
+        fi
+        printf '%s: section at line %s lacks owner marker: %s\n' \
+            "${_c8o_f#$_c8o_corpus/}" "$_c8o_ln" \
+            "$(sed -n "${_c8o_ln}p" "$_c8o_f")"
+        _c8o_rc=1
+    done
+    return $_c8o_rc
 }
 
 # C9: относительные пути `docs/…`/`.zcode/…` из README, AGENTS.md,
@@ -443,6 +570,54 @@ reviewer-risk'
     return $_c10_rc
 }
 
+# C11 (cutoff >= 261112_0111, скоуп — секция ## Token usage): строки
+# с якорем `^- <TS> — usage: ` — ровно две канонические формы: dispatch
+# (роль.пасс из множеств, N — целое либо `unknown (why=...)`, источник из
+# {dispatch|sendmessage|unknown}) и checkpoint (manager-context).
+# Отсутствие секции у плана >= cutoff ловит C3 (необязательность — зона
+# cutoff-версионности), здесь — только формат присутствующих строк.
+# Осознанная асимметрия (review 261112_0111 Round 1, finding 3): скоуп —
+# только тело секции; usage-строка, ошибочно записанная вне её (например,
+# в ## Evidence), этим линтом не контролируется, но агрегатор
+# /planfaktor-status (шаги 6–7) грепает файл плана целиком и посчитает её.
+# Дисциплина записи (§1(f) AGENTS.md): usage-строки — исключительно
+# в секции ## Token usage.
+check_c11() {
+    _c11_corpus=$1
+    _c11_rc=0
+    for _c11_f in "$_c11_corpus"/docs/plans/[0-9]*.md; do
+        [ -f "$_c11_f" ] || continue
+        _c11_pid=$(plan_prefix "$(basename "$_c11_f")")
+        if [ "$_c11_pid" \< "$USAGE_CUTOFF" ]; then
+            printf '%s: excluded (pre-usage-cutoff %s < %s)\n' \
+                "${_c11_f#$_c11_corpus/}" "$_c11_pid" "$USAGE_CUTOFF"
+            continue
+        fi
+        _c11_tu=$(sect_body "$_c11_f" 'Token usage') || continue
+        [ -n "$_c11_tu" ] || continue
+        while IFS= read -r _c11_line; do
+            case $_c11_line in
+                *'<!--'*) continue ;;
+            esac
+            printf '%s\n' "$_c11_line" | grep -qE \
+                '^- [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} — usage: ' \
+                || continue
+            if printf '%s\n' "$_c11_line" | grep -qE \
+                -e "$USAGE_DISPATCH_RE" -e "$USAGE_CHECKPOINT_RE"
+            then
+                :
+            else
+                printf '%s: malformed usage line: %s\n' \
+                    "${_c11_f#$_c11_corpus/}" "$_c11_line"
+                _c11_rc=1
+            fi
+        done <<EOF
+$_c11_tu
+EOF
+    done
+    return $_c11_rc
+}
+
 # ------------------------------------------------------------------ report
 
 # report <id> <name> <corpus> <func> — печать `OK/FAIL Cn name(: details)`
@@ -472,7 +647,7 @@ report() {
     return "$_rp_rc"
 }
 
-# run_all <corpus> — прогон C1–C10; rc = число проваленных проверок.
+# run_all <corpus> — прогон C1–C11; rc = число проваленных проверок.
 run_all() {
     _ra_corpus=$1
     _ra_fails=0
@@ -486,6 +661,7 @@ run_all() {
     report C8 owner-markers        "$_ra_corpus" check_c8  || _ra_fails=$((_ra_fails + 1))
     report C9 link-integrity       "$_ra_corpus" check_c9  || _ra_fails=$((_ra_fails + 1))
     report C10 roles-vs-agents     "$_ra_corpus" check_c10 || _ra_fails=$((_ra_fails + 1))
+    report C11 token-usage-lines   "$_ra_corpus" check_c11 || _ra_fails=$((_ra_fails + 1))
     return $_ra_fails
 }
 
@@ -509,7 +685,7 @@ selftest() {
     seed_corpus "$_st_base/base"
     _st_bad=0
     for _st_fn in check_c1 check_c2 check_c3 check_c4 check_c5 \
-                  check_c6 check_c7 check_c8 check_c9 check_c10
+                  check_c6 check_c7 check_c8 check_c9 check_c10 check_c11
     do
         if ! "$_st_fn" "$_st_base/base" > /dev/null 2>&1; then
             printf 'selftest baseline: %s fails on clean corpus copy\n' "$_st_fn"
@@ -522,7 +698,7 @@ selftest() {
     fi
 
     _st_caught=0
-    _st_total=10
+    _st_total=12
 
     # C1: недопустимое значение статуса.
     _st_dir=$_st_base/c1
@@ -563,7 +739,7 @@ selftest() {
     # C4: у receipt-маркера срезан префикс метки времени.
     _st_dir=$_st_base/c4
     seed_corpus "$_st_dir"
-    _st_plan=$(post_cutoff_plan_with "$_st_dir" \
+    _st_plan=$(post_cutoff_plan_with "$_st_dir" "$CUTOFF" \
         '^- [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} — \(Role CENSOR\) (OK|FAIL):')
     if [ -z "$_st_plan" ]; then
         printf 'selftest: cannot seed C4 (no post-cutoff receipt in corpus)\n'
@@ -583,7 +759,7 @@ selftest() {
     # C5: intake-строка сломанной формы.
     _st_dir=$_st_base/c5
     seed_corpus "$_st_dir"
-    _st_plan=$(post_cutoff_plan_with "$_st_dir" '^- Intake \([0-9]{4}-')
+    _st_plan=$(post_cutoff_plan_with "$_st_dir" "$CUTOFF" '^- Intake \([0-9]{4}-')
     if [ -z "$_st_plan" ]; then
         printf 'selftest: cannot seed C5 (no post-cutoff intake in corpus)\n'
         return 1
@@ -662,6 +838,40 @@ selftest() {
         printf 'MISSED C10\n'
     else
         printf 'caught C10\n'
+        _st_caught=$((_st_caught + 1))
+    fi
+
+    # C11 (dispatch-форма): источник вне множества {dispatch|sendmessage|unknown}.
+    _st_dir=$_st_base/c11a
+    seed_corpus "$_st_dir"
+    _st_plan=$(post_cutoff_plan_with "$_st_dir" "$USAGE_CUTOFF" \
+        '^- [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} — usage: (architect|planner|coder|reviewer-risk|reviewer-contracts)\.(work|censor|r[0-9]+) ([0-9]+|unknown \(why=[^)]*\)) tokens — (dispatch|sendmessage|unknown)$')
+    if [ -z "$_st_plan" ]; then
+        printf 'selftest: cannot seed C11a (no post-usage-cutoff dispatch line in corpus)\n'
+        return 1
+    fi
+    mutate "$_st_plan" 's/tokens — dispatch$/tokens — via-dispatch/'
+    if check_c11 "$_st_dir" > /dev/null 2>&1; then
+        printf 'MISSED C11a\n'
+    else
+        printf 'caught C11a (dispatch form)\n'
+        _st_caught=$((_st_caught + 1))
+    fi
+
+    # C11 (чекпоинт-форма): потерян `~` перед числом остатка.
+    _st_dir=$_st_base/c11b
+    seed_corpus "$_st_dir"
+    _st_plan=$(post_cutoff_plan_with "$_st_dir" "$USAGE_CUTOFF" \
+        '^- [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} — usage: manager-context checkpoint ~[0-9]+ tokens-left — approximate$')
+    if [ -z "$_st_plan" ]; then
+        printf 'selftest: cannot seed C11b (no post-usage-cutoff checkpoint line in corpus)\n'
+        return 1
+    fi
+    mutate "$_st_plan" 's/checkpoint ~/checkpoint /'
+    if check_c11 "$_st_dir" > /dev/null 2>&1; then
+        printf 'MISSED C11b\n'
+    else
+        printf 'caught C11b (checkpoint form)\n'
         _st_caught=$((_st_caught + 1))
     fi
 

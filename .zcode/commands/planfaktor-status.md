@@ -39,6 +39,79 @@ Routine основной сессии (Manager). Только чтение: ни
    - длительность = конец − начало; текущая незавершённая фаза — elapsed
      от её начала (правила выше); отсутствующие метки (записи до
      введения формата) — прочерк.
-   Чтение меток из Evidence и Q&A log, без скриптов.
+   Чтение меток из Evidence и Q&A log; вычисления допускается вести
+   grep+awk-пайплайнами (шаги 6–7), не только вручную — реверс оговорки
+   «без скриптов» (шаг 5 ранее) по решению 2026-11-12
 
-6. Никаких изменений файлов — только чтение и доклад Owner.
+6. Для активного плана выведи usage-таблицу из `## Token usage` (план
+   261112_0111): `роль.пасс | диспатчей | токены` + итог + чекпоинты.
+   unknown-строки в сумму не входят — итог нижняя граница; чекпоинты —
+   отдельной строкой, в dispatch-суммы не входят:
+
+   ```sh
+   PLAN=docs/plans/<активный план>
+   grep -E '^- [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} — usage: (architect|planner|coder|reviewer-risk|reviewer-contracts)\.(work|censor|r[0-9]+) ([0-9]+|unknown \(why=[^)]*\)) tokens — (dispatch|sendmessage|unknown)$' "$PLAN" \
+     | awk '{ c[$6]++; if ($7 ~ /^[0-9]+$/) s[$6]+=$7; else u[$6]++ }
+             END { t=0; tu=0
+                   for (k in c) { v=(k in s)?s[k]:0; w=(k in u)?u[k]:0
+                                  printf "%s | %s | %s\n", k, c[k], v; t+=v; tu+=w }
+                   printf "итог: >= %d (+unknown: %d)\n", t, tu }'
+   grep -cE '^- [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} — usage: manager-context checkpoint ~[0-9]+ tokens-left — approximate$' "$PLAN"
+   ```
+
+   (`grep -c` возвращает exit 1 при нуле — под `set -e` не ставить.)
+   Нет ни одной usage-строки (секция отсутствует или пуста) — вместо
+   таблицы выведи `нет данных (pre-261112_0111)`; это не ошибка.
+   Осознанная асимметрия: линт C11 `scripts/check_corpus.sh` проверяет
+   формат usage-строк только внутри секции `## Token usage`, а пайплайны
+   шагов 6–7 грепают файл плана целиком — usage-строка, ошибочно
+   записанная вне секции (например, в `## Evidence`), линтом не ловится,
+   но попадёт в суммы агрегатора (тихий двойной учёт). Поэтому
+   usage-строки записывай исключительно в их секцию (§1(f) AGENTS.md).
+   Пример вывода (снимок плана 261112_0111 на 2026-11-12, порядок строк
+   таблицы — порядок awk по хэшам ключей, не регламентирован):
+
+   ```
+   architect.work | 1 | 1407939
+   planner.censor | 1 | 1017329
+   planner.work | 1 | 757943
+   architect.censor | 1 | 1043678
+   итог: >= 4226889 (+unknown: 0)
+   1
+   ```
+
+7. Сводная по Done-планам (закрывает S1 из Follow-ups 261111_1455):
+   `план | wall-clock | токены-итог`. wall-clock = последняя метка
+   `YYYY-MM-DD HH:MM:SS` плана минус первая (создание → терминальное
+   событие); токены — сумма dispatch-формы (unknown не суммируются):
+
+   ```sh
+   for PLAN in docs/plans/[0-9]*.md; do
+     [ "$(sed -n 's/^\*\*Status:\*\* //p' "$PLAN")" = "Done" ] || continue
+     TOK=$(grep -E '^- [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} — usage: (architect|planner|coder|reviewer-risk|reviewer-contracts)\.(work|censor|r[0-9]+) ([0-9]+|unknown \(why=[^)]*\)) tokens — (dispatch|sendmessage|unknown)$' "$PLAN" \
+       | awk '{ if ($7 ~ /^[0-9]+$/) t += $7 } END { printf "%d", t+0 }')
+     UNK=$(grep -E '^- [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} — usage: (architect|planner|coder|reviewer-risk|reviewer-contracts)\.(work|censor|r[0-9]+) ([0-9]+|unknown \(why=[^)]*\)) tokens — (dispatch|sendmessage|unknown)$' "$PLAN" \
+       | awk '{ if ($7 !~ /^[0-9]+$/) u++ } END { printf "%d", u+0 }')
+     WALL=$(grep -oE '^- [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} — ' "$PLAN" \
+       | awk 'function dn(y,m,d){return 367*y-int(7*(y+int((m+9)/12))/4)+int(275*m/9)+d}
+              NR==1{split($2,a,"-");split($3,b,":");s=dn(a[1],a[2],a[3])*86400+b[1]*3600+b[2]*60+b[3]}
+              {split($2,a,"-");split($3,b,":");e=dn(a[1],a[2],a[3])*86400+b[1]*3600+b[2]*60+b[3]}
+              END{if(NR>0){t=e-s;printf "%dd %02d:%02d:%02d",int(t/86400),int(t%86400/3600),int(t%3600/60),t%60}}')
+     B=$(basename "$PLAN" .md); R=${B#*_}; PID="${B%%_*}_${R%%_*}"
+     PRE=$(awk -v a="$PID" -v b="261112_0111" 'BEGIN{print (a<b) ? 1 : 0}')
+     if [ "$TOK" -gt 0 ]; then T="$TOK"
+     elif [ "$PRE" -eq 1 ]; then T="нет данных (pre-261112_0111)"
+     elif [ "$UNK" -gt 0 ]; then T="нет данных (unknown: $UNK)"
+     else T="нет данных"; fi
+     printf '%s | %s | %s\n' "$(basename "$PLAN" .md)" "$WALL" "$T"
+   done
+   ```
+
+   (Метка при TOK=0 честная: план старее cutoff — `нет данных
+   (pre-261112_0111)`; план >= 261112_0111 без чисел, но с живыми
+   unknown-строками — `нет данных (unknown: k)` (данные есть, величина
+   неизвестна); без usage-строк вовсе — `нет данных`. Детализация
+   unknown по ролям — шаг 6. Сравнение PID с cutoff — через awk, а не
+   `[ \< ]`: test-оператор `<` непереносим (zsh его не принимает).)
+
+8. Никаких изменений файлов — только чтение и доклад Owner.
