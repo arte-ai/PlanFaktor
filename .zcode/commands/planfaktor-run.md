@@ -21,12 +21,31 @@ progress` или `In review`. Если таких нет — работай по
 | Статус | Действие |
 |---|---|
 | `Draft` | Диспатч Architect (PHASE=work) → шаг 3 (CENSOR) → `Ready for Planner` |
-| `Ready for Planner` | Диспатч Planner (PHASE=work; Planner сам ставит `Planning` на intake) → дождаться `Ready for Coder` через CENSOR |
-| `Ready for Coder` | **Owner-гейт**: покажи Owner выжимку плана (Scope/DoD), спроси «стартуем?». После «да» поставь `In progress` с Evidence-записью с меткой времени (`- YYYY-MM-DD HH:MM:SS — Manager: гейт «стартуем» пройден, статус In progress`) и диспатчи Coder (PHASE=work) |
+| `Ready for Planner` | Перед диспатчем Planner ретранслируй Owner'у блок «Как я понял задачу» и границы `## Scope` из плана (дословно, не пересказ; информационно, без подтверждения — точка чтения человека), затем диспатч Planner (PHASE=work; Planner сам ставит `Planning` на intake) → дождаться `Ready for Coder` через CENSOR |
+| `Ready for Coder` | Авто-переход без Owner-гейта: перечитай `## Q&A log` плана (механика ниже); открытых вопросов к Owner нет — поставь `In progress` с Evidence-записью с меткой времени (`- YYYY-MM-DD HH:MM:SS — Manager: Q&A чист, открытых вопросов к Owner нет, статус In progress`) и диспатчи Coder (PHASE=work); открытые есть — стоп по §6 |
 | `In progress` | Ожидание Coder (или его blocker-вопрос в Q&A → к Owner). Диспатч продолжается, пока не увидишь `In review` → CENSOR Coder → шаг 4 |
 | `In review` | После валидного Coder CENSOR: ревью — шаг 4 |
 | `Merged` | Closeout: проверь `## Follow-ups` плана (заполнен или `NO FOLLOW-UPS — why:`). Поставь `Done` с Evidence-записью с меткой времени (`- YYYY-MM-DD HH:MM:SS — Manager: closeout, статус Done`), доложи Owner |
 | `Done` / `Superseded` | Ничего; следующий план или `/planfaktor-plan` |
+
+Механика чистого Q&A (строка `Ready for Coder`): перечитай секцию
+`## Q&A log` плана целиком; якорный grep навигирует по строкам-вопросам:
+
+```sh
+grep -E '^- Q\(' docs/plans/<файл>
+```
+
+Форма строки-вопроса:
+
+- Q(<роль>): <текст> to=Owner|to=<роль>, blocker: yes|no, needs_owner: yes|no, status=open
+
+Открытость решается по паре Q→A: Q-строки append-only вечны со своим
+`status=open`, закрытие живёт только в A-строке
+(`A(<кто>): ... status=closed`). Открытый вопрос к Owner — Q с
+`to=Owner` или `needs_owner: yes`, ниже которой нет закрывающей
+A-строки: стоп по §6 (blocker). Вопросы `to=<роль>` (не к Owner)
+авто-переход не блокируют. «Голый» grep по `status=open` некорректен —
+закрытые Q тоже его несут.
 
 ## 3. Диспатч роли и CENSOR
 

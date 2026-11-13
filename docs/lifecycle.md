@@ -18,7 +18,7 @@ Draft → Ready for Planner → Planning → Ready for Coder → In progress
 | Draft | Architect: понимание, Problem/Solution/Scope | Ответы на Q&A; вопрос `to=Owner, blocker:` останавливает работу |
 | Ready for Planner | — | Ничего: Architect CENSOR пройден, план ждёт Planner |
 | Planning | Planner: AC/DoD, Tests/Commands | Ответы на Q&A |
-| Ready for Coder | — | Гейт «старт кодинга»: явное да |
+| Ready for Coder | Manager: авто-переход при чистом Q&A, диспатч Coder | Ничего — кроме открытых вопросов |
 | In progress | Coder: реализация, evidence, staged-изменения | Ничего — кроме blocker |
 | In review | Reviewer-risk, затем Reviewer-contracts | Гейт merge: явное да после двух pass |
 | Merged | Manager: коммит сделан, идёт closeout | Ничего |
@@ -32,14 +32,19 @@ Architect понимает задачу и заполняет решения: «
 Solution/Decisions, Scope/Out of scope; вопросы к Owner — строками в
 `## Q&A log`. Растёт сам план (из `_template.md`). После handoff-статуса —
 Architect CENSOR (§4). Гейт Owner: нет; блокирующий вопрос = стоп (§6).
+При переходе Manager ретранслирует Owner'у блок «Как я понял задачу»
+и границы Scope (дословно, информационно, без подтверждения) — точка
+чтения человека.
 
 ### Planning
 
 Planner переносит ответы Q&A в секции, пишет Acceptance criteria/DoD и
 Tests/Commands, уточняет Scope, готовит handoff Coder. Растут секции плана:
 DoD, Tests/Commands. После `Ready for Coder` — Planner CENSOR (§4).
-Гейт Owner: «старт кодинга» — переход `Ready for Coder` → `In progress`
-Manager делает только после явного да.
+Гейт Owner: нет — переход `Ready for Coder` → `In progress` Manager
+делает автоматически: перечитывает `## Q&A log` (пары Q→A, якорный
+`grep -E '^- Q\('`); открытый вопрос к Owner — стоп (§6), чистый Q&A —
+перевод и диспатч Coder.
 
 ### In progress
 
@@ -77,14 +82,23 @@ Objections) — append-only, историю не переписывают (§5).
 
 ## Гейты Owner
 
-Два гейта, оба зафиксированы в шапке плана строкой `Owner gates`:
+Один гейт, зафиксированный в шапке плана строкой `Owner gates`; сверх
+гейта Owner дёргается точечно — открытыми вопросами `to=Owner` в
+`## Q&A log` (пока вопрос открыт, конвейер ждёт, §6):
 
-1. **Старт кодинга** — `Ready for Coder` → `In progress`: Owner даёт «стартуем».
-2. **Merge** — `In review` → `Merged`: два pass-вердикта review + явное да;
+1. **Merge** — `In review` → `Merged`: два pass-вердикта review + явное да;
    коммит делается в рамках этого гейта.
 
+Переход `Ready for Coder` → `In progress` — не гейт: Manager переводит
+сам при чистом `## Q&A log` (перечитывание секции, пары Q→A; открытый
+вопрос к Owner — стоп, §6). Точка перехода смотрит только Q&A log —
+Objections log блокиратором авто-перехода не является (роль сама
+стопается по §6) — осознанное решение. Точка чтения человека —
+ретрансляция «Как я понял задачу» + границ Scope при выходе Architect'а
+(информационно).
+
 Правило (§8): коммит делает только Manager и только после явного Owner-«да»
-на гейте; молчание Owner ничего не двигает (`owner-silence`, §6).
+на merge-гейте; молчание Owner ничего не двигает (`owner-silence`, §6).
 
 ## Роль CENSOR
 

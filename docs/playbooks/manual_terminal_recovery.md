@@ -43,7 +43,7 @@ git log --oneline -5
 | `Draft` → `Ready for Planner` | Architect |
 | `Ready for Planner` → `Planning` | Planner |
 | `Planning` → `Ready for Coder` | Planner |
-| `Ready for Coder` → `In progress` | Manager (гейт «стартуем») |
+| `Ready for Coder` → `In progress` | Manager (авто: открытых вопросов к Owner нет) |
 | `In progress` → `In review` | Coder |
 | `In review` → `Merged` | Manager (гейт merge + коммит) |
 | `Merged` → `Done` | Manager (closeout) |

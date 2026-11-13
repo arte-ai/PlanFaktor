@@ -3,7 +3,7 @@
 **Plan ID:** YYMMDD_HHMM
 **Status:** Draft
 **Created:** YYYY-MM-DD
-**Owner gates:** старт кодинга (`Ready for Coder`), merge (`In review` → `Merged`)
+**Owner gates:** merge (`In review` → `Merged`); вопросы `to=Owner` — по мере возникновения
 
 > Шапка — parser-контракт: строки выше grep'аются Manager'ом. Не менять формат.
 > Имя файла: `YYMMDD_HHMM_topic.md` (тема латиницей, слова через `_`).

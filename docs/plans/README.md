@@ -45,7 +45,7 @@
 | `Draft` → `Ready for Planner` | Architect | Фаза + intake завершены; CENSOR OK |
 | `Ready for Planner` → `Planning` | Planner | Intake Planner записан в плане |
 | `Planning` → `Ready for Coder` | Planner | DoD/Tests заполнены; CENSOR OK |
-| `Ready for Coder` → `In progress` | Manager | Owner-гейт «стартуем» |
+| `Ready for Coder` → `In progress` | Manager | Открытых вопросов к Owner нет: перечитывание `## Q&A log`, пары Q→A |
 | `In progress` → `In review` | Coder | Реализация + evidence; CENSOR OK |
 | `In review` → `Merged` | Manager | Два pass-вердикта; Owner-гейт merge; коммит |
 | `Merged` → `Done` | Manager | Closeout: `## Follow-ups` заполнен |

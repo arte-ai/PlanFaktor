@@ -27,7 +27,11 @@ Scope/Out of scope, Q&A к Owner; handoff в Ready for Planner.
 
 5. После ответа Architect — CENSOR-проход в тот же хендл и grep-проверка
    receipt (как в `/planfaktor-run`, шаг 3).
-6. Доложи Owner: план создан, статус, открытые вопросы Architect'а
+6. После валидного Architect CENSOR (переход `Draft → Ready for Planner`)
+   ретранслируй Owner'у блок «Как я понял задачу» и границы `## Scope`
+   из плана — дословно, не пересказ; информационно, без запроса
+   подтверждения (точка чтения человека; гейт Owner — только merge).
+7. Доложи Owner: план создан, статус, открытые вопросы Architect'а
    (`to=Owner` из Q&A log). Ответы Owner передавай Architect'у тем же
    хендлом, пока handoff не валиден.
 

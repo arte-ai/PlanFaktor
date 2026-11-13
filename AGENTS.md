@@ -9,7 +9,7 @@ Routing truth — статусы в файлах планов. Память ча
 
 | Роль | Носитель | Зона | Ключевые запреты |
 |---|---|---|---|
-| Owner | человек в чате | Гейты: старт кодинга, merge; ответы на Q&A | Не пишет план/код |
+| Owner | человек в чате | Гейт merge; ответы на Q&A | Не пишет план/код |
 | Manager | основная сессия, `/planfaktor-run` | Роутинг, диспатчи, CENSOR-гейты, коммиты после «да» | Не пишет план/код; решения — только по файлам |
 | Architect | субагент `planfaktor-architect` | Понимание, решения, Problem/Solution/Scope, Q&A с Owner | Не детализирует до DoD; не пишет код |
 | Planner | субагент `planfaktor-planner` | AC/DoD, Tests/Commands, перенос ответов Q&A в секции, handoff для Coder | Не меняет решения Architect; не пишет код |
@@ -24,7 +24,7 @@ Routing truth — статусы в файлах планов. Память ча
 **Write-surface Manager'а.** Запрет Manager'у «писать план» (строка «Не
 пишет план/код» в таблице ролей) означает содержательные секции —
 ownership-зоны ролей. Manager вправе писать в плане только закрытый список
-служебного: (a) Evidence-узлы по §5 (создание плана, гейт-переходы
+служебного: (a) Evidence-узлы по §5 (создание плана, переходы
 `In progress`/`Merged`, merge-коммит, closeout `Done`); (b) дословный
 Owner-бриф в `## Evidence` при создании плана; (c) строки `A(owner)` —
 перенос ответов Owner из чата в Q&A log; (d) служебные fail-loud записи
@@ -57,11 +57,23 @@ Draft → Ready for Planner → Planning → Ready for Coder → In progress
 | `Draft` → `Ready for Planner` | Architect | Фаза + intake завершены; Architect CENSOR OK |
 | `Ready for Planner` → `Planning` | Planner | Intake Planner записан в плане |
 | `Planning` → `Ready for Coder` | Planner | DoD/Tests заполнены; Planner CENSOR OK |
-| `Ready for Coder` → `In progress` | Manager | **Owner-гейт «стартуем»** |
+| `Ready for Coder` → `In progress` | Manager | Открытых вопросов к Owner нет (механика ниже) |
 | `In progress` → `In review` | Coder | Реализация + evidence; Coder CENSOR OK |
 | `In review` → `Merged` | Manager | Оба ревью-вердикта pass; **Owner-гейт merge**; коммит сделан |
 | `Merged` → `Done` | Manager | Closeout: `## Follow-ups` плана заполнен |
 | `*` → `Superseded` | Architect/Owner | План заменён другим; строка-ссылка на преемника |
+
+Переход `Ready for Coder` → `In progress` — авто-переход Manager'а, без
+Owner-гейта: Manager перечитывает `## Q&A log` плана (якорный
+`grep -E '^- Q\(' <план>` навигирует по строкам-вопросам; открытость —
+по паре Q→A: Q-строки append-only вечны со своим `status=open`, закрытие
+живёт в A-строке `status=closed`). Открытый вопрос к Owner — Q с
+`to=Owner` или `needs_owner: yes`, ниже которой нет закрывающей A-строки:
+стоп по §6; открытых нет — перевод. Вопросы `to=<роль>` (не к Owner)
+переход не блокируют. Точка чтения человека — выход Architect'а: при
+переходе `Draft → Ready for Planner` Manager ретранслирует Owner'у блок
+«Как я понял задачу» и границы Scope (дословно, информационно, без
+подтверждения).
 
 Порядок CENSOR (раздел 4): роль ставит handoff-статус → Manager шлёт
 CENSOR-проход в тот же субагент → OK подтверждает переход, FAIL — откат
@@ -178,7 +190,7 @@ Observations:
   не переписываем.
 - **Единая метка времени Evidence.** Событийные записи плана несут
   локальное время машины в формате `- YYYY-MM-DD HH:MM:SS — <кто>: <текст>`;
-  Manager фиксирует Evidence-узлы: создание плана, гейт-переходы
+  Manager фиксирует Evidence-узлы: создание плана, переходы
   (`In progress`, `Merged`), merge-коммит, closeout (`Done`).
 - **Fail loud.** Отклонение от шаблона/процесса Manager фиксирует явно и
   возвращает роли; чинить молча чужую работу нельзя.
@@ -187,7 +199,7 @@ Observations:
 
 | Класс | Признак | Действие |
 |---|---|---|
-| blocker | Роли нужен ответ для продолжения | Вопрос в `## Q&A log` строкой `to=Owner, blocker:`; работа остановлена |
+| blocker | Роли нужен ответ для продолжения | Вопрос в `## Q&A log` строкой `to=Owner, blocker:` (включая `needs_owner: yes` без закрытия); работа остановлена |
 | plan-gap | План неполон/противоречив | Intake-objections или CENSOR FAIL; откат статуса; докрутка автором секции |
 | loop | Одинаковый FAIL/blocker ≥ 2 раз без прогресса | Новый артефакт или закрытый блокер сбрасывает счётчик; иначе — стоп, эскалация Owner с выжимкой |
 | scope-creep | Работа требует выхода за Scope | Стоп, вопрос в Q&A; расширение Scope решает Architect (+Owner) |
@@ -208,7 +220,7 @@ Observations:
 
 ## 8. Коммиты и ветки
 
-- Коммит делает только Manager и только после явного Owner-«да» на гейте.
+- Коммит делает только Manager и только после явного Owner-«да» на merge-гейте.
 - Формат: `type(PlanID): summary`, где type ∈ `feat|fix|docs|chore`,
   PlanID = `YYMMDD_HHMM` из имени плана. Пример: `feat(261111_0315): add review template`.
 - Работа идёт в рабочем дереве main (MVP); изменения стейджит Coder, не

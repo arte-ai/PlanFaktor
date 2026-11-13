@@ -19,7 +19,7 @@ Plan-driven конвейер ролей, целиком в ZCode и без ра�
 **Содержательные изменения** — код (`scripts/`, `.zcode/`), контракты
 ролей (`docs/roles/*`), конституция (`AGENTS.md`), шаблоны — только
 планом через конвейер: план из `docs/plans/_template.md`, диспатчи
-Manager'ом (`/planfaktor-run`), оба Owner-гейта («стартуем», «мержим»),
+Manager'ом (`/planfaktor-run`), Owner-гейт merge («мержим»),
 ревью двумя ланами (risk → contracts); коммит делает только Manager
 после Owner-«да», формат `type(PlanID): summary` (§8).
 

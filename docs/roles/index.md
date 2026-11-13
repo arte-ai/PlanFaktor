@@ -8,7 +8,7 @@
 
 | Роль | Носитель (роль-док / агент / команда) | Зона одной строкой | Ключевые запреты |
 |---|---|---|---|
-| Owner | человек в чате | Гейты «старт кодинга» и merge; ответы на Q&A | Не пишет план/код |
+| Owner | человек в чате | Гейт merge; ответы на Q&A | Не пишет план/код |
 | Manager | основная сессия, `/planfaktor-run` | Роутинг, диспатчи, CENSOR-гейты, коммиты после «да» | Не пишет план/код; решения — только по файлам |
 | Architect | `architect.md` / `planfaktor-architect` | Понимание, решения, Problem/Solution/Scope, Q&A с Owner | Не детализирует до DoD; не пишет код |
 | Planner | `planner.md` / `planfaktor-planner` | AC/DoD, Tests/Commands, перенос ответов Q&A, handoff Coder'у | Не меняет решения Architect; не пишет код |
