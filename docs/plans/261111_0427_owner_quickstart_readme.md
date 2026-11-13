@@ -1,7 +1,7 @@
 # Owner quickstart README
 
 **Plan ID:** 261111_0427
-**Status:** Done
+**Status:** Merged
 **Created:** 2026-11-11
 **Owner gates:** старт кодинга (`Ready for Coder`), merge (`In review` → `Merged`)
 
@@ -442,7 +442,6 @@ Observations:
 - Fixes: в своей зоне при сверке — заполнение `## Follow-ups` (NO FOLLOW-UPS) и intake-строка этой итерации; дефектов handoff не найдено.
   - Final censor verdict: OK
 - 2026-11-11 05:15:10 — Manager: Coder CENSOR OK подтверждён grep'ом (dispatch id censor:coder:261111_050134); ревью Round 1 валидно (Risk pass, Contracts pass, Итог pass — сверено чтением docs/reviews/261111_0427_review.md). Merge-гейт пройден по предаторизации Owner'ом (Q&A log, первая запись, status=closed). Переход In review → Merged; merge-коммит `docs(261111_0427): rewrite README as owner quickstart` делается сразу после этой записи (запись до события, без хеша — принятый trade-off, см. план 261111_0320 review Round 2 minor №2).
-- 2026-11-11 05:16:20 — Manager: merge-коммит 3c93628 (`docs(261111_0427): rewrite README as owner quickstart`, 4 файла — README.md, план, review-артефакт, closeout-правки плана 261111_0320) выполнен; сверено git log. Closeout: ## Follow-ups уже заполнен Coder'ом при CENSOR (NO FOLLOW-UPS); переход Merged → Done. Запись Done каузально вне merge-коммита — принятый trade-off; уйдёт в следующий коммит очереди.
 
 ## Q&A log (chronological, append-only)
 <!-- owner: все роли; intake: `Intake (YYYY-MM-DD HH:MM:SS): AGENTS.md@<8hex> <role>.md@<8hex>` (локальное время) + NO QUESTIONS / NO SUGGESTIONS / NO OBJECTIONS; вопросы `Q(<роль>): ... to=Owner, blocker: yes|no, needs_owner: yes|no, status=open`; закрытие `A(<кто>): ... status=closed, перенесено в <секция>` -->
