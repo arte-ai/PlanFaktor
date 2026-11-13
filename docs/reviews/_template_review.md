@@ -3,7 +3,12 @@
 **Plan:** docs/plans/<PlanID>_<topic>.md
 **Reviewed:** staged-изменения против HEAD (`git diff --cached`; при пустом — `git diff`)
 **Status плана на момент review:** In review
+**Round:** 1
 **Lanes:** risk → contracts (последовательно; contracts читает секцию risk)
+
+> Повторный раунд (после needs-fix): `**Round:**` +1 дописывается в этот же
+> файл; findings/вердикты прошлого раунда помечаются `superseded (round N-1)`.
+> Действителен только последний Round.
 
 ## Findings — Risk lane
 <!-- owner: reviewer-risk -->

@@ -58,14 +58,23 @@ CENSOR-проход в тот же субагент → OK подтвержда�
 
 1. Прочитать `AGENTS.md` (этот файл) и свою `docs/roles/<role>.md`.
 2. Прочитать план целиком.
-3. Зафиксировать в `## Q&A log` плана три явных ответа: `NO QUESTIONS` /
-   `NO SUGGESTIONS` / `NO OBJECTIONS` — или конкретные списки (вопрос —
-   строкой `to=Owner` или `to=<роль>`; возражение — с `blocker:` при блокере).
-4. Architect дополнительно пишет/обновляет `## Как я понял задачу` (3–7 строк).
-5. Только после этого — работа по фазе.
+3. Записать в `## Q&A log` contract-строку: `Intake (<дата>):
+   AGENTS.md@<8 hex sha256> <role>.md@<8 hex sha256>` — подтверждение, что
+   прочитаны именно текущие версии контрактов (Manager волен сверить:
+   `shasum -a 256 AGENTS.md docs/roles/<role>.md`).
+4. Зафиксировать в `## Q&A log` три явных ответа: `NO QUESTIONS` /
+   `NO SUGGESTIONS` / `NO OBJECTIONS` — или конкретные списки. Формат
+   вопроса: `Q(<роль>): <текст> to=Owner|to=<роль>, blocker: yes|no,
+   needs_owner: yes|no, status=open`. Не-блокирующий вопрос, который
+   решает только Owner (`needs_owner: yes`), роль сама не закрывает;
+   закрытие — только ответной строкой `A(<кто>): <ответ> status=closed,
+   перенесено в <секция>`. Ответ в чате закрытием не считается.
+5. Architect дополнительно пишет/обновляет `## Как я понял задачу` (3–7 строк).
+6. Только после этого — работа по фазе.
 
 Manager не диспатчит работу роли, если intake-записи текущей итерации нет
-в плане. Intake — запись в плане, отдельного статуса нет.
+в плане (contract-строка + три ответа). Intake — запись в плане, отдельного
+статуса нет.
 
 ## 4. CENSOR — same-subagent second opinion
 
@@ -80,7 +89,7 @@ CENSOR-конверт (SendMessage в тот же handle):
 
 ```
 PASS: censor
-DISPATCH_ID: censor:<role>:<YYMMDD_HHMM>
+DISPATCH_ID: censor:<role>:<YYMMDD_HHMMSS>
 PRE_STATUS_LINE: **Status:** <текущий handoff-статус>
 Задача: сверка собственного handoff с файлами (не с памятью); append-only
 receipt в ## Evidence.
@@ -90,9 +99,11 @@ Receipt (ровно одна append-only запись в `## Evidence` план�
 
 ```
 (Role CENSOR) OK: <handoff-статус> validated; current=true
-Censor dispatch id: censor:<role>:<YYMMDD_HHMM>
+Censor dispatch id: censor:<role>:<YYMMDD_HHMMSS>
 Observations:
 - Second opinion: <что перепроверено, с цитатами из файлов>
+- Counterfactuals considered: <что могло сломаться и проверено; обязательно при «дефектов не нашёл»>
+- Addendum (new angle): <что посмотрено сверх чек-листа; обязательно при «дефектов не нашёл»>
 - Fixes: <что исправлено / ничего>
 - Final censor verdict: OK | FAIL
 ```
@@ -130,6 +141,8 @@ Observations:
 - **Память чата = только reconciliation.** Всё существенное из обсуждения
   обязано попасть в план (Q&A, решения, evidence). Чего нет в файлах —
   не существует.
+- **Ответ роли — никогда не одобрение Owner.** `Next: Owner` от роли —
+  требование остановиться и спросить человека, не разрешение продолжать.
 - **Append-only логи.** `## Evidence`, `## Q&A log`, `## Suggestions log`,
   `## Objections log` — только дописывание; историю не переписываем.
 - **Fail loud.** Отклонение от шаблона/процесса Manager фиксирует явно и
@@ -141,7 +154,7 @@ Observations:
 |---|---|---|
 | blocker | Роли нужен ответ для продолжения | Вопрос в `## Q&A log` строкой `to=Owner, blocker:`; работа остановлена |
 | plan-gap | План неполон/противоречив | Intake-objections или CENSOR FAIL; откат статуса; докрутка автором секции |
-| loop | Одинаковый FAIL/blocker ≥ 2 раз | Стоп, эскалация Owner с выжимкой |
+| loop | Одинаковый FAIL/blocker ≥ 2 раз без прогресса | Новый артефакт или закрытый блокер сбрасывает счётчик; иначе — стоп, эскалация Owner с выжимкой |
 | scope-creep | Работа требует выхода за Scope | Стоп, вопрос в Q&A; расширение Scope решает Architect (+Owner) |
 | broken-evidence | Проверки падают, причина неясна | Стоп, blocker с логом в Evidence |
 | lost-handle | Субагент-хендл недоступен | Fresh-диспатч той же роли: план перечитывается, consumed authorization не наследуется |
@@ -153,6 +166,8 @@ Observations:
   роль перечитывает план и продолжает с текущего статуса.
 - Повторный диспатч не наследует прошлых обещаний роли: истина — только то,
   что записано в файлах.
+- Один fresh-диспатч на роль за recovery-цикл; повторный сбой спавна —
+  стоп, Owner (blocker: `spawn failed`).
 - Ручное терминальное восстановление (когда конвейер встал намертво) —
   Owner-плейбук `docs/playbooks/manual_terminal_recovery.md`.
 

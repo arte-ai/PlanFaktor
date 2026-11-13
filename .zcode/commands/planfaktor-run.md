@@ -49,7 +49,7 @@ TASK: <одно предложение — фаза по routing-таблице>
 
 ```
 PASS: censor
-DISPATCH_ID: censor:<роль>:<YYMMDD_HHMM>
+DISPATCH_ID: censor:<роль>:<YYMMDD_HHMMSS>
 PRE_STATUS_LINE: **Status:** <handoff-статус>
 Задача: сверка собственного handoff с файлами; append-only receipt в ## Evidence.
 ```
@@ -71,10 +71,13 @@ Objections log; после 2 FAIL подряд — Owner (стоп-матриц�
 
 1. Убедись: Coder CENSOR OK (шаг 3).
 2. Диспатч `planfaktor-reviewer-risk` (конверт; TASK: review-артефакт
-   `docs/reviews/<PlanID>_review.md` из шаблона, секция Risk).
+   `docs/reviews/<PlanID>_review.md` из шаблона, секция Risk; при
+   существующем артефакте — новый `**Round:**`, прежние findings/вердикты
+   пометить `superseded (round N-1)`).
 3. После risk-вердикта диспатч `planfaktor-reviewer-contracts` (он читает
    risk-секцию; заполняет Contracts-секцию и Итог).
-4. Перечитай артефакт сам: оба вердикта записаны.
+4. Перечитай артефакт сам: оба вердикта записаны; учитывай только
+   последний `**Round:**` — строки `superseded` не считаются.
    - `pass` → **Owner-гейт merge**: покажи выжимку, спроси «мержим?».
      После «да»: `git add -A && git commit -m "type(PlanID): summary"`,
      поставь `Merged`.
@@ -84,7 +87,10 @@ Objections log; после 2 FAIL подряд — Owner (стоп-матриц�
 ## 5. Всегда
 
 - Intake-записи текущей итерации роли в плане нет — верни конверт с задачей
-  intake (конституция §3).
+  intake (конституция §3). При сомнении в свежести контрактов сверь
+  digest из intake-строки: `shasum -a 256 AGENTS.md docs/roles/<роль>.md`
+  (первые 8 hex должны совпасть); расхождение — конституция изменилась,
+  роль работала по старой: стоп, повторный диспатч.
 - Ответ роли ≠ истина: перед каждым переходом перечитывай статус файла.
 - Гейт Owner без ответа — ожидание (стоп-матрица `owner-silence`).
 - Один шаг команды = одна фаза одного плана; не разгоняй несколько фаз

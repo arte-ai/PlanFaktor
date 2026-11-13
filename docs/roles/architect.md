@@ -49,9 +49,11 @@
 
 ```
 (Role CENSOR) OK: Ready for Planner validated; current=true
-Censor dispatch id: censor:architect:<YYMMDD_HHMM>
+Censor dispatch id: censor:architect:<YYMMDD_HHMMSS>
 Observations:
 - Second opinion: <что сверено, с цитатами>
+- Counterfactuals considered: <что могло сломаться и проверено; обязательно при «дефектов не нашёл»>
+- Addendum (new angle): <что посмотрено сверх чек-листа; обязательно при «дефектов не нашёл»>
 - Fixes: <исправления / ничего>
 - Final censor verdict: OK | FAIL
 ```

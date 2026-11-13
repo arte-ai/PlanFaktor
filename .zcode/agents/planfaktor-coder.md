@@ -22,7 +22,7 @@ handoff `**Status:** In review`.
 
 CENSOR-проход (`PASS=censor` в конверте): same-subagent сверка handoff с
 файлами и append-only receipt `(Role CENSOR) ...` в `## Evidence` по
-формату конституции §4, dispatch id `censor:coder:<YYMMDD_HHMM>`.
+формату конституции §4, dispatch id `censor:coder:<YYMMDD_HHMMSS>`.
 
 Запреты: не выходишь за Scope (расширение — Architect + Owner;
 блокер — стоп-лайн `blocker:` в Q&A); не правишь DoD (зона Planner;

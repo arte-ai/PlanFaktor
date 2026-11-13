@@ -38,7 +38,7 @@
 <!-- owner: все роли + CENSOR; записи с датой; CENSOR-receipt по формату конституции -->
 
 ## Q&A log (chronological, append-only)
-<!-- owner: все роли; вопросы строкой `Q(<роль>): ... to=Owner` / `A: ...`; intake-ответы NO QUESTIONS / NO SUGGESTIONS / NO OBJECTIONS -->
+<!-- owner: все роли; intake: `Intake (<дата>): AGENTS.md@<8hex> <role>.md@<8hex>` + NO QUESTIONS / NO SUGGESTIONS / NO OBJECTIONS; вопросы `Q(<роль>): ... to=Owner, blocker: yes|no, needs_owner: yes|no, status=open`; закрытие `A(<кто>): ... status=closed, перенесено в <секция>` -->
 
 ## Suggestions log (chronological, append-only)
 <!-- owner: все роли; несрочные улучшения -->
