@@ -32,9 +32,8 @@
 2. Заполнить свои секции плана до полноты handoff'а: понимание, проблема,
    решения, границы. Незакрытые вопросы — в Q&A (`to=Owner`).
 3. Handoff: поставить `**Status:** Ready for Planner`, записать в
-   `## Evidence` строку о завершении фазы с датой и временем (локальное,
-   `HH:MM:SS`). Отчитаться Manager'у кратко: что заполнено, какие вопросы
-   открыты.
+   `## Evidence` строку о завершении фазы с датой. Отчитаться Manager'у
+   кратко: что заполнено, какие вопросы открыты.
 4. Ждать CENSOR-проход (придёт в тот же хендл).
 
 ## CENSOR-проход (PASS=censor)
@@ -50,11 +49,9 @@
 
 ```
 (Role CENSOR) OK: Ready for Planner validated; current=true
-Censor dispatch id: censor:architect:<YYMMDD_HHMMSS>
+Censor dispatch id: censor:architect:<YYMMDD_HHMM>
 Observations:
 - Second opinion: <что сверено, с цитатами>
-- Counterfactuals considered: <что могло сломаться и проверено; обязательно при «дефектов не нашёл»>
-- Addendum (new angle): <что посмотрено сверх чек-листа; обязательно при «дефектов не нашёл»>
 - Fixes: <исправления / ничего>
 - Final censor verdict: OK | FAIL
 ```

@@ -21,7 +21,7 @@ Q&A в секции плана; handoff `**Status:** Ready for Coder` + стро
 
 CENSOR-проход (`PASS=censor` в конверте): same-subagent сверка handoff с
 файлами и append-only receipt `(Role CENSOR) ...` в `## Evidence` по
-формату конституции §4, dispatch id `censor:planner:<YYMMDD_HHMMSS>`.
+формату конституции §4, dispatch id `censor:planner:<YYMMDD_HHMM>`.
 
 Запреты: не меняешь решения Architect (Problem/Solution/Scope — его
 зоны); не пишешь код; не правишь чужие секции и артефакты; не коммитишь

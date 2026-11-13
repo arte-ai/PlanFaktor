@@ -9,7 +9,7 @@ Routing truth — статусы в файлах планов. Память ча
 
 | Роль | Носитель | Зона | Ключевые запреты |
 |---|---|---|---|
-| Owner | человек в чате | Гейт merge; ответы на Q&A | Не пишет план/код |
+| Owner | человек в чате | Гейты: старт кодинга, merge; ответы на Q&A | Не пишет план/код |
 | Manager | основная сессия, `/planfaktor-run` | Роутинг, диспатчи, CENSOR-гейты, коммиты после «да» | Не пишет план/код; решения — только по файлам |
 | Architect | субагент `planfaktor-architect` | Понимание, решения, Problem/Solution/Scope, Q&A с Owner | Не детализирует до DoD; не пишет код |
 | Planner | субагент `planfaktor-planner` | AC/DoD, Tests/Commands, перенос ответов Q&A в секции, handoff для Coder | Не меняет решения Architect; не пишет код |
@@ -20,26 +20,6 @@ Routing truth — статусы в файлах планов. Память ча
 **Ownership-зоны.** Роль не заполняет чужие секции плана и не правит чужие
 артефакты: Coder не правит DoD, Planner не меняет решения Architect,
 цензор-проход роли не заполняет поля другой роли. Нарушение зоны = FAIL.
-
-**Write-surface Manager'а.** Запрет Manager'у «писать план» (строка «Не
-пишет план/код» в таблице ролей) означает содержательные секции —
-ownership-зоны ролей. Manager вправе писать в плане только закрытый список
-служебного: (a) Evidence-узлы по §5 (создание плана, переходы
-`In progress`/`Merged`, merge-коммит, closeout `Done`); (b) дословный
-Owner-бриф в `## Evidence` при создании плана; (c) строки `A(owner)` —
-перенос ответов Owner из чата в Q&A log; (d) служебные fail-loud записи
-отклонений в Evidence; (e) Evidence-записи о событиях собственной зоны
-Manager'а по §1 (роутинг, диспатчи, CENSOR-гейты, Owner-гейты) сверх
-обязательных узлов §5: grep-валидация CENSOR-перехода и диспатч следующей
-роли, открытие/ожидание Owner-гейта (owner-silence), возврат needs-fix
-со статусом и составом возврата; (f) usage-строки в `## Token usage`
-(формат — комментарий шаблона `docs/plans/_template.md`) — зона Manager'а:
-пишет только Manager, сразу после получения результата диспатча/CENSOR,
-число — из tool-результата харнесса. Статусная строка `**Status:**` — не
-секция плана: право её менять определяет §2 (кто ставит переход, тот
-и пишет строку); write-surface её не ограничивает. Всё вне списка —
-содержательные секции (ownership-зоны ролей); запись Manager'а
-в содержательной секции вне write-surface = нарушение §1.
 
 ## 2. Routing truth и статусная машина
 
@@ -57,23 +37,11 @@ Draft → Ready for Planner → Planning → Ready for Coder → In progress
 | `Draft` → `Ready for Planner` | Architect | Фаза + intake завершены; Architect CENSOR OK |
 | `Ready for Planner` → `Planning` | Planner | Intake Planner записан в плане |
 | `Planning` → `Ready for Coder` | Planner | DoD/Tests заполнены; Planner CENSOR OK |
-| `Ready for Coder` → `In progress` | Manager | Открытых вопросов к Owner нет (механика ниже) |
+| `Ready for Coder` → `In progress` | Manager | **Owner-гейт «стартуем»** |
 | `In progress` → `In review` | Coder | Реализация + evidence; Coder CENSOR OK |
 | `In review` → `Merged` | Manager | Оба ревью-вердикта pass; **Owner-гейт merge**; коммит сделан |
 | `Merged` → `Done` | Manager | Closeout: `## Follow-ups` плана заполнен |
 | `*` → `Superseded` | Architect/Owner | План заменён другим; строка-ссылка на преемника |
-
-Переход `Ready for Coder` → `In progress` — авто-переход Manager'а, без
-Owner-гейта: Manager перечитывает `## Q&A log` плана (якорный
-`grep -E '^- Q\(' <план>` навигирует по строкам-вопросам; открытость —
-по паре Q→A: Q-строки append-only вечны со своим `status=open`, закрытие
-живёт в A-строке `status=closed`). Открытый вопрос к Owner — Q с
-`to=Owner` или `needs_owner: yes`, ниже которой нет закрывающей A-строки:
-стоп по §6; открытых нет — перевод. Вопросы `to=<роль>` (не к Owner)
-переход не блокируют. Точка чтения человека — выход Architect'а: при
-переходе `Draft → Ready for Planner` Manager ретранслирует Owner'у блок
-«Как я понял задачу» и границы Scope (дословно, информационно, без
-подтверждения).
 
 Порядок CENSOR (раздел 4): роль ставит handoff-статус → Manager шлёт
 CENSOR-проход в тот же субагент → OK подтверждает переход, FAIL — откат
@@ -90,31 +58,14 @@ CENSOR-проход в тот же субагент → OK подтвержда�
 
 1. Прочитать `AGENTS.md` (этот файл) и свою `docs/roles/<role>.md`.
 2. Прочитать план целиком.
-3. Записать в `## Q&A log` contract-строку: `Intake (YYYY-MM-DD HH:MM:SS):
-   AGENTS.md@<8 hex sha256> <role>.md@<8 hex sha256>` (локальное время
-   машины) — подтверждение, что прочитаны именно текущие версии контрактов
-   (Manager волен сверить: `shasum -a 256 AGENTS.md docs/roles/<role>.md`).
-4. Зафиксировать в `## Q&A log` три явных ответа: `NO QUESTIONS` /
-   `NO SUGGESTIONS` / `NO OBJECTIONS` — или конкретные списки. Формат
-   вопроса: `Q(<роль>): <текст> to=Owner|to=<роль>, blocker: yes|no,
-   needs_owner: yes|no, status=open`. Не-блокирующий вопрос, который
-   решает только Owner (`needs_owner: yes`), роль сама не закрывает;
-   закрытие — только ответной строкой `A(<кто>): <ответ> status=closed,
-   перенесено в <секция>`. Ответ в чате закрытием не считается.
-5. Architect дополнительно пишет/обновляет `## Как я понял задачу` (3–7 строк).
-6. Только после этого — работа по фазе.
-7. **Миграция контрактов внутри фазы.** Правило миграции: план, меняющий
-   контракты (`AGENTS.md`, `docs/roles/*`, шаблоны, `.zcode/commands/*`),
-   фиксирует в `## Evidence` смену digest'ов по каждому изменённому файлу
-   (старый@8hex → новый@8hex, с меткой времени). Роли при следующем intake
-   перечитывают изменённые контракты (п.1) и записывают актуальные
-   digest'ы; расхождение digest'ов между итерациями одной фазы — норма,
-   если смена зафиксирована в Evidence планом; незафиксированное
-   расхождение — стоп и повторный диспатч.
+3. Зафиксировать в `## Q&A log` плана три явных ответа: `NO QUESTIONS` /
+   `NO SUGGESTIONS` / `NO OBJECTIONS` — или конкретные списки (вопрос —
+   строкой `to=Owner` или `to=<роль>`; возражение — с `blocker:` при блокере).
+4. Architect дополнительно пишет/обновляет `## Как я понял задачу` (3–7 строк).
+5. Только после этого — работа по фазе.
 
 Manager не диспатчит работу роли, если intake-записи текущей итерации нет
-в плане (contract-строка + три ответа). Intake — запись в плане, отдельного
-статуса нет.
+в плане. Intake — запись в плане, отдельного статуса нет.
 
 ## 4. CENSOR — same-subagent second opinion
 
@@ -129,7 +80,7 @@ CENSOR-конверт (SendMessage в тот же handle):
 
 ```
 PASS: censor
-DISPATCH_ID: censor:<role>:<YYMMDD_HHMMSS>
+DISPATCH_ID: censor:<role>:<YYMMDD_HHMM>
 PRE_STATUS_LINE: **Status:** <текущий handoff-статус>
 Задача: сверка собственного handoff с файлами (не с памятью); append-only
 receipt в ## Evidence.
@@ -138,22 +89,18 @@ receipt в ## Evidence.
 Receipt (ровно одна append-only запись в `## Evidence` плана):
 
 ```
-- YYYY-MM-DD HH:MM:SS — (Role CENSOR) OK: <handoff-статус> validated; current=true
-Censor dispatch id: censor:<role>:<YYMMDD_HHMMSS>
+(Role CENSOR) OK: <handoff-статус> validated; current=true
+Censor dispatch id: censor:<role>:<YYMMDD_HHMM>
 Observations:
 - Second opinion: <что перепроверено, с цитатами из файлов>
-- Counterfactuals considered: <что могло сломаться и проверено; обязательно при «дефектов не нашёл»>
-- Addendum (new angle): <что посмотрено сверх чек-листа; обязательно при «дефектов не нашёл»>
 - Fixes: <что исправлено / ничего>
 - Final censor verdict: OK | FAIL
 ```
 
 Правила:
 - Гейт Manager: grep-проверка маркера `(Role CENSOR)`, вердикта, dispatch id
-  и непустых Observations; строка маркера `(Role CENSOR)` обязана нести
-  префикс `- YYYY-MM-DD HH:MM:SS — ` (единая метка времени Evidence, §5).
-  Нет валидного receipt — переход не считается подтверждённым, план
-  не двигается.
+  и непустых Observations. Нет валидного receipt — переход не считается
+  подтверждённым, план не двигается.
 - FAIL: роль откатывает handoff-статус, фиксирует причину в
   `### <Role> objections`, правит и повторяет фазу. Максимум 2 FAIL подряд,
   дальше — Owner (стоп-матрица).
@@ -183,15 +130,8 @@ Observations:
 - **Память чата = только reconciliation.** Всё существенное из обсуждения
   обязано попасть в план (Q&A, решения, evidence). Чего нет в файлах —
   не существует.
-- **Ответ роли — никогда не одобрение Owner.** `Next: Owner` от роли —
-  требование остановиться и спросить человека, не разрешение продолжать.
 - **Append-only логи.** `## Evidence`, `## Q&A log`, `## Suggestions log`,
-  `## Objections log`, `## Token usage` — только дописывание; историю
-  не переписываем.
-- **Единая метка времени Evidence.** Событийные записи плана несут
-  локальное время машины в формате `- YYYY-MM-DD HH:MM:SS — <кто>: <текст>`;
-  Manager фиксирует Evidence-узлы: создание плана, переходы
-  (`In progress`, `Merged`), merge-коммит, closeout (`Done`).
+  `## Objections log` — только дописывание; историю не переписываем.
 - **Fail loud.** Отклонение от шаблона/процесса Manager фиксирует явно и
   возвращает роли; чинить молча чужую работу нельзя.
 
@@ -199,9 +139,9 @@ Observations:
 
 | Класс | Признак | Действие |
 |---|---|---|
-| blocker | Роли нужен ответ для продолжения | Вопрос в `## Q&A log` строкой `to=Owner, blocker:` (включая `needs_owner: yes` без закрытия); работа остановлена |
+| blocker | Роли нужен ответ для продолжения | Вопрос в `## Q&A log` строкой `to=Owner, blocker:`; работа остановлена |
 | plan-gap | План неполон/противоречив | Intake-objections или CENSOR FAIL; откат статуса; докрутка автором секции |
-| loop | Одинаковый FAIL/blocker ≥ 2 раз без прогресса | Новый артефакт или закрытый блокер сбрасывает счётчик; иначе — стоп, эскалация Owner с выжимкой |
+| loop | Одинаковый FAIL/blocker ≥ 2 раз | Стоп, эскалация Owner с выжимкой |
 | scope-creep | Работа требует выхода за Scope | Стоп, вопрос в Q&A; расширение Scope решает Architect (+Owner) |
 | broken-evidence | Проверки падают, причина неясна | Стоп, blocker с логом в Evidence |
 | lost-handle | Субагент-хендл недоступен | Fresh-диспатч той же роли: план перечитывается, consumed authorization не наследуется |
@@ -213,14 +153,12 @@ Observations:
   роль перечитывает план и продолжает с текущего статуса.
 - Повторный диспатч не наследует прошлых обещаний роли: истина — только то,
   что записано в файлах.
-- Один fresh-диспатч на роль за recovery-цикл; повторный сбой спавна —
-  стоп, Owner (blocker: `spawn failed`).
 - Ручное терминальное восстановление (когда конвейер встал намертво) —
   Owner-плейбук `docs/playbooks/manual_terminal_recovery.md`.
 
 ## 8. Коммиты и ветки
 
-- Коммит делает только Manager и только после явного Owner-«да» на merge-гейте.
+- Коммит делает только Manager и только после явного Owner-«да» на гейте.
 - Формат: `type(PlanID): summary`, где type ∈ `feat|fix|docs|chore`,
   PlanID = `YYMMDD_HHMM` из имени плана. Пример: `feat(261111_0315): add review template`.
 - Работа идёт в рабочем дереве main (MVP); изменения стейджит Coder, не
@@ -234,9 +172,6 @@ docs/plans/     планы (YYMMDD_HHMM_topic.md) + _template.md — единс�
 docs/reviews/   review-артефакты: <PlanID>_review.md + _template_review.md
 docs/roles/     роли-доки: architect, planner, coder, reviewer-risk, reviewer-contracts
 docs/playbooks/ ручные восстановления
-docs/followups/ backlog техдолга (row-грамматика + derived index)
-docs/requirements/  реестр внешних требований (row-грамматика + журнал статусов), регламент, derived-матрица трассируемости
-docs/compliance/    комплаенс-маппинги стандартов (предъявляемые клиенту документы)
 ```
 
 Новый артефакт создаётся только из шаблона. Отступление от шаблона —

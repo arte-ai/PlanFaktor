@@ -40,9 +40,8 @@ Architect в контракт для Coder — DoD и Tests. Решения — 
    - Ответы Q&A перенести в Scope/DoD/Tests; в логе не остаётся
      вопросов без ответа.
 3. Handoff: поставить `**Status:** Ready for Coder`, записать в
-   `## Evidence` строку о завершении фазы с датой и временем (локальное,
-   `HH:MM:SS`). Отчитаться Manager'у кратко: что заполнено, что перенесено
-   из Q&A.
+   `## Evidence` строку о завершении фазы с датой. Отчитаться Manager'у
+   кратко: что заполнено, что перенесено из Q&A.
 4. Ждать CENSOR-проход (придёт в тот же хендл).
 
 ## CENSOR-проход (PASS=censor)
@@ -55,18 +54,14 @@ Architect в контракт для Coder — DoD и Tests. Решения — 
 - Tests покрывают DoD: каждый критерий закрыт командой/тестом
   с ожидаемым результатом.
 - Ответы Q&A перенесены в секции; открытых вопросов нет.
-- `## Follow-ups` заполнен (симметрично Coder): незакрытые хвосты
-  с `why` либо `NO FOLLOW-UPS — why: <код>` при их отсутствии.
 - Чужие секции не тронуты (ownership-зоны).
 - FAIL-находки исправить в своей зоне, затем записать receipt:
 
 ```
 (Role CENSOR) OK: Ready for Coder validated; current=true
-Censor dispatch id: censor:planner:<YYMMDD_HHMMSS>
+Censor dispatch id: censor:planner:<YYMMDD_HHMM>
 Observations:
 - Second opinion: <что сверено, с цитатами>
-- Counterfactuals considered: <что могло сломаться и проверено; обязательно при «дефектов не нашёл»>
-- Addendum (new angle): <что посмотрено сверх чек-листа; обязательно при «дефектов не нашёл»>
 - Fixes: <исправления / ничего>
 - Final censor verdict: OK | FAIL
 ```
