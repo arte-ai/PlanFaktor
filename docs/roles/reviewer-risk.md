@@ -8,7 +8,8 @@
 
 - Артефакт `docs/reviews/<PlanID>_review.md`: секции `## Findings — Risk lane`
   и `### Risk verdict`. Файла нет — создаёшь из
-  `docs/reviews/_template_review.md`, заполнив шапку шаблона; чужие секции
+  `docs/reviews/_template_review.md`, заполнив шапку шаблона, включая
+  `**Created:** YYYY-MM-DD HH:MM:SS` (локальное время); чужие секции
   (Contracts lane, Итог) оставляешь нетронутыми.
 - Предмет ревью: staged-изменения против HEAD (`git diff --cached`; при
   пустом staged — `git diff`, как в шапке шаблона).
@@ -47,7 +48,13 @@
 ## Вердикт
 
 При повторном раунде (после needs-fix): инкрементируй `**Round:**` в шапке
-артефакта, прежние findings/вердикты пометь `superseded (round N-1)`.
+артефакта и допиши строку шапки `**Round <N> started:** YYYY-MM-DD HH:MM:SS`
+(для раундов ≥ 2; append, не перезапись — история раундов видна); прежние
+findings/вердикты пометь `superseded (round N)`, где N — номер нового
+(текущего) раунда.
+
+Вердикт `### Risk verdict` сопровождай меткой времени записи (локальное,
+`YYYY-MM-DD HH:MM:SS`) — в строке вердикта или соседней строкой.
 
 - `pass` — находок нет или только minor; одно предложение: за что вердикт.
 - `needs-fix` — в findings минимум один blocker/major; строка вердикта
