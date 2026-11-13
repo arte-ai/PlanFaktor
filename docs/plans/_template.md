@@ -35,10 +35,10 @@
 <!-- owner: coder; фактические изменения по областям; заполняется в ходе работы -->
 
 ## Evidence (chronological, append-only)
-<!-- owner: все роли + CENSOR; записи с датой; CENSOR-receipt по формату конституции -->
+<!-- owner: все роли + CENSOR; событийные записи с датой и локальным временем `- YYYY-MM-DD HH:MM:SS — <кто>: <текст>`; CENSOR-receipt по формату конституции -->
 
 ## Q&A log (chronological, append-only)
-<!-- owner: все роли; intake: `Intake (<дата>): AGENTS.md@<8hex> <role>.md@<8hex>` + NO QUESTIONS / NO SUGGESTIONS / NO OBJECTIONS; вопросы `Q(<роль>): ... to=Owner, blocker: yes|no, needs_owner: yes|no, status=open`; закрытие `A(<кто>): ... status=closed, перенесено в <секция>` -->
+<!-- owner: все роли; intake: `Intake (YYYY-MM-DD HH:MM:SS): AGENTS.md@<8hex> <role>.md@<8hex>` (локальное время) + NO QUESTIONS / NO SUGGESTIONS / NO OBJECTIONS; вопросы `Q(<роль>): ... to=Owner, blocker: yes|no, needs_owner: yes|no, status=open`; закрытие `A(<кто>): ... status=closed, перенесено в <секция>` -->
 
 ## Suggestions log (chronological, append-only)
 <!-- owner: все роли; несрочные улучшения -->

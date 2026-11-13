@@ -22,10 +22,10 @@ progress` или `In review`. Если таких нет — работай по
 |---|---|
 | `Draft` | Диспатч Architect (PHASE=work) → шаг 3 (CENSOR) → `Ready for Planner` |
 | `Ready for Planner` | Диспатч Planner (PHASE=work; Planner сам ставит `Planning` на intake) → дождаться `Ready for Coder` через CENSOR |
-| `Ready for Coder` | **Owner-гейт**: покажи Owner выжимку плана (Scope/DoD), спроси «стартуем?». После «да» поставь `In progress` и диспатчи Coder (PHASE=work) |
+| `Ready for Coder` | **Owner-гейт**: покажи Owner выжимку плана (Scope/DoD), спроси «стартуем?». После «да» поставь `In progress` с Evidence-записью с меткой времени (`- YYYY-MM-DD HH:MM:SS — Manager: гейт «стартуем» пройден, статус In progress`) и диспатчи Coder (PHASE=work) |
 | `In progress` | Ожидание Coder (или его blocker-вопрос в Q&A → к Owner). Диспатч продолжается, пока не увидишь `In review` → CENSOR Coder → шаг 4 |
 | `In review` | После валидного Coder CENSOR: ревью — шаг 4 |
-| `Merged` | Closeout: проверь `## Follow-ups` плана (заполнен или `NO FOLLOW-UPS — why:`). Поставь `Done`, доложи Owner |
+| `Merged` | Closeout: проверь `## Follow-ups` плана (заполнен или `NO FOLLOW-UPS — why:`). Поставь `Done` с Evidence-записью с меткой времени (`- YYYY-MM-DD HH:MM:SS — Manager: closeout, статус Done`), доложи Owner |
 | `Done` / `Superseded` | Ничего; следующий план или `/planfaktor-plan` |
 
 ## 3. Диспатч роли и CENSOR
@@ -79,8 +79,11 @@ Objections log; после 2 FAIL подряд — Owner (стоп-матриц�
 4. Перечитай артефакт сам: оба вердикта записаны; учитывай только
    последний `**Round:**` — строки `superseded` не считаются.
    - `pass` → **Owner-гейт merge**: покажи выжимку, спроси «мержим?».
-     После «да»: `git add -A && git commit -m "type(PlanID): summary"`,
-     поставь `Merged`.
+     После «да»: зафиксируй Evidence-записи с меткой времени
+     (`YYYY-MM-DD HH:MM:SS`) — merge-коммит и гейт-переход `Merged`;
+     поставь `Merged`; затем `git add -A && git commit -m
+     "type(PlanID): summary"` — Evidence-записи и статус `Merged` входят
+     в merge-коммит, рабочее дерево после него чистое.
    - `needs-fix` → статус `In progress`, возражения уже в артефакте;
      диспатчи Coder с TASK на fixes.
 

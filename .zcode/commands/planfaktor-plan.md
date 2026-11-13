@@ -8,8 +8,10 @@ description: Создать план Planfaktor — Manager-рутина зап�
 2. Сгенерируй Plan ID: `date +%y%m%d_%H%M`. Имя файла:
    `docs/plans/<PlanID>_<topic>.md` (topic — латиница, слова через `_`).
 3. Создай план из `docs/plans/_template.md`: скопируй шаблон, подставь
-   Plan ID, тему, `**Status:** Draft`, дату. Больше ничего не заполняй —
-   план пишет Architect.
+   Plan ID, тему, `**Status:** Draft`, дату. В `## Evidence` нового плана
+   зафиксируй запись о создании с меткой времени локального времени машины:
+   `- YYYY-MM-DD HH:MM:SS — Manager: план создан из шаблона по /planfaktor-plan`.
+   Остальные секции не заполняй — план пишет Architect.
 4. Диспатч субагента `planfaktor-architect` конвертом:
 
 ```

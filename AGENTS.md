@@ -58,10 +58,10 @@ CENSOR-проход в тот же субагент → OK подтвержда�
 
 1. Прочитать `AGENTS.md` (этот файл) и свою `docs/roles/<role>.md`.
 2. Прочитать план целиком.
-3. Записать в `## Q&A log` contract-строку: `Intake (<дата>):
-   AGENTS.md@<8 hex sha256> <role>.md@<8 hex sha256>` — подтверждение, что
-   прочитаны именно текущие версии контрактов (Manager волен сверить:
-   `shasum -a 256 AGENTS.md docs/roles/<role>.md`).
+3. Записать в `## Q&A log` contract-строку: `Intake (YYYY-MM-DD HH:MM:SS):
+   AGENTS.md@<8 hex sha256> <role>.md@<8 hex sha256>` (локальное время
+   машины) — подтверждение, что прочитаны именно текущие версии контрактов
+   (Manager волен сверить: `shasum -a 256 AGENTS.md docs/roles/<role>.md`).
 4. Зафиксировать в `## Q&A log` три явных ответа: `NO QUESTIONS` /
    `NO SUGGESTIONS` / `NO OBJECTIONS` — или конкретные списки. Формат
    вопроса: `Q(<роль>): <текст> to=Owner|to=<роль>, blocker: yes|no,
@@ -98,7 +98,7 @@ receipt в ## Evidence.
 Receipt (ровно одна append-only запись в `## Evidence` плана):
 
 ```
-(Role CENSOR) OK: <handoff-статус> validated; current=true
+- YYYY-MM-DD HH:MM:SS — (Role CENSOR) OK: <handoff-статус> validated; current=true
 Censor dispatch id: censor:<role>:<YYMMDD_HHMMSS>
 Observations:
 - Second opinion: <что перепроверено, с цитатами из файлов>
@@ -145,6 +145,10 @@ Observations:
   требование остановиться и спросить человека, не разрешение продолжать.
 - **Append-only логи.** `## Evidence`, `## Q&A log`, `## Suggestions log`,
   `## Objections log` — только дописывание; историю не переписываем.
+- **Единая метка времени Evidence.** Событийные записи плана несут
+  локальное время машины в формате `- YYYY-MM-DD HH:MM:SS — <кто>: <текст>`;
+  Manager фиксирует Evidence-узлы: создание плана, гейт-переходы
+  (`In progress`, `Merged`), merge-коммит, closeout (`Done`).
 - **Fail loud.** Отклонение от шаблона/процесса Manager фиксирует явно и
   возвращает роли; чинить молча чужую работу нельзя.
 
