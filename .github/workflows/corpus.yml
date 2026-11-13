@@ -1,6 +1,6 @@
 # Corpus lint — машинная проверка инвариантов конвейера Planfaktor.
-# Ремоута нет: файл добавлен вперёд, активируется сам при появлении
-# удалённого репозитория (план 261111_2243, Solution п.4).
+# CI корпуса: линт + selftest на каждый push/PR; окружение верификации —
+# см. README (supported verification environment).
 name: corpus-lint
 
 on: [push, pull_request]

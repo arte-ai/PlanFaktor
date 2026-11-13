@@ -46,8 +46,8 @@
 в `## Журнал статусов` реестра (append-only, конституция §5):
 
 - `open` — предъявлено, не промоутнуто: `plan=none`.
-- `planned` — план закрытия прошёл Owner-гейт старта кодинга
-  (`Ready for Coder` → `In progress`): row обновляется
+- `planned` — план закрытия перешёл в работу (`Ready for Coder` →
+  `In progress` — авто-переход Manager'а при чистом Q&A, §2): row обновляется
   (`plan=<PlanID>`, `статус=planned`), запись журнала
   `<ID>: open → planned — <PlanID>`.
 - `verified` — план смержён (Owner-гейт `In review` → `Merged`,

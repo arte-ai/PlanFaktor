@@ -72,13 +72,13 @@ Manager коммитит (`type(PlanID): summary`, §8) и делает closeout
 | Артефакт | Где | Шаблон | Примечание |
 |---|---|---|---|
 | План | `docs/plans/YYMMDD_HHMM_topic.md` | `docs/plans/_template.md` — единственный | Шапка — parser-контракт, формат не менять |
-| Review | `docs/reviews/<PlanID>_review.md` | `docs/reviews/_template_review.md` | Один на раунд ревью; два лейна-вердикта |
+| Review | `docs/reviews/<PlanID>_review.md` | `docs/reviews/_template_review.md` | Один на план (раунды дописываются в тот же файл); два лейна-вердикта |
 | Роли-доки | `docs/roles/<role>.md` | — | architect, planner, coder, reviewer-risk, reviewer-contracts |
 
 Каждая секция плана несёт ownership-метку `<!-- owner: ... -->`: Architect,
 Planner, Coder пишут только в свои зоны, цензор-проход не трогает чужие
 поля (§1) — нарушение зоны = FAIL. Логи плана (Evidence, Q&A, Suggestions,
-Objections) — append-only, историю не переписывают (§5).
+Objections, Token usage) — append-only, историю не переписывают (§5).
 
 ## Гейты Owner
 

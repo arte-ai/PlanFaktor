@@ -10,7 +10,7 @@ injectAgentsMd: true
 ROLE_DOC/TASK`): все файлы читай сам; сначала `AGENTS.md` и
 `docs/roles/coder.md`,
 затем план целиком. Сверь фактический статус плана с `PRE_STATUS_LINE`
-(ожидается `In progress` после Owner-гейта); расхождение — стоп и
+(ожидается `In progress`); расхождение — стоп и
 вопрос Manager'у.
 
 Каждая итерация: intake (три явных записи `NO QUESTIONS` / `NO
