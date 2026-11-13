@@ -1,7 +1,7 @@
 # ГОСТ Р 56939-2024: прослеживаемость требований безопасности
 
 **Plan ID:** 261112_2236
-**Status:** Merged
+**Status:** Done
 **Created:** 2026-11-12
 **Owner gates:** старт кодинга (`Ready for Coder`), merge (`In review` → `Merged`)
 
@@ -321,6 +321,8 @@ Observations:
 
 - 2026-11-13 02:22:11 — Manager: гейт merge пройден — Owner-ответ дословно (кураторская сессия): «давай с дополнениями» — merge одобрен с двумя дополнениями до merge-коммита (независимый аудит), операции в зоне Manager'а, роли не диспатчатся. Внесено до коммита: (1) `docs/requirements/registry.md` — 6 rows `статус=planned` → `статус=verified` + 6 записей `## Журнал статусов` `planned → verified — 261112_2236` (по регламенту README «Отслеживание»: verified на Merged, переводит Manager в Evidence-узле merge; хэш коммита — в closeout-узле); `docs/requirements/matrix.md` пересобрана — Review-колонки: Round 1 pass/pass с метками вердиктов (risk 2026-11-13 01:46:36, contracts 2026-11-13 01:51:51), Коммиты: feat(261112_2236) merge-коммит (хэш — в closeout-узле), Статус: verified, состояние в заголовке актуализировано; (2) `docs/compliance/gost-r-56939-2024.md` — проза неохвата сужена «5.19–5.25» → «5.19, 5.21–5.25» (5.20 заявлен в таблице «частично» — противоречие прозы устранено). Отклонение (fail loud, §5): перевод rows в verified вскрыл хрупкость selftest-посадки C12b — мутация была привязана к литералу ` — статус=planned`, в реестре не осталось planned → дефект не вносился → `selftest: 14/15 caught` (MISSED C12b). Минимальный фикс самоприменения в `scripts/check_corpus.sh` (строки ~1074–1080): паттерн посадки переведён на статус-независимый `[a-z][a-z]*` (портит row с любым статусом enum, шапку формата `статус=<open|...` не трогает) — `selftest: 15/15 caught` восстановлен, `corpus: clean`, в живом реестре `in-progress` отсутствует (негативный контроль). Дополнения проверены: T4=6 (≥3), T7=9 (≥6), rows=6/verified=6, журнал verified=6 + planned=6.
 - 2026-11-13 02:22:11 — Manager: merge-коммит `feat(261112_2236): gost r 56939 requirements traceability registry matrix compliance lint c12` (git add -A; 17 файлов: staged 15 + registry/matrix/compliance/check_corpus.sh из дополнений; хэш — в closeout-узле). Статус Merged.
+- 2026-11-13 21:21:47 — Manager (кураторская сессия, по указанию Owner, итог разбора внешнего аудита): closeout — merge-коммит плана 70178a7 (пересобранная история; до-санитизационный эквивалент bce3fb3); Follow-ups заполнены при merge (Evidence 02:22:11); переход Merged → Done по образцу 261113_0217 (7750771); конвенция хвоста (а) — решение Owner 2026-11-12 (Evidence 261112_0111:276): этот closeout-узел и статус едут отдельным chore-коммитом
+
 ## Token usage (append-only)
 <!-- owner: manager; dispatch-форма: `- YYYY-MM-DD HH:MM:SS — usage: <role>.<work|censor|rN> <N|unknown (why=...)> tokens — <dispatch|sendmessage|unknown>`; чекпоинт-форма: `- YYYY-MM-DD HH:MM:SS — usage: manager-context checkpoint ~<N> tokens-left — approximate`; числа — учёт харнесса ZCode (subagent_tokens), приближение, не биллинг провайдера; пишет только Manager из tool-результата вызова -->
 
