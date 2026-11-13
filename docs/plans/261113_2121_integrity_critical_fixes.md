@@ -1,7 +1,7 @@
 # Целостность конвейера: merge-шаг, селекция статусов, needs-fix-переход, роль-доки, куратор, пост-ребилд миграции
 
 **Plan ID:** 261113_2121
-**Status:** Merged
+**Status:** Done
 **Created:** 2026-11-13
 **Owner gates:** merge (`In review` → `Merged`); вопросы `to=Owner` — по мере возникновения
 
@@ -591,6 +591,8 @@ Observations:
 - 2026-11-14 00:49:23 — Manager: ревью Round 3 завершено — Risk pass (00:38:20) + Contracts pass (00:47:30), Итог: pass → открыт Owner-гейт merge; свежий линт собственным прогоном: corpus: clean, selftest: 15/15 caught; выжимка доложена Owner'у (вердикты, staged-список 20, lint). Ожидание ответа Owner (owner-silence, §6)
 - 2026-11-14 01:24:15 — Manager: reconciliation с кураторской сессией мониторинга — гейт-отчёт 00:49 не был виден монитору; состояние перепроверено по дискам (вердикты Round 3, staged 20, corpus: clean), диспатч contracts не терялся, fresh-диспатч по §7 не требуется; гейт остаётся открытым, выжимка повторена
 - 2026-11-14 01:40:18 — Manager: Owner-«да» на merge-гейте («мержим»); контроли (а) пройдены — unstaged: только план (append-only-дельта, штатное исключение), untracked: 4 Draft-черновика очереди (все `**Status:** Draft`, сверено) + review-артефакт (оба класса в исключениях), staged = 20, свежий линт: corpus: clean, selftest: 15/15 caught; статус Merged, merge-коммит по явному списку из Итога (самоприменение Solution п.1)
+- 2026-11-14 01:42:10 — Manager: merge-коммит 720519f (`feat(261113_2121): integrity critical fixes`, 21 файл) — сверка (г) со списком Итога пройдена: 20 файлов дословно + единственное расхождение docs/reviews/261113_2121_review.md — санкционированное шагом (в) добавление, иное расхождение отсутствует; рабочее дерево после коммита чистое (untracked — только 4 Draft-черновика, в коммит не вошли)
+- 2026-11-14 01:42:10 — Manager: closeout, статус Done — `## Follow-ups` плана заполнен (`NO FOLLOW-UPS — why: out-of-scope-backlog`); хвост — отдельным коммитом `chore(261113_2121): closeout tail`
 
 ## Token usage (append-only)
 <!-- owner: manager; dispatch-форма: `- YYYY-MM-DD HH:MM:SS — usage: <role>.<work|censor|rN> <N|unknown (why=...)> tokens — <dispatch|sendmessage|unknown>`; чекпоинт-форма: `- YYYY-MM-DD HH:MM:SS — usage: manager-context checkpoint ~<N> tokens-left — approximate`; числа — учёт харнесса ZCode (subagent_tokens), приближение, не биллинг провайдера; пишет только Manager из tool-результата вызова -->
