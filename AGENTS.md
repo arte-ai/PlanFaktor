@@ -223,6 +223,8 @@ docs/reviews/   review-артефакты: <PlanID>_review.md + _template_review
 docs/roles/     роли-доки: architect, planner, coder, reviewer-risk, reviewer-contracts
 docs/playbooks/ ручные восстановления
 docs/followups/ backlog техдолга (row-грамматика + derived index)
+docs/requirements/  реестр внешних требований (row-грамматика + журнал статусов), регламент, derived-матрица трассируемости
+docs/compliance/    комплаенс-маппинги стандартов (предъявляемые клиенту документы)
 ```
 
 Новый артефакт создаётся только из шаблона. Отступление от шаблона —

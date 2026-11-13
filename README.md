@@ -62,6 +62,10 @@ needs-fix план возвращается Coder'у, а в артефакт д�
 
 - `docs/lifecycle.md` — жизненный цикл плана от Draft до Done;
 - `docs/followups/index.md` — открытый техдолг конвейера (derived index над backlog);
+- `docs/compliance/gost-r-56939-2024.md` — комплаенс-маппинг
+  ГОСТ Р 56939-2024: какими механизмами и артефактами конвейер закрывает
+  пункты стандарта; вход трассы внешних требований —
+  `docs/requirements/registry.md`, регламент — `docs/requirements/README.md`;
 - `docs/playbooks/manual_terminal_recovery.md` — ручное восстановление,
   если конвейер встал;
 - ops: программно созданным сессиям Manager'а выдавайте права записи

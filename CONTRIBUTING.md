@@ -70,8 +70,8 @@ Manager'ом (`/planfaktor-run`), оба Owner-гейта («стартуем»,
 Линт корпуса:
 
 ```zsh
-./scripts/check_corpus.sh             # инварианты C1–C11, итог `corpus: clean`
-./scripts/check_corpus.sh --selftest  # линт проверяет сам себя: 12/12 caught
+./scripts/check_corpus.sh             # инварианты C1–C12, итог `corpus: clean`
+./scripts/check_corpus.sh --selftest  # линт проверяет сам себя: 15/15 caught
 ```
 
 CI (`.github/workflows/corpus.yml`) гоняет обе команды на каждый push и PR.

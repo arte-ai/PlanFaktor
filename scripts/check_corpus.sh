@@ -21,8 +21,8 @@
 # Selftest:
 #   scripts/check_corpus.sh --selftest
 #   строит в ${TMPDIR:-/tmp} копии корпуса, подсаживает по одному дефекту
-#   на каждый класс C1–C11 и проверяет, что каждая проверка ловит свой
-#   дефект; итог `selftest: N/12 caught`; exit 0 только при 12/12.
+#   на каждый класс C1–C12 и проверяет, что каждая проверка ловит свой
+#   дефект; итог `selftest: N/15 caught`; exit 0 только при 15/15.
 
 set -u
 
@@ -41,6 +41,20 @@ USAGE_CUTOFF=261112_0111
 # примеры формата в прозе/комментариях.
 USAGE_DISPATCH_RE='^- [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} — usage: (architect|planner|coder|reviewer-risk|reviewer-contracts)\.(work|censor|r[0-9]+) ([0-9]+|unknown \(why=[^)]*\)) tokens — (dispatch|sendmessage|unknown)$'
 USAGE_CHECKPOINT_RE='^- [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} — usage: manager-context checkpoint ~[0-9]+ tokens-left — approximate$'
+
+# Cutoff C12(в): R-DoD-покрытие Tests обязательно планам >= 261112_2236
+# в статусе Done (план 261112_2236 — первый носитель R-меток; до гейта
+# Done связку DoD<->Tests закрывает Planner + contracts-лан review,
+# план 261112_2236 Solution п.7). Cutoff нужен только для (в).
+REQ_CUTOFF=261112_2236
+
+# Реестр внешних требований (план 261112_2236, Solution п.1/п.7): rows —
+# в теле секции `## Требования`, статусы — `## Журнал статусов`.
+REQ_REGISTRY=docs/requirements/registry.md
+
+# R-метка: `[R: <ID>]`, ID — алфанумерик с `.`/`-` (форма = T1 плана
+# 261112_2236).
+R_TAG_RE='\[R: [A-Za-z0-9][A-Za-z0-9.-]*\]'
 
 # Замороженный список обязательных секций плана: 13 секций шаблона
 # docs/plans/_template.md на момент плана 261111_2243 (cutoff-версионность
@@ -128,7 +142,7 @@ mutate() {
     sed "$2" "$1" > "$1.lintmut" && mv "$1.lintmut" "$1"
 }
 
-# ------------------------------------------------------------- checks C1-C10
+# ------------------------------------------------------------- checks C1-C12
 
 # C1: каждый план имеет ровно одну строку `^**Status:**` из 9 допустимых
 # значений конституции §2.
@@ -499,7 +513,10 @@ _c8_check_one() {
 # токенизатором до `docs/<dir>/<`); слэш-команды `/planfaktor-*` требуют
 # `.zcode/commands/<имя>.md`. Glob-паттерн `docs/plans/[0-9]*.md`
 # токенизатором обрезается до существующего каталога `docs/plans/`
-# (квадратные скобки не входят в алфавит пути-токена).
+# (квадратные скобки не входят в алфавит пути-токена). Дефис — часть
+# алфавита пути-токена (план 261112_2236: файлы вида
+# docs/compliance/gost-r-56939-2024.md без дефиса обрезались
+# до несуществующего префикса).
 check_c9() {
     _c9_corpus=$1
     _c9_rc=0
@@ -509,7 +526,7 @@ check_c9() {
     do
         [ -f "$_c9_src" ] || continue
         _c9_rel=${_c9_src#$_c9_corpus/}
-        for _c9_tok in $(grep -hoE '(docs|\.zcode)/[A-Za-z0-9_./<>*]+' "$_c9_src" | sort -u || true); do
+        for _c9_tok in $(grep -hoE '(docs|\.zcode)/[A-Za-z0-9_./<>*-]+' "$_c9_src" | sort -u || true); do
             case $_c9_tok in
                 'docs/plans/YYMMDD_HHMM_topic.md' \
                 |'docs/plans/<PlanID>_<topic>.md' \
@@ -619,6 +636,166 @@ EOF
     return $_c11_rc
 }
 
+# C12: трассируемость внешних требований (план 261112_2236, Solution
+# п.7). Три ветки:
+# (а) каждая R-метка из тел `## Scope` и `## Acceptance criteria / DoD`
+#     планов существует в реестре REQ_REGISTRY; ID rows реестра
+#     без дублей;
+# (б) rows реестра (тело `## Требования`) валидны: ровно 8 полей /
+#     7 разделителей ` — ` (разделитель заменяется на `|`, поля
+#     считаются cut'ом), формы полей — ID (`REQ-<n>`|`G56939-<пункт>`),
+#     `предъявлено=`, `принято=`, enum приоритетов/статусов, `срок=`,
+#     `plan=<PlanID>|none`; plan=<PlanID> существует в корпусе;
+# (в) планам >= REQ_CUTOFF в статусе Done: каждая DoD-строка с [R: ...]
+#     несёт метку Dn, и `(Dn)` упомянута в теле `## Tests / Commands`.
+# Секционно-якорный детектор (прецедент C5/C11): строки с `<!--`
+# исключены — примеры формата в прозе/комментариях не считаются.
+check_c12() {
+    _c12_corpus=$1
+    _c12_rc=0
+    _c12_reg=$_c12_corpus/$REQ_REGISTRY
+    _c12_ids=''
+
+    # --- (б) rows реестра + сборка ID ---
+    if [ ! -f "$_c12_reg" ]; then
+        printf '%s: missing\n' "$REQ_REGISTRY"
+        _c12_rc=1
+    else
+        if ! _c12_rows=$(sect_body "$_c12_reg" 'Требования'); then
+            printf '%s: missing section `## Требования`\n' "$REQ_REGISTRY"
+            _c12_rows=''
+            _c12_rc=1
+        fi
+        while IFS= read -r _c12_row; do
+            [ -n "$_c12_row" ] || continue
+            case $_c12_row in *'<!--'*) continue ;; esac
+            case $_c12_row in '- '*) ;; *) continue ;; esac
+            _c12_pipe=$(printf '%s\n' "$_c12_row" | sed 's/^- //' | sed 's/ — /|/g')
+            _c12_nf=$(printf '%s\n' "$_c12_pipe" | awk -F'|' '{print NF}')
+            if [ "$_c12_nf" -ne 8 ]; then
+                printf '%s: row has %s fields (want 8): %.60s...\n' \
+                    "$REQ_REGISTRY" "$_c12_nf" "$_c12_row"
+                _c12_rc=1
+                continue
+            fi
+            _c12_id=$(printf '%s\n' "$_c12_pipe" | cut -d'|' -f1)
+            _c12_ids="$_c12_ids $_c12_id"
+            if ! printf '%s\n' "$_c12_id" | grep -qE \
+                '^(REQ-[0-9]+|G56939-[0-9]+(\.[0-9]+)*[a-z]?)$'
+            then
+                printf '%s: bad ID `%s`\n' "$REQ_REGISTRY" "$_c12_id"
+                _c12_rc=1
+            fi
+            if ! printf '%s\n' "$_c12_pipe" | cut -d'|' -f3 | grep -qE \
+                '^предъявлено=[0-9]{4}-[0-9]{2}-[0-9]{2}, .+$'
+            then
+                printf '%s: row %s: bad `предъявлено=` field\n' \
+                    "$REQ_REGISTRY" "$_c12_id"
+                _c12_rc=1
+            fi
+            if ! printf '%s\n' "$_c12_pipe" | cut -d'|' -f4 | grep -qE \
+                '^принято=(none|.+, [0-9]{4}-[0-9]{2}-[0-9]{2})$'
+            then
+                printf '%s: row %s: bad `принято=` field\n' \
+                    "$REQ_REGISTRY" "$_c12_id"
+                _c12_rc=1
+            fi
+            if ! printf '%s\n' "$_c12_pipe" | cut -d'|' -f5 | grep -qE \
+                '^приоритет=P[123]$'
+            then
+                printf '%s: row %s: bad `приоритет=` field\n' \
+                    "$REQ_REGISTRY" "$_c12_id"
+                _c12_rc=1
+            fi
+            if ! printf '%s\n' "$_c12_pipe" | cut -d'|' -f6 | grep -qE \
+                '^срок=(none|[0-9]{4}-[0-9]{2}-[0-9]{2})$'
+            then
+                printf '%s: row %s: bad `срок=` field\n' \
+                    "$REQ_REGISTRY" "$_c12_id"
+                _c12_rc=1
+            fi
+            if ! printf '%s\n' "$_c12_pipe" | cut -d'|' -f7 | grep -qE \
+                '^статус=(open|planned|verified)$'
+            then
+                printf '%s: row %s: bad `статус=` field\n' \
+                    "$REQ_REGISTRY" "$_c12_id"
+                _c12_rc=1
+            fi
+            _c12_pl=$(printf '%s\n' "$_c12_pipe" | cut -d'|' -f8 | sed 's/^plan=//')
+            if ! printf '%s\n' "$_c12_pl" | grep -qE '^(none|[0-9]{6}_[0-9]{4})$'; then
+                printf '%s: row %s: bad `plan=` field\n' \
+                    "$REQ_REGISTRY" "$_c12_id"
+                _c12_rc=1
+            elif [ "$_c12_pl" != none ]; then
+                _c12_found=''
+                for _c12_pf in "$_c12_corpus"/docs/plans/"$_c12_pl"_*.md; do
+                    if [ -f "$_c12_pf" ]; then _c12_found=1; break; fi
+                done
+                if [ -z "$_c12_found" ]; then
+                    printf '%s: row %s references missing plan %s\n' \
+                        "$REQ_REGISTRY" "$_c12_id" "$_c12_pl"
+                    _c12_rc=1
+                fi
+            fi
+        done <<EOF
+$_c12_rows
+EOF
+        _c12_dup=$(printf '%s\n' $_c12_ids | sed '/^$/d' | sort | uniq -d)
+        if [ -n "$_c12_dup" ]; then
+            printf '%s: duplicate row IDs: %s\n' \
+                "$REQ_REGISTRY" "$(printf '%s ' $_c12_dup)"
+            _c12_rc=1
+        fi
+    fi
+
+    # --- (а) R-метки планов существуют в реестре ---
+    for _c12_f in "$_c12_corpus"/docs/plans/[0-9]*.md; do
+        [ -f "$_c12_f" ] || continue
+        _c12_rel=${_c12_f#$_c12_corpus/}
+        _c12_tags=$({ sect_body "$_c12_f" 'Scope' || true
+                      sect_body "$_c12_f" 'Acceptance criteria / DoD' || true
+                    } | grep -v '<!--' | grep -oE "$R_TAG_RE" \
+                      | sed 's/^\[R: //; s/\]$//' | sort -u || true)
+        while IFS= read -r _c12_tag; do
+            [ -n "$_c12_tag" ] || continue
+            if ! printf '%s\n' $_c12_ids | grep -qxF "$_c12_tag"; then
+                printf '%s: R-tag `%s` not in %s\n' \
+                    "$_c12_rel" "$_c12_tag" "$REQ_REGISTRY"
+                _c12_rc=1
+            fi
+        done <<EOF
+$_c12_tags
+EOF
+
+        # --- (в) R-DoD-покрытие: планы >= REQ_CUTOFF в статусе Done ---
+        _c12_pid=$(plan_prefix "$(basename "$_c12_f")")
+        if [ "$_c12_pid" \< "$REQ_CUTOFF" ]; then continue; fi
+        _c12_status=$(sed -n 's/^\*\*Status:\*\* //p' "$_c12_f" | head -n 1)
+        [ "$_c12_status" = Done ] || continue
+        _c12_tests=$(sect_body "$_c12_f" 'Tests / Commands') || _c12_tests=''
+        _c12_rrows=$(sect_body "$_c12_f" 'Acceptance criteria / DoD' \
+            | grep -v '<!--' | grep '\[R: ' || true)
+        while IFS= read -r _c12_dl; do
+            [ -n "$_c12_dl" ] || continue
+            _c12_d=$(printf '%s\n' "$_c12_dl" | grep -oE 'D[0-9]+' | head -n 1)
+            if [ -z "$_c12_d" ]; then
+                printf '%s: R-DoD line without Dn label: %.60s...\n' \
+                    "$_c12_rel" "$_c12_dl"
+                _c12_rc=1
+                continue
+            fi
+            if ! printf '%s\n' "$_c12_tests" | grep -qF "($_c12_d)"; then
+                printf '%s: R-DoD %s not covered by `(%s)` in Tests\n' \
+                    "$_c12_rel" "$_c12_d" "$_c12_d"
+                _c12_rc=1
+            fi
+        done <<EOF
+$_c12_rrows
+EOF
+    done
+    return $_c12_rc
+}
+
 # ------------------------------------------------------------------ report
 
 # report <id> <name> <corpus> <func> — печать `OK/FAIL Cn name(: details)`
@@ -648,7 +825,7 @@ report() {
     return "$_rp_rc"
 }
 
-# run_all <corpus> — прогон C1–C11; rc = число проваленных проверок.
+# run_all <corpus> — прогон C1–C12; rc = число проваленных проверок.
 run_all() {
     _ra_corpus=$1
     _ra_fails=0
@@ -663,6 +840,7 @@ run_all() {
     report C9 link-integrity       "$_ra_corpus" check_c9  || _ra_fails=$((_ra_fails + 1))
     report C10 roles-vs-agents     "$_ra_corpus" check_c10 || _ra_fails=$((_ra_fails + 1))
     report C11 token-usage-lines   "$_ra_corpus" check_c11 || _ra_fails=$((_ra_fails + 1))
+    report C12 requirements-traceability "$_ra_corpus" check_c12 || _ra_fails=$((_ra_fails + 1))
     return $_ra_fails
 }
 
@@ -686,7 +864,8 @@ selftest() {
     seed_corpus "$_st_base/base"
     _st_bad=0
     for _st_fn in check_c1 check_c2 check_c3 check_c4 check_c5 \
-                  check_c6 check_c7 check_c8 check_c9 check_c10 check_c11
+                  check_c6 check_c7 check_c8 check_c9 check_c10 check_c11 \
+                  check_c12
     do
         if ! "$_st_fn" "$_st_base/base" > /dev/null 2>&1; then
             printf 'selftest baseline: %s fails on clean corpus copy\n' "$_st_fn"
@@ -699,7 +878,7 @@ selftest() {
     fi
 
     _st_caught=0
-    _st_total=12
+    _st_total=15
 
     # C1: недопустимое значение статуса.
     _st_dir=$_st_base/c1
@@ -873,6 +1052,54 @@ selftest() {
         printf 'MISSED C11b\n'
     else
         printf 'caught C11b (checkpoint form)\n'
+        _st_caught=$((_st_caught + 1))
+    fi
+
+    # C12 (а): R-метка с ID, отсутствующим в реестре требований.
+    _st_dir=$_st_base/c12a
+    seed_corpus "$_st_dir"
+    _st_plan=$(post_cutoff_plan_with "$_st_dir" "$REQ_CUTOFF" "$R_TAG_RE")
+    if [ -z "$_st_plan" ]; then
+        printf 'selftest: cannot seed C12a (no R-tags in corpus plans)\n'
+        return 1
+    fi
+    mutate "$_st_plan" 's/\[R: G56939-5\.3\.3\.2\]/[R: G56939-9.9.9]/'
+    if check_c12 "$_st_dir" > /dev/null 2>&1; then
+        printf 'MISSED C12a\n'
+    else
+        printf 'caught C12a (R-tag not in registry)\n'
+        _st_caught=$((_st_caught + 1))
+    fi
+
+    # C12 (б): row реестра с невалидным полем статуса (вне enum).
+    # Паттерн не привязан к значению статуса ([a-z]+, не литерал planned):
+    # живые переводы open→planned→verified не должны обнулять посадку.
+    _st_dir=$_st_base/c12b
+    seed_corpus "$_st_dir"
+    mutate "$_st_dir/docs/requirements/registry.md" \
+        's/ — статус=[a-z][a-z]*/ — статус=in-progress/'
+    if check_c12 "$_st_dir" > /dev/null 2>&1; then
+        printf 'MISSED C12b\n'
+    else
+        printf 'caught C12b (bad registry row)\n'
+        _st_caught=$((_st_caught + 1))
+    fi
+
+    # C12 (в): R-DoD без упоминания `(Dn)` в Tests у плана >= cutoff
+    # в статусе Done (метка D1 из T2 переименована в несуществующую D9).
+    _st_dir=$_st_base/c12c
+    seed_corpus "$_st_dir"
+    _st_plan=$(post_cutoff_plan_with "$_st_dir" "$REQ_CUTOFF" "$R_TAG_RE")
+    if [ -z "$_st_plan" ]; then
+        printf 'selftest: cannot seed C12c (no R-tags in corpus plans)\n'
+        return 1
+    fi
+    mutate "$_st_plan" 's/^\*\*Status:\*\* .*/**Status:** Done/'
+    mutate "$_st_plan" 's/^- T2 (D1):/- T2 (D9):/'
+    if check_c12 "$_st_dir" > /dev/null 2>&1; then
+        printf 'MISSED C12c\n'
+    else
+        printf 'caught C12c (R-DoD uncovered in Tests)\n'
         _st_caught=$((_st_caught + 1))
     fi
 
