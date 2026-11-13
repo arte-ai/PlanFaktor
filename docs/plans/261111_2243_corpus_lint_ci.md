@@ -1,7 +1,7 @@
 # Corpus lint + CI — машинная проверка инвариантов конвейера
 
 **Plan ID:** 261111_2243
-**Status:** Merged
+**Status:** Done
 **Created:** 2026-11-11
 **Owner gates:** старт кодинга (`Ready for Coder`), merge (`In review` → `Merged`)
 
@@ -332,6 +332,7 @@ Observations:
 - 2026-11-12 02:15:11 — Manager: risk-вердикт pass (grep-проверен: артефакт Round 1, `### Risk verdict: pass` с меткой 02:12:36, 5 minor-находок; диспатч reviewer-risk прерывался 10-минутным таймаутом неактивности — хендл продолжен, артефакт дозаписан; intake 01:50:43). Диспатч reviewer-contracts (review-лайн 2 из 2); до заполнения Contracts-лейна прогон линта ожидаемо красный на плейсхолдере вердикта (finding 5 артефакта — переходное состояние, задокументировано).
 - 2026-11-12 02:20:26 — Manager: contracts-вердикт pass (grep-проверен: `### Contracts verdict: pass` с меткой 02:18:53, `## Итог` — итоговый вердикт pass, оба лайна без blocker/major); контрольный прогон Manager'а: `corpus: clean`/exit 0, `selftest: 10/10 caught`/exit 0. Открыт Owner-гейт merge (In review → Merged), ожидание ответа Owner (owner-silence §6).
 - 2026-11-12 02:27:19 — Manager: гейт merge пройден (Owner: «давай»); merge-коммит `feat(261111_2243): add corpus lint script, CI stub and ops line` — 7 файлов (scripts/check_corpus.sh, .github/workflows/corpus.yml, docs/roles/coder.md, README.md, docs/decisions.md, этот план, docs/reviews/261111_2243_review.md); чужой untracked docs/plans/261112_0111_route_token_accounting.md в коммит не входит (артефакт другого плана, ждёт своей очереди). Статус Merged.
+- 2026-11-12 02:27:45 — Manager: closeout — merge-коммит создан (64b6622, рабочее дерево чистое, кроме чужого untracked 261112_0111), `## Follow-ups` заполнен (3 хвоста с why: corpus lint v2 digest-сверка, Q&A-линт, S1-дубль исключён); статус Done.
 
 
 
