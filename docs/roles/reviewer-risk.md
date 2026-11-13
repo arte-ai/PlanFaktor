@@ -27,8 +27,12 @@
 ## Intake (перед каждой итерацией)
 
 По конституции §3: прочитать `AGENTS.md` + этот док + план целиком;
-записать в `## Q&A log` плана явные `NO QUESTIONS` / `NO SUGGESTIONS` /
-`NO OBJECTIONS` (или списки). Без intake-записей Manager работу не диспатчит.
+записать в `## Q&A log` плана contract-строку intake с digest'ами —
+`Intake (YYYY-MM-DD HH:MM:SS): AGENTS.md@<8hex> reviewer-risk.md@<8hex>`
+(локальное время; digest'ы — `shasum -a 256` прочитанных файлов; строка —
+носитель миграции контрактов §3 п.7) — и явные `NO QUESTIONS` /
+`NO SUGGESTIONS` / `NO OBJECTIONS` (или списки). Без intake-записей
+Manager работу не диспатчит.
 
 ## Фаза (PHASE=work)
 

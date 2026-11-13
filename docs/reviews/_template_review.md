@@ -47,4 +47,11 @@ R-DoD закрыт — его метка Dn покрыта Tests-строкой 
 
 - Risk: pass | needs-fix
 - Contracts: pass | needs-fix
-- **Итоговый вердикт:** pass → Owner-гейт merge | needs-fix → вернуть Coder'у (статус `In progress`, возражения в Objections log плана)
+- **Итоговый вердикт:** pass → Owner-гейт merge | needs-fix → вернуть Coder'у (Coder ставит `In progress`; возражения — в этом review-артефакте: findings ланов)
+- **Состав staged (канонизация merge-состава):** дословный вывод
+  `git diff --cached --name-only` на момент contracts-вердикта, один
+  файл на строку; Manager сверяет merge-коммит с этим списком
+  (notice ≠ mutation truth)
+
+  <файл 1>
+  <файл 2>

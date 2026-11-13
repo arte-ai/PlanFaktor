@@ -11,8 +11,13 @@ Routine основной сессии (Manager). Только чтение: ни
    ls docs/reviews/
    ```
 
-2. Для каждого плана проверь `grep -n 'to=Owner' docs/plans/<файл>` и
-   валидность CENSOR-receipt: `grep -n '(Role CENSOR)' docs/plans/<файл>`.
+2. Для каждого плана проверь открытость Q&A парами Q#n→A#n
+   (`grep -nE '^- Q\(' docs/plans/<файл>`): открыта Q#n с `to=Owner`
+   или `needs_owner: yes`, если ниже в логе нет парной
+   `A(...#n): ... status=closed`; исторические планы (до 261113_2121)
+   писались без `#<n>` — их открытость читай позиционно (Q без
+   закрывающей A-строки ниже по секции). И валидность CENSOR-receipt:
+   `grep -n '(Role CENSOR)' docs/plans/<файл>`.
 
 3. Выведи таблицу `План | Статус | Чья фаза | CENSOR-receipt | to=Owner`:
    «Чья фаза» — переход по таблице §2 AGENTS.md и кто ставит следующий;

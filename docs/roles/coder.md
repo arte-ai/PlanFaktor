@@ -29,9 +29,12 @@
 ## Intake (перед каждой итерацией)
 
 По конституции §3: прочитать `AGENTS.md` + этот док + план целиком;
-записать в `## Q&A log` явные `NO QUESTIONS` / `NO SUGGESTIONS` /
-`NO OBJECTIONS` (при возражениях — конкретные списки). Затем — работа
-по фазе.
+записать в `## Q&A log` contract-строку intake с digest'ами —
+`Intake (YYYY-MM-DD HH:MM:SS): AGENTS.md@<8hex> coder.md@<8hex>`
+(локальное время; digest'ы — `shasum -a 256` прочитанных файлов; строка —
+носитель миграции контрактов §3 п.7) — и явные `NO QUESTIONS` /
+`NO SUGGESTIONS` / `NO OBJECTIONS` (при возражениях — конкретные
+списки). Затем — работа по фазе.
 
 ## Фаза (PHASE=work)
 
@@ -48,6 +51,8 @@
 6. Ждать CENSOR-проход (придёт в тот же хендл).
 
 ## CENSOR-проход (PASS=censor)
+
+> DUPLICATE OF AGENTS.md §4 — синхронизировать при правке.
 
 Сверка собственного handoff `In review` с файлами, не с памятью
 (конституция §4):
@@ -67,7 +72,7 @@
 - FAIL-находки исправить в своей зоне, затем записать receipt:
 
 ```
-(Role CENSOR) OK: In review validated; current=true
+- YYYY-MM-DD HH:MM:SS — (Role CENSOR) OK: In review validated; current=true
 Censor dispatch id: censor:coder:<YYMMDD_HHMMSS>
 Observations:
 - Second opinion: <что сверено, с цитатами из файлов>

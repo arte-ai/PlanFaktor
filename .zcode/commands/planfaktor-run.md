@@ -12,15 +12,20 @@ grep -H '^\*\*Status:\*\*' docs/plans/[0-9]*.md 2>/dev/null
 ```
 
 Выбери активный план: старейший по имени в статусе `Ready for *`, `In
-progress` или `In review`. Если таких нет — работай по `/planfaktor-plan`
-(новый план) или доложи состояние. Несколько активных планов — стоп,
-спроси Owner, какой вести.
+progress`, `In review` или `Merged` (Merged — closeout-ветка
+routing-таблицы ниже; зависший `Merged` не ждёт ручной операции).
+`Draft` селекцией не выбирается: резюмируется по указанию Owner —
+управление очередью идёт переходами статусов. Если активных нет —
+работай по `/planfaktor-plan` (новый план) или доложи состояние.
+Активных несколько — веди старейший (норма конституции §2: один план
+в активной работе), доложи Owner информационно.
 
 ## 2. Routing-таблица (действие по статусу)
 
 | Статус | Действие |
 |---|---|
 | `Draft` | Диспатч Architect (PHASE=work) → шаг 3 (CENSOR) → `Ready for Planner` |
+| `Planning` | Planner в работе (intake → DoD/Tests; диспатч уже сделан из `Ready for Planner`, повторный не нужен): ожидание `Ready for Coder` → шаг 3 (CENSOR); blocker-вопрос в Q&A → к Owner |
 | `Ready for Planner` | Перед диспатчем Planner ретранслируй Owner'у блок «Как я понял задачу» и границы `## Scope` из плана (дословно, не пересказ; информационно, без подтверждения — точка чтения человека), затем диспатч Planner (PHASE=work; Planner сам ставит `Planning` на intake) → дождаться `Ready for Coder` через CENSOR |
 | `Ready for Coder` | Авто-переход без Owner-гейта: перечитай `## Q&A log` плана (механика ниже); открытых вопросов к Owner нет — поставь `In progress` с Evidence-записью с меткой времени (`- YYYY-MM-DD HH:MM:SS — Manager: Q&A чист, открытых вопросов к Owner нет, статус In progress`) и диспатчи Coder (PHASE=work); открытые есть — стоп по §6 |
 | `In progress` | Ожидание Coder (или его blocker-вопрос в Q&A → к Owner). Диспатч продолжается, пока не увидишь `In review` → CENSOR Coder → шаг 4 |
@@ -35,17 +40,21 @@ progress` или `In review`. Если таких нет — работай по
 grep -E '^- Q\(' docs/plans/<файл>
 ```
 
-Форма строки-вопроса:
+Форма строки-вопроса (идентификаторы `#<n>` — план 261113_2121,
+Solution п.8):
 
-- Q(<роль>): <текст> to=Owner|to=<роль>, blocker: yes|no, needs_owner: yes|no, status=open
+- Q(<роль>#<n>): <текст> to=Owner|to=<роль>, blocker: yes|no, needs_owner: yes|no, status=open
+- A(<кто>#<n>): <ответ> status=closed, перенесено в <секция>
 
-Открытость решается по паре Q→A: Q-строки append-only вечны со своим
-`status=open`, закрытие живёт только в A-строке
-(`A(<кто>): ... status=closed`). Открытый вопрос к Owner — Q с
-`to=Owner` или `needs_owner: yes`, ниже которой нет закрывающей
-A-строки: стоп по §6 (blocker). Вопросы `to=<роль>` (не к Owner)
-авто-переход не блокируют. «Голый» grep по `status=open` некорректен —
-закрытые Q тоже его несут.
+Открытость решается по парам Q#n→A#n: Q-строки append-only вечны со
+своим `status=open`, закрытие живёт только в парной A-строке
+(`A(<кто>#<n>): ... status=closed`). Открытый вопрос к Owner — Q#n с
+`to=Owner` или `needs_owner: yes`, ниже которой нет парной A#n: стоп по
+§6 (blocker). Вопросы `to=<роль>` (не к Owner) авто-переход не
+блокируют. «Голый» grep по `status=open` некорректен — закрытые Q тоже
+его несут. Переходный период: исторические планы (до 261113_2121)
+писались без `#<n>` — их открытость читается позиционно (Q без
+закрывающей A-строки ниже по секции).
 
 ## 3. Диспатч роли и CENSOR
 
@@ -130,13 +139,44 @@ best-effort (если харнесс показывает остаток бюд�
 4. Перечитай артефакт сам: оба вердикта записаны; учитывай только
    последний `**Round:**` — строки `superseded` не считаются.
    - `pass` → **Owner-гейт merge**: покажи выжимку, спроси «мержим?».
-     После «да»: зафиксируй Evidence-записи с меткой времени
-     (`YYYY-MM-DD HH:MM:SS`) — merge-коммит и гейт-переход `Merged`;
-     поставь `Merged`; затем `git add -A && git commit -m
-     "type(PlanID): summary"` — Evidence-записи и статус `Merged` входят
-     в merge-коммит, рабочее дерево после него чистое.
-   - `needs-fix` → статус `In progress`, возражения уже в артефакте;
-     диспатчи Coder с TASK на fixes.
+     После «да» — merge-рутина по явному списку:
+     (а) контроли до коммита: `git diff --name-only` пуст, кроме
+       unstaged-дельты самого плана и его review-артефакта
+       (`docs/plans/<PlanID>_<topic>.md`,
+       `docs/reviews/<PlanID>_review.md`) — их append-only записи,
+       появившиеся после финального стейджинга Coder'а (usage-строки
+       §1(f), intake-записи ревьюеров, Evidence-узлы Manager'а),
+       штатны и стейджатся шагом (в); и `git status --porcelain` не
+       содержит посторонних untracked, кроме: файлов мерджимого плана
+       (`<PlanID>*.md`, `docs/reviews/<PlanID>_review.md`) и
+       Draft-черновиков других планов очереди
+       (`docs/plans/[0-9]*.md` со статусом `Draft` по шагу 1 —
+       штатное состояние очереди, управление переходами статусов §2;
+       в merge-коммит не входят и не добавляются — перечисли их
+       в докладе Owner информационно); иное нарушение контроля —
+       стоп fail loud с докладом Owner, без коммита;
+     (б) зафиксируй Evidence-записи с меткой времени
+       (`YYYY-MM-DD HH:MM:SS`) — merge-коммит и гейт-переход `Merged`;
+       поставь `Merged`;
+     (в) коммит из staged-индекса (предмет ревью по §8 — Coder уже
+       стейджит) плюс явный `git add` плана и review-артефакта
+       (`docs/plans/<PlanID>_<topic>.md`,
+       `docs/reviews/<PlanID>_review.md`), затем
+       `git commit -m "type(PlanID): summary"` — Evidence-записи и
+       статус `Merged` входят в merge-коммит, рабочее дерево после него
+       чистое;
+     (г) сверь состав merge-коммита (`git show --stat`) с дословным
+       списком `git diff --cached --name-only` из Итога
+       review-артефакта — санкционированные шагом (в) добавления
+       (явный `git add` плана и review-артефакта; review-артефакт
+       на момент contracts-вердикта не staged — ревьюеры не
+       стейджат, в списке Итога его нет) расхождением не считаются;
+       иное расхождение = захвачено постороннее: fail loud
+       с докладом Owner (notice ≠ mutation truth).
+   - `needs-fix` → Manager статус не ставит: диспатчи Coder с TASK на
+     fixes — Coder ставит `In progress` на intake fixes-итерации;
+     возражения — в review-артефакте (findings ланов), Coder работает
+     по ним из артефакта.
 
 ## 5. Всегда
 

@@ -17,9 +17,10 @@ Manager'у.
 Каждая итерация: intake (три явных записи `NO QUESTIONS` / `NO
 SUGGESTIONS` / `NO OBJECTIONS` в `## Q&A log` плана), затем фаза.
 Ты — второй лан: первым делом прочитай заполненную Risk-секцию
-`docs/reviews/<PlanID>_review.md` (при отсутствии артефакта — создать
-из `docs/reviews/_template_review.md`; diff = `git diff --cached`,
-пустой — `git diff`). Заполняешь только свою зону: таблицу
+`docs/reviews/<PlanID>_review.md` (артефакта нет → стоп, вопрос
+Manager'у: risk-лайн создаёт артефакт, его отсутствие = сбой
+последовательности лейнов; diff = `git diff --cached`, пустой —
+`git diff`). Заполняешь только свою зону: таблицу
 `## Findings — Contracts lane` (каждый DoD-пункт и Scope-граница:
 ok/violation), `### Contracts verdict: pass | needs-fix` и секцию
 `## Итог` — собираешь оба вердикта; итог действителен только при двух

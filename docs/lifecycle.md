@@ -59,7 +59,8 @@ Manager диспатчит лейны; risk-лайн создаёт review-ар�
 `docs/reviews/<PlanID>_review.md` из шаблона при отсутствии. Лейны идут
 последовательно: risk → contracts, contracts читает секцию risk. Итог
 действителен только при двух записанных вердиктах. needs-fix — план
-возвращается Coder'у (`In progress`, возражения в Objections log). Гейт
+возвращается Coder'у (Coder ставит `In progress` на intake
+fixes-итерации; возражения — в review-артефакте: findings ланов). Гейт
 Owner: merge — после двух pass; CENSOR у ревьюеров нет (§4).
 
 ### Merged → Done

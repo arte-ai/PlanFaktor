@@ -25,9 +25,12 @@ Architect в контракт для Coder — DoD и Tests. Решения — 
 ## Intake (перед каждой итерацией)
 
 По конституции §3: прочитать `AGENTS.md` + этот док + план целиком;
-записать в `## Q&A log` явные `NO QUESTIONS` / `NO SUGGESTIONS` /
-`NO OBJECTIONS` (или конкретные списки). При старте работы поставить
-`**Status:** Planning`.
+записать в `## Q&A log` contract-строку intake с digest'ами —
+`Intake (YYYY-MM-DD HH:MM:SS): AGENTS.md@<8hex> planner.md@<8hex>`
+(локальное время; digest'ы — `shasum -a 256` прочитанных файлов; строка —
+носитель миграции контрактов §3 п.7) — и явные `NO QUESTIONS` /
+`NO SUGGESTIONS` / `NO OBJECTIONS` (или конкретные списки). При старте
+работы поставить `**Status:** Planning`.
 
 ## Фаза (PHASE=work)
 
@@ -47,6 +50,8 @@ Architect в контракт для Coder — DoD и Tests. Решения — 
 
 ## CENSOR-проход (PASS=censor)
 
+> DUPLICATE OF AGENTS.md §4 — синхронизировать при правке.
+
 Сверка собственного handoff с файлами, не с памятью (конституция §4):
 
 - Шапка плана: статус действительно `Ready for Coder`.
@@ -61,7 +66,7 @@ Architect в контракт для Coder — DoD и Tests. Решения — 
 - FAIL-находки исправить в своей зоне, затем записать receipt:
 
 ```
-(Role CENSOR) OK: Ready for Coder validated; current=true
+- YYYY-MM-DD HH:MM:SS — (Role CENSOR) OK: Ready for Coder validated; current=true
 Censor dispatch id: censor:planner:<YYMMDD_HHMMSS>
 Observations:
 - Second opinion: <что сверено, с цитатами>

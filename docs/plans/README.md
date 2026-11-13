@@ -25,8 +25,9 @@
 - время в имени обязательно: несколько планов за день по одной теме —
   норма, сортировка имён должна отражать порядок работ;
 - сортировка имён = очередь: следующий к исполнению — старейший план в
-  `Ready for *` / `In progress` / `In review`; один план в активной
-  работе одновременно (§2).
+  `Ready for *` / `In progress` / `In review` / `Merged` (Merged —
+  closeout не откладывается); один план в активной работе одновременно
+  (§2).
 
 ## Шапка — parser-контракт
 
@@ -47,6 +48,7 @@
 | `Planning` → `Ready for Coder` | Planner | DoD/Tests заполнены; CENSOR OK |
 | `Ready for Coder` → `In progress` | Manager | Открытых вопросов к Owner нет: перечитывание `## Q&A log`, пары Q→A |
 | `In progress` → `In review` | Coder | Реализация + evidence; CENSOR OK |
+| `In review → In progress` | Coder | needs-fix (blocker/major у лейнов; возражения — в review-артефакте) |
 | `In review` → `Merged` | Manager | Два pass-вердикта; Owner-гейт merge; коммит |
 | `Merged` → `Done` | Manager | Closeout: `## Follow-ups` заполнен |
 | `*` → `Superseded` | Architect/Owner | План заменён; строка-ссылка на преемника |
