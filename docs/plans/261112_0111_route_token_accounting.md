@@ -1,7 +1,7 @@
 # Учёт токенов маршрута по всем ролям
 
 **Plan ID:** 261112_0111
-**Status:** Merged
+**Status:** Done
 **Created:** 2026-11-12
 **Owner gates:** старт кодинга (`Ready for Coder`), merge (`In review` → `Merged`)
 
@@ -272,6 +272,8 @@ Observations:
 - 2026-11-12 12:23:33 — Manager: Coder r1 CENSOR подтверждён grep-гейтом (маркер с префиксом метки времени 12:21:55, вердикт OK, dispatch id censor:coder:261112_121540, Observations непусты; контрольные прогоны: `corpus: clean`/exit 0, `selftest: 12/12 caught`/exit 0, миграционные digest'ы r1 сверены). Диспатч reviewer-risk Round 2 (проверка фиксов Round 1).
 - 2026-11-12 14:03:19 — Manager: review Round 2 завершён — risk pass (метка 13:49:36: фиксы finding 1 и findings 2–4 верифицированы, репро finding 1 независимо воспроизведено, новых findings 0), contracts pass (метка 14:01:19), итоговый вердикт (round 2) pass (grep-проверен в артефакте, Round 1 помечен superseded); контрольный прогон Manager'а: `corpus: clean`/exit 0, `selftest: 12/12 caught`/exit 0. Открыт Owner-гейт merge (In review → Merged), ожидание ответа Owner (owner-silence §6).
 - 2026-11-12 18:08:32 — Manager: гейт merge пройден (Owner: «мержим» — дословно, ответ доставлен через кураторскую сессию); merge-коммит `feat(261112_0111): route token usage accounting` (`git add -A`) — 8 файлов: 7 staged-областей (docs/plans/_template.md, .zcode/commands/planfaktor-run.md, .zcode/commands/planfaktor-status.md, scripts/check_corpus.sh, AGENTS.md, docs/decisions.md, этот план) + untracked review-артефакт docs/reviews/261112_0111_review.md; Evidence-записи гейта и статус Merged входят в merge-коммит; после коммита в рабочем дереве останется только closeout-хвост этого плана (конвенция closeout-хвоста не нормализована, решение Owner pending — не коммитится). Статус Merged.
+- 2026-11-12 18:09:19 — Manager: closeout — merge-коммит создан (b53f8f5 `feat(261112_0111): route token usage accounting`, 8 файлов: 7 областей корпуса + review-артефакт; рабочее дерево сразу после коммита чистое), контрольный линт до коммита — `corpus: clean`/exit 0; `## Follow-ups` заполнен (1 хвост: бюджеты/алерты/лимиты расхода на план — why: нет данных до накопления usage-истории); closeout-хвост (этот узел, финальный чекпоинт, статус Done) сознательно оставлен в рабочем дереве некоммиченым — конвенция closeout-хвоста не нормализована (аудит-пробел §8), варианты у Owner: (а) «да» merge-гейта покрывает хвост — дослать отдельным chore-коммитом, (б) хвост уезжает в следующий merge. Статус Done.
+- 2026-11-12 20:22:35 — Manager: Owner-решение по closeout-хвосту — вариант (а) (дословно: «давай вариант а»): «да» merge-гейта покрывает хвост, хвост досылается отдельным chore-коммитом; этот узел входит в хвост-коммит `chore(261112_0111): closeout tail` (прецеденты: 6ed56d0, a58a7dc, 9514d2f). Нормализация конвенции в AGENTS.md §8 остаётся открытым вопросом Owner.
 
 ## Token usage (append-only)
 <!-- owner: manager; dispatch-форма: `- YYYY-MM-DD HH:MM:SS — usage: <role>.<work|censor|rN> <N|unknown (why=...)> tokens — <dispatch|sendmessage|unknown>`; чекпоинт-форма: `- YYYY-MM-DD HH:MM:SS — usage: manager-context checkpoint ~<N> tokens-left — approximate`; числа — учёт харнесса ZCode (subagent_tokens), приближение, не биллинг провайдера; пишет только Manager из tool-результата вызова -->
@@ -291,6 +293,7 @@ Observations:
 - 2026-11-12 14:03:19 — usage: reviewer-contracts.r1 1510566 tokens — dispatch
 - 2026-11-12 14:04:35 — usage: manager-context checkpoint ~14964712 tokens-left — approximate
 - 2026-11-12 18:08:32 — usage: manager-context checkpoint ~14908493 tokens-left — approximate
+- 2026-11-12 18:09:19 — usage: manager-context checkpoint ~14906357 tokens-left — approximate
 
 ## Q&A log (chronological, append-only)
 <!-- owner: все роли; intake: `Intake (YYYY-MM-DD HH:MM:SS): AGENTS.md@<8hex> <role>.md@<8hex>` (локальное время) + NO QUESTIONS / NO SUGGESTIONS / NO OBJECTIONS; вопросы `Q(<роль>): ... to=Owner, blocker: yes|no, needs_owner: yes|no, status=open`; закрытие `A(<кто>): ... status=closed, перенесено в <секция>` -->
