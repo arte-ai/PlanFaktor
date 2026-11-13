@@ -1,0 +1,16 @@
+# Follow-ups backlog — Planfaktor
+
+Единый носитель техдолга между планами: одна строка = один follow-up по
+row-грамматике `docs/followups/_template.md`. Планы (`docs/plans/`) —
+контракт на реализацию; техдолг живёт здесь и промоутится отдельным
+планом (`status=promoted`). Derived-сводка — `docs/followups/index.md`.
+
+## Follow-ups (backlog)
+
+- P1 [ ] Конвенция closeout-хвоста — нормализовать §8: (а) merge-«да» покрывает хвост-коммит / (б) хвост в следующий merge (прецедент: хвосты коммитились вручную — 6ed56d0, a58a7dc, 9514d2f самим Manager'ом без закрепления, 4a1cdce Owner'ом; конвенция не выбрана) — to=Owner — status=open — plan=none — id=closeout-tail-convention — source_ref=docs/plans/261112_2236_gost56939_traceability.md#evidence — why: аудит 2026-11-12 нашёл пробел §8 (Evidence 261112_0111, 18:09:19)
+- P1 [ ] Бюджеты/алерты/лимиты расхода токенов на план — to=Owner — status=open — plan=none — id=token-budgets — source_ref=docs/plans/261112_0111_route_token_accounting.md#follow-ups — why: нет данных до накопления usage-истории по Done-планам (Out of scope п.4 плана 261112_0111); вернуться при появлении статистики
+- P2 [ ] Corpus lint v2 — сверка значений digest-цитат `@<8hex>` в планах с фактическим `shasum` контрактов (класс опечатки a2c2faf8↔a2c2faf9; C6 v1 ловит только форму) — to=Architect — status=open — plan=none — id=lint-v2-digest-verify — source_ref=docs/plans/261111_2243_corpus_lint_ci.md#follow-ups — why: осознанно Out of scope п.1 плана 261111_2243; grep-v1 по определению не сверяет значения
+- P2 [ ] Q&A-линт — грамматика Q&A log (`status=open` без закрытия, формат Q/A-строк), кандидат в v2 вместе с digest-сверкой — to=Architect — status=open — plan=none — id=qa-lint — source_ref=docs/plans/261111_2243_corpus_lint_ci.md#follow-ups — why: Out of scope п.2 плана 261111_2243 — грамматика сложна для grep-v1
+- P2 [ ] Edge оговорки «Всегда» (/planfaktor-run): протухший intake-digest, записанный ролью после зафиксированной планом смены контракта (нарушение §3 п.7 «актуальные digest'ы»), текстом команды не ловится — кандидат отдельным планом на ужесточение §3/«Всегда» — to=Architect — status=open — plan=none — id=stale-intake-digest — source_ref=docs/plans/261111_1455_hardening_after_dogfood.md#follow-ups — why: класс узкий, живых прецедентов в корпусе нет (risk Round 2, 17:45:07, 2026-11-11)
+- P3 [ ] Hex-опечатка a2c2faf8 → a2c2faf9 в Tests-цитате блока коррекции T4 плана 261111_1455 (верное значение — Evidence 17:25:18 и D13; вывод «файл не менялся» ревьюером пересчитан и верен) — правка зоной Coder'а первым планом, трогающим Tests (append-only, историю не переписываем) — to=Coder — status=open — plan=none — id=hex-typo-t4 — source_ref=docs/plans/261111_1455_hardening_after_dogfood.md#follow-ups — why: minor, non-gating (Round 2 Contracts, строка 5 review-артефакта); одиночная литера в Tests-факте
+- P3 [ ] CI-гигиена `.github/workflows/corpus.yml`: обновить actions/checkout@v4 → v5; отследить миграцию ubuntu-latest (актуальный runner-образ GitHub) — to=Coder — status=open — plan=none — id=ci-hygiene — source_ref=.github/workflows/corpus.yml — why: первый CI-прогон зелёный (2026-11-12), но аннотации GitHub о deprecated Node 20 в checkout@v4

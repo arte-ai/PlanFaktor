@@ -555,7 +555,8 @@ coder
 planner
 reviewer-contracts
 reviewer-risk'
-    _c10_roles=$(ls "$_c10_corpus/docs/roles" 2>/dev/null | sed -n 's/\.md$//p' | sort)
+    # Служебные носители (_-префикс и index) — не роль-доки, из сверки исключены.
+    _c10_roles=$(ls "$_c10_corpus/docs/roles" 2>/dev/null | sed -n 's/\.md$//p' | grep -vE '^_|^index$' | sort)
     _c10_agents=$(ls "$_c10_corpus/.zcode/agents" 2>/dev/null | sed -n 's/^planfaktor-\(.*\)\.md$/\1/p' | sort)
     if [ "$_c10_roles" != "$_c10_want" ]; then
         printf 'docs/roles: got [%s] want [architect coder planner reviewer-contracts reviewer-risk]\n' \

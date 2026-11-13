@@ -222,6 +222,7 @@ docs/plans/     планы (YYMMDD_HHMM_topic.md) + _template.md — единс�
 docs/reviews/   review-артефакты: <PlanID>_review.md + _template_review.md
 docs/roles/     роли-доки: architect, planner, coder, reviewer-risk, reviewer-contracts
 docs/playbooks/ ручные восстановления
+docs/followups/ backlog техдолга (row-грамматика + derived index)
 ```
 
 Новый артефакт создаётся только из шаблона. Отступление от шаблона —

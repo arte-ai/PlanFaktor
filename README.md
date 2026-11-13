@@ -61,6 +61,7 @@ needs-fix план возвращается Coder'у, а в артефакт д�
 ## Куда дальше
 
 - `docs/lifecycle.md` — жизненный цикл плана от Draft до Done;
+- `docs/followups/index.md` — открытый техдолг конвейера (derived index над backlog);
 - `docs/playbooks/manual_terminal_recovery.md` — ручное восстановление,
   если конвейер встал;
 - ops: программно созданным сессиям Manager'а выдавайте права записи
