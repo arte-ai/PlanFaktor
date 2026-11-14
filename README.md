@@ -84,6 +84,14 @@ needs-fix маршрут зависит от повторяемости: вер�
   `docs/requirements/registry.md`, регламент — `docs/requirements/README.md`;
 - `docs/playbooks/manual_terminal_recovery.md` — ручное восстановление,
   если конвейер встал;
+- `docs/playbooks/manager_snapshot_restart.md` — snapshot-рестарт
+  Manager-сессии: контекст-чекпоинт между сессиями;
+- `docs/playbooks/contract_edit_invariant_map.md` — классификатор
+  инвариантов для правки контрактов и гигиены канона;
+- `docs/playbooks/doc_gardening.md` — регламентная расчистка канона:
+  правила в рецепты, минус дубли;
+- `docs/playbooks/docs_canon_sweep.md` — уплотнение канона после
+  merge-волны: коротко и pointers;
 - ops: программно созданным сессиям Manager'а выдавайте права записи
   заранее — иначе сессия зависнет на permission-гейте до ручного
   одобрения.

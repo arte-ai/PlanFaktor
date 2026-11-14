@@ -83,14 +83,22 @@ full`. Гейт Owner: merge — после двух pass; CENSOR у ревью�
 ### Merged → Done
 
 Manager коммитит (`type(PlanID): summary`, §8) и делает closeout:
-секция `## Follow-ups` плана заполнена и review-артефакт в терминальном
+секция `## Follow-ups` плана заполнена, review-артефакт в терминальном
 состоянии (`**Artifact state:**` = `current_green` /
 `historical_reconciled`; нетерминальные `current_red` /
 `needs_reviewer_rerun` closeout блокируют — терминальность проверена
 гейтом мерджа до Owner-«да», повторное срабатывание = пост-мердж-
 аномалия: стоп, Owner + ручной плейбук; диспатч ревью из `Merged`
 контрактом статусов не предусмотрен, ревьюеры работают в `In review`)
-— статус `Done`.
+и harvest-инвентарь de-scoped хвостов пройден: инвентаризируются три
+источника (`## Follow-ups (deferred)`; открытые Q&A/suggestions/
+objections; пункты `## Out of scope` класса «removed from active
+scope / отдельно потом» — candidate de-scoped debt), каждый candidate
+получает судьбу (`promoted` / `open` / `handled` /
+`already-tracked-elsewhere`; судьбы переиспользуют row-грамматику
+followups; дедуп по canonical ref `id=`/`source_ref`/`#B<N>`);
+candidate без судьбы = `lost follow-up during harvest` — стоп-код,
+`Done` не ставится (§2) — статус `Done`.
 
 ## Артефакты
 
@@ -99,6 +107,10 @@ Manager коммитит (`type(PlanID): summary`, §8) и делает closeout
 | План | `docs/plans/YYMMDD_HHMM_topic.md` | `docs/plans/_template.md` — единственный | Шапка — parser-контракт, формат не менять |
 | Review | `docs/reviews/<PlanID>_review.md` | `docs/reviews/_template_review.md` | Один на план (раунды дописываются в тот же файл); два лейна-вердикта; live-блокеры — B-блокы `### B<N>` в Итоге; состояния артефакта: `current_green` / `historical_reconciled` (терминальные, разрешают closeout), `current_red` / `needs_reviewer_rerun` (нетерминальные, блокируют closeout) |
 | Роли-доки | `docs/roles/<role>.md` | — | architect, planner, coder, reviewer-risk, reviewer-contracts |
+| Snapshot-рестарт Manager | `docs/playbooks/manager_snapshot_restart.md` | — | Упреждающий контекст-чекпоинт между сессиями (history/handover, не source of truth); носитель `.tmp/snapshots/`, не коммитится |
+| Invariant map правки контрактов | `docs/playbooks/contract_edit_invariant_map.md` | — | Классификатор hard invariant / role-specific delta / procedural noise; обязателен перед gardening/sweep и правкой контрактов |
+| Doc gardening | `docs/playbooks/doc_gardening.md` | — | Регламентный GC канона: правила в рецепты, минус дубли; запуск по решению Owner |
+| Canon sweep | `docs/playbooks/docs_canon_sweep.md` | — | Уплотнение канона после merge-волны: «коротко + pointers», новых правил не создаёт |
 
 Каждая секция плана несёт ownership-метку `<!-- owner: ... -->`: Architect,
 Planner, Coder пишут только в свои зоны, цензор-проход не трогает чужие

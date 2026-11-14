@@ -67,7 +67,7 @@ Draft → Ready for Planner → Planning → Ready for Coder → In progress
 | `In review` → `Ready for Coder` | Architect | Reopened-классификация `same-contract reroute` — контракт не менялся; Manager диспатчит Architect по Loop signal до любого перевода статуса |
 | `In review` → `Ready for Planner` | Architect | Reopened-классификация `real scope expansion`; Manager диспатчит Architect по Loop signal до любого перевода статуса |
 | `In review` → `Merged` | Manager | Оба ревью-вердикта pass; **Owner-гейт merge**; коммит сделан |
-| `Merged` → `Done` | Manager | Closeout: `## Follow-ups` плана заполнен; review-артефакт в терминальном состоянии (`current_green`/`historical_reconciled`); нетерминальные `current_red`/`needs_reviewer_rerun` closeout блокируют |
+| `Merged` → `Done` | Manager | Closeout: `## Follow-ups` плана заполнен; review-артефакт в терминальном состоянии (`current_green`/`historical_reconciled`); нетерминальные `current_red`/`needs_reviewer_rerun` closeout блокируют; harvest-инвентарь de-scoped хвостов пройден — все candidates с судьбой (механика ниже) |
 | `*` → `Superseded` | Architect/Owner | План заменён другим; строка-ссылка на преемника |
 
 Reroute-классификация reopened-плана: класс `de-scoped follow-up`
@@ -78,6 +78,26 @@ Reroute-классификация reopened-плана: класс `de-scoped fo
 вердикт ревью (реран по актуальному diff / split блока: закрытая часть —
 `historical-fixed`, живая — собственный B-блок со своим классом) до
 любого маршрута.
+
+Harvest-инвентарь closeout (третий конъюнкт условия `Merged → Done`,
+поверх заполненности `## Follow-ups (deferred)` и терминальности
+review-артефакта): Manager инвентаризирует de-scoped хвосты плана по
+трём источникам — (а) `## Follow-ups (deferred)`; (б) открытые
+Q&A/suggestions/objections логов плана; (в) пункты `## Out of scope`
+с формулировками класса «removed from active scope / отдельно потом» —
+candidate de-scoped debt. Каждый candidate обязан получить судьбу из
+закрытого набора: `promoted` (существует план, backlog-строка с
+`plan=<PlanID>`) | `open` (строка backlog `status=open`) | `handled`
+(закрыт в текущем merge, disposition — ссылка на коммит/файл) |
+`already-tracked-elsewhere` (literal указатель на существующую строку
+backlog/план/канон). Судьбы `promoted|open|handled` переиспользуют
+статусы row-грамматики followups (`open|promoted|handled|cancelled`,
+`docs/followups/_template.md`); `already-tracked-elsewhere` — исход
+инвентаризации, не статус строки: новую строку backlog не порождает.
+Дедуп — по canonical ref (`id=`/`source_ref` backlog-грамматики,
+`#B<N>` review-артефакта), не по формулировке. Candidate без судьбы =
+`lost follow-up during harvest`: Manager фиксирует это в Evidence,
+`Done` не ставится — пункт `## Out of scope` не может молча потеряться.
 
 Переход `Ready for Coder` → `In progress` — авто-переход Manager'а, без
 Owner-гейта: Manager перечитывает `## Q&A log` плана (якорный
@@ -229,6 +249,16 @@ Observations:
   локальное время машины в формате `- YYYY-MM-DD HH:MM:SS — <кто>: <текст>`;
   Manager фиксирует Evidence-узлы: создание плана, переходы
   (`In progress`, `Merged`), merge-коммит, closeout (`Done`).
+- **Bounded fan-out inventory.** План, меняющий shared-контракт
+  (AGENTS.md, `docs/roles/*`, шаблоны, `.zcode/commands/*`,
+  `scripts/check_corpus.sh`), до handoff несёт в `## Scope` инвентарь
+  затронутых поверхностей: изменяемый носитель + зависимые проверки +
+  зависимые доки + известные consumer-пути. Формулировки «audit later»/
+  «dependents потом» = plan-gap (стоп-матрица). Архитектор поднимает
+  триггер и не отдаёт `Ready for Planner` без инвентаря; Planner
+  переносит инвентарь в DoD; Planner CENSOR сверяет наличие.
+  Дополняет миграционную запись §3 п.7: та фиксирует факт смены
+  digest, инвентарь — полноту затронутых поверхностей.
 - **AC-to-test (Coder).** До начала правок по каждому пункту DoD
   фиксируется ровно один исход из закрытого набора: `explicit assertion`
   (новая проверка, ref) | `existing proof` (уже есть в корпусе, ref) |
@@ -294,6 +324,11 @@ Observations:
   стоп, Owner (blocker: `spawn failed`).
 - Ручное терминальное восстановление (когда конвейер встал намертво) —
   Owner-плейбук `docs/playbooks/manual_terminal_recovery.md`.
+- Упреждающий контекст-чекпоинт Manager-сессии — плейбук
+  `docs/playbooks/manager_snapshot_restart.md`: snapshot между живыми
+  сессиями (history/handover, не source of truth; носитель `.tmp/`,
+  не коммитится); дополнение к recovery этого раздела — аварийное
+  восстановление (потеря хендла, терминальный ступор) остаётся зоной §7.
 
 ## 8. Коммиты и ветки
 
@@ -310,7 +345,7 @@ Observations:
 docs/plans/     планы (YYMMDD_HHMM_topic.md) + _template.md — единственный шаблон
 docs/reviews/   review-артефакты: <PlanID>_review.md + _template_review.md
 docs/roles/     роли-доки: architect, planner, coder, reviewer-risk, reviewer-contracts
-docs/playbooks/ ручные восстановления
+docs/playbooks/ ручные восстановления и регламентная гигиена канона
 docs/followups/ backlog техдолга (row-грамматика + derived index)
 docs/requirements/  реестр внешних требований (row-грамматика + журнал статусов), регламент, derived-матрица трассируемости
 docs/compliance/    комплаенс-маппинги стандартов (предъявляемые клиенту документы)

@@ -18,7 +18,7 @@
 <!-- owner: architect; решения уровня «что и почему», без детализации -->
 
 ## Scope
-<!-- owner: architect (границы), planner (уточняет); список изменений; пункты, реализующие внешние требования, несут метку [R: <ID>] (ID — из docs/requirements/registry.md) -->
+<!-- owner: architect (границы), planner (уточняет); список изменений; пункты, реализующие внешние требования, несут метку [R: <ID>] (ID — из docs/requirements/registry.md); план, меняющий shared-контракт (AGENTS.md, docs/roles/*, шаблоны, .zcode/commands/*, scripts/check_corpus.sh), до handoff несёт в Scope fan-out инвентарь: изменяемый носитель + зависимые проверки + зависимые доки + известные consumer-пути (конституция §5; «audit later» = plan-gap) -->
 
 ## Out of scope
 <!-- owner: architect -->
@@ -50,4 +50,4 @@
 <!-- owner: все роли; `### <Role> objections`; строка на возражение, blocker: при блокере -->
 
 ## Follow-ups (deferred)
-<!-- owner: coder/planner при CENSOR; незакрытые хвосты: <описание> — why: <почему сейчас не в скоупе>; обязательна запись `NO FOLLOW-UPS — why: <код_причины>` при отсутствии -->
+<!-- owner: coder/planner при CENSOR; незакрытые хвосты: <описание> — why: <почему сейчас не в скоупе>; обязательна запись `NO FOLLOW-UPS — why: <код>` при отсутствии; <код> — только из enum: handled-in-followup | already-tracked-elsewhere (с literal указателем) | canon-sync-closed | no-remaining-actionable-debt (грамматика — docs/plans/README.md), значение вне enum невалидно -->
