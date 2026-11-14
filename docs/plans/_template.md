@@ -29,7 +29,7 @@
 - [ ] <критерий 1>
 
 ## Tests / Commands
-<!-- owner: planner (задаёт), coder (заполняет факт); каждый DoD-пункт (Dn) покрывается строкой с меткой (Dn); R-DoD — обязательно -->
+<!-- owner: planner (задаёт), coder (заполняет факт); каждый DoD-пункт (Dn) покрывается строкой с меткой (Dn); R-DoD — обязательно; при переименованиях/миграциях терминологии — narrow + broad proof: narrow — exact-паттерн нового wording (база «сейчас 0», если якорь различающий), broad — prose-drift старого токена по всем активным носителям с классификацией вхождений (исторические планы и append-only артефакты исключены — там старое имя остаётся вечно) -->
 
 ## Changes (by area)
 <!-- owner: coder; фактические изменения по областям; заполняется в ходе работы -->
@@ -41,7 +41,7 @@
 <!-- owner: manager; dispatch-форма: `- YYYY-MM-DD HH:MM:SS — usage: <role>.<work|censor|rN> <N|unknown (why=...)> tokens — <dispatch|sendmessage|unknown>`; чекпоинт-форма: `- YYYY-MM-DD HH:MM:SS — usage: manager-context checkpoint ~<N> tokens-left — approximate`; числа — учёт харнесса ZCode (subagent_tokens), приближение, не биллинг провайдера; пишет только Manager из tool-результата вызова -->
 
 ## Q&A log (chronological, append-only)
-<!-- owner: все роли; intake: `Intake (YYYY-MM-DD HH:MM:SS): AGENTS.md@<8hex> <role>.md@<8hex>` (локальное время) + NO QUESTIONS / NO SUGGESTIONS / NO OBJECTIONS; вопросы `Q(<роль>#<n>): ... to=Owner, blocker: yes|no, needs_owner: yes|no, status=open`; закрытие парной строкой по номеру `A(<кто>#<n>): ... status=closed, перенесено в <секция>`; открытость = Q#n, ниже которой нет парной A#n -->
+<!-- owner: все роли; intake: `Intake (YYYY-MM-DD HH:MM:SS): AGENTS.md@<8hex> <role>.md@<8hex>` (локальное время) + NO QUESTIONS / NO SUGGESTIONS / NO OBJECTIONS; вопросы `Q(<роль>#<n>): ... to=Owner, blocker: yes|no, needs_owner: yes|no, status=open`; закрытие парной строкой по номеру `A(<кто>#<n>): ... status=closed, перенесено в <секция>`; открытость = Q#n, ниже которой нет парной A#n; допущения Coder'а — строки `Assumption: ...` (append-only; влияющее на Scope/DoD/контракты — стоп и возврат на Planner, §5) -->
 
 ## Suggestions log (chronological, append-only)
 <!-- owner: все роли; несрочные улучшения -->

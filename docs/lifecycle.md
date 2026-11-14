@@ -40,7 +40,11 @@ Architect CENSOR (§4). Гейт Owner: нет; блокирующий вопр�
 
 Planner переносит ответы Q&A в секции, пишет Acceptance criteria/DoD и
 Tests/Commands, уточняет Scope, готовит handoff Coder. Растут секции плана:
-DoD, Tests/Commands. После `Ready for Coder` — Planner CENSOR (§4).
+DoD, Tests/Commands. До простановки статуса — finalize completion-pass:
+второй проход «глазами Coder и Reviewer» (что им придётся угадывать;
+нет ли implicit-доказательств без материального носителя), исход —
+append-only запись в Evidence (§2). После `Ready for Coder` — Planner
+CENSOR (§4).
 Гейт Owner: нет — переход `Ready for Coder` → `In progress` Manager
 делает автоматически: перечитывает `## Q&A log` (пары Q→A, якорный
 `grep -E '^- Q\('`); открытый вопрос к Owner — стоп (§6), чистый Q&A —
@@ -48,7 +52,12 @@ DoD, Tests/Commands. После `Ready for Coder` — Planner CENSOR (§4).
 
 ### In progress
 
-Coder реализует по плану: изменения стейджит, но не коммитит; факты — в
+Coder реализует по плану: до правок по каждому DoD-пункту фиксирует
+исход AC-to-test из закрытого набора (`explicit assertion` |
+`existing proof` | `N/A (why=...)` | `reroute` — стоп-линия без
+расширения скоупа; фиксация в Evidence до Changes); допущения — строками
+`Assumption:` в Q&A log, влияющие на Scope/DoD/контракты — стоп
+и возврат на Planner (§5). Изменения стейджит, но не коммитит; факты — в
 `## Changes (by area)`, прогоны тестов — в Evidence. Растут рабочее дерево
 и Evidence. После `In review` — Coder CENSOR (§4). Гейт Owner: нет;
 блокер — стоп-лайн (§6).
@@ -123,7 +132,10 @@ Objections log блокиратором авто-перехода не явля�
 - После ключевой фазы (Architect, Planner, Coder) Manager шлёт CENSOR-проход
   в тот же живой субагент-хендл — «второй угол обзора» по файлам.
 - Итог — append-only receipt в `## Evidence` плана: маркер `(Role CENSOR)`,
-  dispatch id, Observations, вердикт `OK | FAIL`. Manager подтверждает
+  dispatch id, Observations, вердикт `OK | FAIL`. `Fixes:` обязателен
+  всегда: контент либо `Fixes: none (NO FINDINGS; <контент-факты>)`;
+  rN-проходы (fixes-итерации Coder'а) несут метку
+  `Review verdict seen: <Round, вердикт>`. Manager подтверждает
   переход grep'ом receipt, а не словами роли.
 - FAIL: роль сама откатывает handoff-статус, фиксирует причину в
   `### <Role> objections`, правит и повторяет; два FAIL подряд — эскалация

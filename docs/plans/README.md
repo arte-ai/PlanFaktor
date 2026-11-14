@@ -45,7 +45,7 @@
 |---|---|---|
 | `Draft` → `Ready for Planner` | Architect | Фаза + intake завершены; CENSOR OK |
 | `Ready for Planner` → `Planning` | Planner | Intake Planner записан в плане |
-| `Planning` → `Ready for Coder` | Planner | DoD/Tests заполнены; CENSOR OK |
+| `Planning` → `Ready for Coder` | Planner | DoD/Tests заполнены; finalize completion-pass записан; CENSOR OK |
 | `Ready for Coder` → `In progress` | Manager | Открытых вопросов к Owner нет: перечитывание `## Q&A log`, пары Q→A |
 | `In progress` → `In review` | Coder | Реализация + evidence; CENSOR OK |
 | `In review → In progress` | Coder | needs-fix без Loop signal (возражения — в review-артефакте; Coder ставит статус на intake fixes-итерации) |
@@ -67,6 +67,30 @@ FAIL (§1). DoD-чекбоксы (`## Acceptance criteria / DoD`) — зона P
 формулирует проверяемые критерии и закрывает чекбоксы по фактам; Coder
 DoD не правит — его зона `## Tests / Commands` (факты прогонов) и
 `## Changes (by area)`.
+
+## Обязательные поля: контент или явная форма отсутствия
+
+Обязательное поле плана несёт контент либо `N/A (why=...)` — если у
+поля нет специализированной формы отсутствия (`NO QUESTIONS`,
+`NO FOLLOW-UPS — why:`, `plan=none` и другие по §5 конституции);
+специализированные формы старше общей, не дублируются и не заменяются
+ею; `TBD`/пусто/`UNCONFIRMED` невалидны как класс (§5).
+
+A/B-выборы: пока выбор между вариантами не сделан, развилка — открытый
+Q&A (`status=open`); секция решения не несёт «либо/или» — иначе Coder
+получает развилку вместо решения. Закрытие выбора: пункт
+секции-владельца переписывается в финальную формулировку без дизъюнкции
+(append-only логи при этом не переписываются — история выбора остаётся
+в Q&A-паре), отклонённая альтернатива фиксируется строкой
+`rejected alternative: <вариант> — why: <основание>`, добавляются
+1–2 acceptance-пункта, делающие решение проверяемым.
+
+Переименования и миграции терминологии — narrow + broad proof в Tests:
+narrow — exact-паттерн нового wording (с базой «сейчас 0», если якорь
+различающий), broad — prose-drift старого токена по всем активным
+носителям с классификацией вхождений (исторические планы и append-only
+артефакты исключены — там старое имя остаётся вечно). Один narrow без
+broad даёт false-green, один broad без narrow — false-red.
 
 ## Логи — append-only
 

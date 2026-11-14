@@ -92,7 +92,11 @@ grep -nE '^- [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} — \(Role CE
 
 Валидный receipt: маркер + вердикт OK + совпадающий dispatch id + непустые
 Observations; строка маркера `(Role CENSOR)` — с префиксом метки времени
-`- YYYY-MM-DD HH:MM:SS — ` (третья grep-команда выше). FAIL → роль обязана
+`- YYYY-MM-DD HH:MM:SS — ` (третья grep-команда выше). rN-цензорный
+receipt (fixes-итерации Coder'а, раунды `**Round:**` ≥ 2
+review-артефакта) валидируется дополнительным grep'ом якоря
+`Review verdict seen` (§4); обычные доревьюерные receipt метку не несут.
+FAIL → роль обязана
 откатить статус и записать причину в
 Objections log; после 2 FAIL подряд — Owner (стоп-матрица `loop`).
 Пропущенный CENSOR (`Censor hint: skip (why=...)`) допустим, но не чаще
