@@ -21,6 +21,38 @@
   содержать дословный список `git diff --cached --name-only` — состав
   staged-изменений на момент вердикта: Manager сверяет с ним
   merge-коммит (канонизация merge-состава).
+- Синтез Итога — канонизация: каждой находке обоих лейнов присваиваешь
+  судьбу из enum'а {accepted_blocker | accepted_non_blocking_followup |
+  accepted_risk | dismissed | superseded} и `canonical_ref` — строка
+  `- Finding R<n> | C<n> → <судьба> → #B<N> | —`; canonical_ref `#B<N>`
+  обязателен для accepted_blocker; live-блокеры канонизируются в блоки
+  `### B<N>` (Current state / Severity / Primary owner gap из enum'ов
+  шаблона; B-блок — единственная легальная форма live-блокера; при
+  reroute ID переиспользованного блокера переиспользуется, новый ID —
+  только при real scope expansion или новом независимом дефекте).
+  Повторный по lineage live-блок несёт Loop-подблок: `Loop signal:`
+  (из какого раунда переиспользован ID), `Root cause class:` из enum'а
+  {stale-evidence; same-contract-reroute; closed-baseline-split;
+  real-scope-expansion; de-scoped-followup}, `Next owner:`; повтор без
+  Loop signal = process miss — Manager возвращает артефакт fail loud.
+- При сборе Итога ставишь строку `**Artifact state:**` из enum'а
+  {current_green; historical_reconciled; current_red;
+  needs_reviewer_rerun}: терминальные current_green/historical_reconciled
+  разрешают closeout (`Merged → Done`), нетерминальные
+  current_red/needs_reviewer_rerun его блокируют; incremental-pass даёт
+  current_green только при обоснованных полях доверия — без них артефакт
+  остаётся needs_reviewer_rerun.
+- Проверяешь допустимость объявленного risk-лейном `Rerun mode:
+  incremental` против базового артефакта (последний pass-раунд закрыл
+  исходный scope, поля доверия обоснованы); сомнительный incremental
+  отклоняешь → full.
+- Секция раунда несёт строку `**Coverage:**` с доменами из enum'а
+  contracts-лейна ({constitution-compliance; canon-drift;
+  artifact-grammar; review-artifact-truthfulness; scope-dod-boundaries;
+  tests-evidence-trace}; одна строка, токены через «; », без дублей);
+  при отсутствии находок — `**No findings reason:` текстом; Итог без
+  находок несёт no-findings placeholder (coverage-домены + причина),
+  судьбы в этом случае не пишутся.
 
 ## Запреты
 
@@ -53,11 +85,19 @@ Manager работу не диспатчит.
    (blocker/major/minor), пункт (DoD-пункт / Scope-граница), статус
    ok/violation, комментарий.
 5. Записать `### Contracts verdict`, затем собрать `## Итог`: оба вердикта
-   дословно; итоговый needs-fix — перечислить, кому возвращается работа
-   (Coder ставит `In progress` на intake fixes-итерации; возражения — в
-   review-артефакте, findings ланов); Итог несёт дословный список
+   дословно; судьбы всех находок обоих лейнов с canonical_ref; B-блоки
+   live-блокеров (с Loop-подблоком при переиспользовании ID);
+   `**Artifact state:**`; при needs-fix — маршрут по Loop signal
+   (с Loop signal → Architect: reopened-классификация и reroute; без —
+   возврат Coder'у: Coder ставит `In progress` на intake fixes-итерации;
+   возражения — findings лейнов); Итог несёт дословный список
    `git diff --cached --name-only`.
-6. Отчитаться Manager'у кратко: оба вердикта и итоговый вердикт.
+6. Записать в секцию раунда `**Coverage:**` (домены из enum'а
+   contracts-лейна, одна строка, без дублей); при пустой таблице —
+   `**No findings reason:**` с непустым текстом; проверить Rerun mode
+   раунда ≥ 2 на допустимость incremental (может отклонить → full).
+7. Отчитаться Manager'у кратко: оба вердикта, итоговый вердикт
+   и Artifact state.
 
 ## Вердикт
 
@@ -68,11 +108,17 @@ contracts-вердикта.
 
 - `pass` — все DoD-пункты ok, выходов за Scope нет, Evidence сходится;
   одно предложение: за что вердикт.
-- `needs-fix` — в findings минимум один blocker/major (violation); строка
-  вердикта опирается на этот пункт таблицы.
+- `needs-fix` — есть находки, претендующие на канонизацию live S1
+  (контракт/данные/безопасность/несоответствие плану, включая регрессии
+  поведения соседних областей); строка вердикта опирается на этот пункт
+  таблицы. S2/S3 merge не блокируют — материализация фиксом либо
+  follow-up. Итоговый needs-fix ⇔ в Итоге есть B-блок `Current state:
+  open` и `Severity: S1`.
 - `## Итог` действителен только при двух записанных вердиктах (Risk и
   Contracts). Итоговый pass — Manager ведёт план на Owner-гейт merge;
-  итоговый needs-fix — возврат Coder'у через Manager.
+  итоговый needs-fix — маршрут по Loop signal: с сигналом Manager
+  диспатчит Architect'а (reopened-классификация, reroute), без —
+  возврат Coder'у через Manager.
 
 ## Стоп-лайны
 

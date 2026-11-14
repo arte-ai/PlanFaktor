@@ -58,22 +58,37 @@ Coder реализует по плану: изменения стейджит, �
 Manager диспатчит лейны; risk-лайн создаёт review-артефакт
 `docs/reviews/<PlanID>_review.md` из шаблона при отсутствии. Лейны идут
 последовательно: risk → contracts, contracts читает секцию risk. Итог
-действителен только при двух записанных вердиктах. needs-fix — план
-возвращается Coder'у (Coder ставит `In progress` на intake
-fixes-итерации; возражения — в review-артефакте: findings ланов). Гейт
-Owner: merge — после двух pass; CENSOR у ревьюеров нет (§4).
+действителен только при двух записанных вердиктах; contracts ставит
+`**Artifact state:**` артефакта при сборе Итога. needs-fix с Loop signal
+(повторный по lineage блокер — B-блок с Loop-подблоком) — Manager
+диспатчит Architect'а (reroute) до любого перевода статуса:
+same-contract reroute → `Ready for Coder`, real scope expansion →
+`Ready for Planner`, de-scoped follow-up — Follow-ups/backlog без
+перехода; needs-fix без Loop signal — план возвращается Coder'у (Coder
+ставит `In progress` на intake fixes-итерации; возражения — в
+review-артефакте: findings ланов); Manager дописывает Stale/Rerun note
+в Evidence плана: прошлый вердикт относится к пред-фиксному diff,
+реран обязателен. Раунд ≥ 2 объявляет `**Rerun mode:** incremental |
+full`. Гейт Owner: merge — после двух pass; CENSOR у ревьюеров нет (§4).
 
 ### Merged → Done
 
 Manager коммитит (`type(PlanID): summary`, §8) и делает closeout:
-секция `## Follow-ups` плана заполнена — статус `Done`.
+секция `## Follow-ups` плана заполнена и review-артефакт в терминальном
+состоянии (`**Artifact state:**` = `current_green` /
+`historical_reconciled`; нетерминальные `current_red` /
+`needs_reviewer_rerun` closeout блокируют — терминальность проверена
+гейтом мерджа до Owner-«да», повторное срабатывание = пост-мердж-
+аномалия: стоп, Owner + ручной плейбук; диспатч ревью из `Merged`
+контрактом статусов не предусмотрен, ревьюеры работают в `In review`)
+— статус `Done`.
 
 ## Артефакты
 
 | Артефакт | Где | Шаблон | Примечание |
 |---|---|---|---|
 | План | `docs/plans/YYMMDD_HHMM_topic.md` | `docs/plans/_template.md` — единственный | Шапка — parser-контракт, формат не менять |
-| Review | `docs/reviews/<PlanID>_review.md` | `docs/reviews/_template_review.md` | Один на план (раунды дописываются в тот же файл); два лейна-вердикта |
+| Review | `docs/reviews/<PlanID>_review.md` | `docs/reviews/_template_review.md` | Один на план (раунды дописываются в тот же файл); два лейна-вердикта; live-блокеры — B-блокы `### B<N>` в Итоге; состояния артефакта: `current_green` / `historical_reconciled` (терминальные, разрешают closeout), `current_red` / `needs_reviewer_rerun` (нетерминальные, блокируют closeout) |
 | Роли-доки | `docs/roles/<role>.md` | — | architect, planner, coder, reviewer-risk, reviewer-contracts |
 
 Каждая секция плана несёт ownership-метку `<!-- owner: ... -->`: Architect,

@@ -45,6 +45,8 @@ git log --oneline -5
 | `Planning` → `Ready for Coder` | Planner |
 | `Ready for Coder` → `In progress` | Manager (авто: открытых вопросов к Owner нет) |
 | `In progress` → `In review` | Coder |
+| `In review` → `Ready for Coder` | Architect (reroute: Reopened-классификация same-contract reroute) |
+| `In review` → `Ready for Planner` | Architect (reroute: Reopened-классификация real scope expansion) |
 | `In review` → `Merged` | Manager (гейт merge + коммит) |
 | `Merged` → `Done` | Manager (closeout) |
 | `*` → `Superseded` | Architect/Owner |

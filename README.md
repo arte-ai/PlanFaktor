@@ -62,8 +62,11 @@ Manager ретранслирует его вам при выходе Architect'�
 Ревью живёт в `docs/reviews/<PlanID>_review.md` (шаблон —
 `docs/reviews/_template_review.md`). Лейны идут последовательно:
 risk → contracts; каждый ставит вердикт `pass` или `needs-fix`. После
-needs-fix план возвращается Coder'у, а в артефакт дописывается новый раунд —
-действителен только последний `**Round:**`.
+needs-fix маршрут зависит от повторяемости: вердикт с Loop signal
+(повторный по lineage блокер) идёт Architect'у — reroute-классификация
+до возврата (Coder, Planner или follow-up), без Loop signal план
+возвращается Coder'у. В артефакт дописывается новый раунд — действителен
+только последний `**Round:**`.
 
 ## История репозитория
 

@@ -63,10 +63,21 @@ Draft → Ready for Planner → Planning → Ready for Coder → In progress
 | `Planning` → `Ready for Coder` | Planner | DoD/Tests заполнены; Planner CENSOR OK |
 | `Ready for Coder` → `In progress` | Manager | Открытых вопросов к Owner нет (механика ниже) |
 | `In progress` → `In review` | Coder | Реализация + evidence; Coder CENSOR OK |
-| `In review → In progress` | Coder | needs-fix (blocker/major у лейнов; возражения — в review-артефакте) |
+| `In review → In progress` | Coder | needs-fix без Loop signal (итоговый needs-fix ⇔ live-блокер `Current state: open` + `Severity: S1`; возражения — в review-артефакте; Coder ставит статус на intake fixes-итерации) |
+| `In review` → `Ready for Coder` | Architect | Reopened-классификация `same-contract reroute` — контракт не менялся; Manager диспатчит Architect по Loop signal до любого перевода статуса |
+| `In review` → `Ready for Planner` | Architect | Reopened-классификация `real scope expansion`; Manager диспатчит Architect по Loop signal до любого перевода статуса |
 | `In review` → `Merged` | Manager | Оба ревью-вердикта pass; **Owner-гейт merge**; коммит сделан |
-| `Merged` → `Done` | Manager | Closeout: `## Follow-ups` плана заполнен |
+| `Merged` → `Done` | Manager | Closeout: `## Follow-ups` плана заполнен; review-артефакт в терминальном состоянии (`current_green`/`historical_reconciled`); нетерминальные `current_red`/`needs_reviewer_rerun` closeout блокируют |
 | `*` → `Superseded` | Architect/Owner | План заменён другим; строка-ссылка на преемника |
+
+Reroute-классификация reopened-плана: класс `de-scoped follow-up`
+статусного перехода не имеет — Architect материализует его в
+`## Follow-ups (deferred)` плана / `docs/followups/backlog.md` (механика
+классификации — роль-док Architect'а). Диагностические классы
+`stale evidence` и `closed baseline + live blocker split` пересматривают
+вердикт ревью (реран по актуальному diff / split блока: закрытая часть —
+`historical-fixed`, живая — собственный B-блок со своим классом) до
+любого маршрута.
 
 Переход `Ready for Coder` → `In progress` — авто-переход Manager'а, без
 Owner-гейта: Manager перечитывает `## Q&A log` плана (якорный
@@ -171,6 +182,13 @@ Observations:
   строкой в `## Evidence` вместо receipt; максимум 2 skip'а подряд.
 - CENSOR не меняет решения и не заполняет чужие зоны: только сверка,
   мелкие исправления своей зоны и вердикт.
+- Deadlock-режим: при repo-backed повторном loop (повтор подтверждается
+  файлами, не памятью чата) пустой receipt запрещён — receipt обязан нести
+  `Loop signal` (lineage повтора), ответ «why previous rerun did not break the loop»
+  и «extraordinary action» (что сделано сверх обычного чек-листа);
+  «дефектов не нашёл» без этих полей в подтверждённом файлами лупе не
+  принимается. Новые CENSOR-точки не вводятся: §4 расширяется только
+  полями receipt.
 
 ## 5. Дисциплины конвейера
 
@@ -211,7 +229,11 @@ Observations:
 |---|---|---|
 | blocker | Роли нужен ответ для продолжения | Вопрос в `## Q&A log` строкой `to=Owner, blocker:` (включая `needs_owner: yes` без закрытия); работа остановлена |
 | plan-gap | План неполон/противоречив | Intake-objections или CENSOR FAIL; откат статуса; докрутка автором секции |
-| loop | Одинаковый FAIL/blocker ≥ 2 раз без прогресса | Новый артефакт или закрытый блокер сбрасывает счётчик; иначе — стоп, эскалация Owner с выжимкой |
+| loop: `operational_retry` | Повтор остановки транзиентен: сбой спавна/оверштатный retry, не связанный с содержанием работы | Повтор по §7 допустим; класс повтора фиксируется записью в Evidence |
+| loop: `semantic_blocker` | Повтор того же блокера, требующего решения (ответ Owner/правка контракта), а не кода | Вопрос `to=Owner, blocker:`; класс повтора — в Evidence |
+| loop: `progress_with_artifact` | Повтор с новым артефактом (review-раунд, фикс с evidence) или с закрытым блокером | Счётчик повторов сбрасывается; класс повтора — в Evidence |
+| loop: `real_loop` | Тот же активный пункт + тот же статус + тот же blocker lineage (B-ID) + нет нового артефакта | Стоп, эскалация Owner с выжимкой; слепой реран запрещён |
+| loop: `unknown` | Класс повтора не определён | Осторожный дефолт: сначала классифицируй, потом действуй |
 | scope-creep | Работа требует выхода за Scope | Стоп, вопрос в Q&A; расширение Scope решает Architect (+Owner) |
 | broken-evidence | Проверки падают, причина неясна | Стоп, blocker с логом в Evidence |
 | lost-handle | Субагент-хендл недоступен | Fresh-диспатч той же роли: план перечитывается, consumed authorization не наследуется |

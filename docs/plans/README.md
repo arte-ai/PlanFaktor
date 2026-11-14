@@ -48,9 +48,11 @@
 | `Planning` → `Ready for Coder` | Planner | DoD/Tests заполнены; CENSOR OK |
 | `Ready for Coder` → `In progress` | Manager | Открытых вопросов к Owner нет: перечитывание `## Q&A log`, пары Q→A |
 | `In progress` → `In review` | Coder | Реализация + evidence; CENSOR OK |
-| `In review → In progress` | Coder | needs-fix (blocker/major у лейнов; возражения — в review-артефакте) |
+| `In review → In progress` | Coder | needs-fix без Loop signal (возражения — в review-артефакте; Coder ставит статус на intake fixes-итерации) |
+| `In review` → `Ready for Coder` | Architect | Reopened-классификация `same-contract reroute` (контракт не менялся); диспатч Architect по Loop signal |
+| `In review` → `Ready for Planner` | Architect | Reopened-классификация `real scope expansion`; диспатч Architect по Loop signal |
 | `In review` → `Merged` | Manager | Два pass-вердикта; Owner-гейт merge; коммит |
-| `Merged` → `Done` | Manager | Closeout: `## Follow-ups` заполнен |
+| `Merged` → `Done` | Manager | Closeout: `## Follow-ups` заполнен; review-артефакт в терминальном состоянии |
 | `*` → `Superseded` | Architect/Owner | План заменён; строка-ссылка на преемника |
 
 Порядок CENSOR: роль ставит handoff-статус → Manager шлёт CENSOR-проход
@@ -98,3 +100,42 @@ risk → contracts (contracts читает секцию risk); итог дейс
 `**Round:** N` в том же артефакте (append + строка
 `**Round N started:**`); вердикты прошлых раундов помечаются
 `superseded (round N)`; действителен только последний Round.
+
+Грамматика live-блокеров и rerun-цикла (план 261113_1642):
+
+- **Канонические B-ID.** Live-блокер оформляется блоком `### B<N>`
+  в `## Итог` (лейны пишут findings с локальными ID — канонизация
+  в синтезе): `Current state:` ∈ {open; historical-fixed; superseded},
+  `Severity:` ∈ {S1; S2; S3}, `Primary owner gap:`. B-блок — единственная
+  легальная форма live-блокера; ссылки на него — `<путь_ревью>#B<N>`;
+  findings-таблицы blocker/major/minor остаются плотным перечнем находок.
+- **Merge-гейт — только live S1** (контракт/данные/безопасность/
+  несоответствие плану, включая регрессии поведения соседних областей):
+  итоговый needs-fix ⇔ есть блок `Current state: open` + `Severity: S1`;
+  S2/S3 материализуются фиксом либо follow-up.
+- **Loop signal.** Live-блок, чей ID переиспользован из superseded-раунда
+  (маркер `#B<N>` в строках с `superseded (round ...)`), несёт
+  Loop-подблок: `Loop signal:`, `Root cause class:` ∈ {stale-evidence;
+  same-contract-reroute; closed-baseline-split; real-scope-expansion;
+  de-scoped-followup}, `Next owner:`; повтор без Loop signal = process
+  miss — Manager возвращает артефакт fail loud. needs-fix с Loop signal
+  идёт Architect'у (reopened-классификация → reroute-переходы §2),
+  без — Coder'у.
+- **Rerun mode.** Раунд ≥ 2 объявляет `**Rerun mode:** incremental |
+  full` (risk-лейн при открытии раунда): incremental — только от
+  последнего pass-раунда, закрывшего исходный scope, с полями Baseline
+  artifact / Rerun scope / Trusted unaffected surfaces / Reused evidence;
+  full — реран по всему diff. Необъявленный режим = process gap.
+- **Терминальные состояния.** `**Artifact state:**` (ставит contracts-лейн
+  при сборе Итога): `current_green` / `historical_reconciled` —
+  терминальные, разрешают closeout; `current_red` /
+  `needs_reviewer_rerun` — нетерминальные, блокируют `Merged → Done`.
+- **Судьбы синтеза.** Итог присваивает каждой находке судьбу
+  {accepted_blocker | accepted_non_blocking_followup | accepted_risk |
+  dismissed | superseded} с canonical_ref `#B<N>`; при отсутствии находок
+  — no-findings placeholder (coverage-домены + причина), не пустота;
+  при rerane прежние судьбы помечаются `— superseded (round N)`.
+- **Coverage.** Секция раунда каждого лейна несёт `**Coverage:**`
+  с доменами из enum'а лейна и при пустой таблице — `**No findings
+  reason:**` текстом. Форма проверяется линтом C13 (`scripts/check_corpus.sh`,
+  Plan ID ≥ 261113_1642 минус exclude-лист артефактов старой грамматики).

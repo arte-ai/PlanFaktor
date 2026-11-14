@@ -76,8 +76,8 @@ Manager'ом (`/planfaktor-run`), Owner-гейт merge («мержим»),
 Линт корпуса:
 
 ```zsh
-./scripts/check_corpus.sh             # инварианты C1–C12, итог `corpus: clean`
-./scripts/check_corpus.sh --selftest  # линт проверяет сам себя: 15/15 caught
+./scripts/check_corpus.sh             # инварианты корпуса (все чеки линта), итог `corpus: clean`
+./scripts/check_corpus.sh --selftest  # линт проверяет сам себя: все кейсы caught
 ```
 
 CI (`.github/workflows/corpus.yml`) гоняет обе команды на каждый push и PR.

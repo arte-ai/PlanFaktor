@@ -30,7 +30,7 @@ routing-таблицы ниже; зависший `Merged` не ждёт руч�
 | `Ready for Coder` | Авто-переход без Owner-гейта: перечитай `## Q&A log` плана (механика ниже); открытых вопросов к Owner нет — поставь `In progress` с Evidence-записью с меткой времени (`- YYYY-MM-DD HH:MM:SS — Manager: Q&A чист, открытых вопросов к Owner нет, статус In progress`) и диспатчи Coder (PHASE=work); открытые есть — стоп по §6 |
 | `In progress` | Ожидание Coder (или его blocker-вопрос в Q&A → к Owner). Диспатч продолжается, пока не увидишь `In review` → CENSOR Coder → шаг 4 |
 | `In review` | После валидного Coder CENSOR: ревью — шаг 4 |
-| `Merged` | Closeout: проверь `## Follow-ups` плана (заполнен или `NO FOLLOW-UPS — why:`). Поставь `Done` с Evidence-записью с меткой времени (`- YYYY-MM-DD HH:MM:SS — Manager: closeout, статус Done`), доложи Owner |
+| `Merged` | Closeout: проверь `## Follow-ups` плана (заполнен или `NO FOLLOW-UPS — why:`) и терминальное состояние review-артефакта: `**Artifact state:**` = `current_green` или `historical_reconciled`. Нетерминальное — пост-мердж-аномалия (терминальность уже проверена гейтом мерджа в шаге 4): стоп, доклад Owner + ручной плейбук `docs/playbooks/manual_terminal_recovery.md`; диспатч ревью из `Merged` контрактом статусов не предусмотрен (§2: из `Merged` только → `Done`; ревьюеры работают в `In review`), слепой реран запрещён (§6). Поставь `Done` с Evidence-записью с меткой времени (`- YYYY-MM-DD HH:MM:SS — Manager: closeout, статус Done`), доложи Owner |
 | `Done` / `Superseded` | Ничего; следующий план или `/planfaktor-plan` |
 
 Механика чистого Q&A (строка `Ready for Coder`): перечитай секцию
@@ -138,8 +138,21 @@ best-effort (если харнесс показывает остаток бюд�
    risk-секцию; заполняет Contracts-секцию и Итог).
 4. Перечитай артефакт сам: оба вердикта записаны; учитывай только
    последний `**Round:**` — строки `superseded` не считаются.
-   - `pass` → **Owner-гейт merge**: покажи выжимку, спроси «мержим?».
-     После «да» — merge-рутина по явному списку:
+   Fail-loud контроли грамматики артефакта (перед вердиктами): `**Round:**`
+   ≥ 2 без строки `**Rerun mode:** incremental | full` — необъявленный
+   режим, верни артефакт ревьюерам (process gap); записанный
+   Contracts-вердикт, а Итог без судеб находок и без no-findings
+   плейсхолдера (`**No findings reason:**`) — верни артефакт ревьюерам;
+   машинная страховка — C13 `scripts/check_corpus.sh`.
+   - `pass` → сначала сверь терминальность review-артефакта:
+     `**Artifact state:**` = `current_green` или `historical_reconciled`.
+     Нетерминальное (`current_red`/`needs_reviewer_rerun`, напр.
+     incremental-pass без обоснованных полей доверия) → Owner-гейт
+     не открывай: диспатч рерана ревью (шаг 4; план ещё `In review` —
+     контракт ревьюеров соблюдён, PRE_STATUS_LINE `In review`),
+     Owner не дёргать; Owner-гейт — только по терминальному pass.
+     Терминальное → **Owner-гейт merge**: покажи выжимку, спроси
+     «мержим?». После «да» — merge-рутина по явному списку:
      (а) контроли до коммита: `git diff --name-only` пуст, кроме
        unstaged-дельты самого плана и его review-артефакта
        (`docs/plans/<PlanID>_<topic>.md`,
@@ -173,10 +186,25 @@ best-effort (если харнесс показывает остаток бюд�
        стейджат, в списке Итога его нет) расхождением не считаются;
        иное расхождение = захвачено постороннее: fail loud
        с докладом Owner (notice ≠ mutation truth).
-   - `needs-fix` → Manager статус не ставит: диспатчи Coder с TASK на
-     fixes — Coder ставит `In progress` на intake fixes-итерации;
-     возражения — в review-артефакте (findings ланов), Coder работает
-     по ним из артефакта.
+   - `needs-fix` → Manager статус не ставит. Сначала прочитай Итог:
+     итоговый B-блок с `Loop signal:` (повторный по lineage блокер).
+     **С Loop signal** — диспатч Architect (PHASE=work, TASK:
+     reopened-классификация вернувшегося блокера) до любого перевода
+     статуса; Architect записывает `Reopened classification:` в
+     `## Evidence` плана и ставит reroute-переход:
+     `same-contract-reroute` → `Ready for Coder`; `real-scope-expansion`
+     → `Ready for Planner`; `de-scoped-followup` → материализация в
+     `## Follow-ups (deferred)`/backlog без статусного перехода;
+     `stale-evidence` → реран ревью по актуальному diff — вердикт
+     пересматривается до любого маршрута; `closed-baseline-split` →
+     закрытая часть блока historical-fixed, живая — собственный B-блок
+     со своим классом (маршрут по его классу). **Без Loop signal** —
+     штатный возврат Coder'у: диспатчи Coder с TASK на fixes — Coder
+     ставит `In progress` на intake fixes-итерации; возражения — в
+     review-артефакте (findings лейнов), Coder работает по ним из
+     артефакта. При любом возврате needs-fix допиши Stale/Rerun note
+     в `## Evidence` плана (Evidence-строка Manager'а): прошлый вердикт
+     относится к пред-фиксному diff, реран обязателен.
 
 ## 5. Всегда
 

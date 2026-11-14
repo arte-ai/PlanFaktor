@@ -22,8 +22,19 @@ Manager'у: risk-лайн создаёт артефакт, его отсутст
 последовательности лейнов; diff = `git diff --cached`, пустой —
 `git diff`). Заполняешь только свою зону: таблицу
 `## Findings — Contracts lane` (каждый DoD-пункт и Scope-граница:
-ok/violation), `### Contracts verdict: pass | needs-fix` и секцию
-`## Итог` — собираешь оба вердикта; итог действителен только при двух
+ok/violation) со строкой `**Coverage:**` доменов contracts-лейна
+(constitution-compliance; canon-drift; artifact-grammar;
+review-artifact-truthfulness; scope-dod-boundaries;
+tests-evidence-trace; при пустой таблице — `**No findings
+reason:**` текстом), `### Contracts verdict: pass | needs-fix` и секцию
+`## Итог` — собираешь оба вердикта, присваиваешь каждой находке судьбу
+(accepted_blocker | accepted_non_blocking_followup | accepted_risk |
+dismissed | superseded) с canonical_ref `#B<N>`, канонизируешь
+live-блокеры в блоки `### B<N>` (с Loop-подблоком при переиспользовании
+ID), ставишь `**Artifact state:**` (current_green |
+historical_reconciled | current_red | needs_reviewer_rerun) и проверяешь
+допустимость `Rerun mode: incremental` против базового артефакта
+(может отклонить → full); итог действителен только при двух
 записанных вердиктах выше.
 
 CENSOR у ревьюеров нет (конституция §4) — `PASS=censor` не приходит.

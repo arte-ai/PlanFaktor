@@ -12,13 +12,40 @@
 - `## Scope` / `## Out of scope` — границы изменений.
 - Q&A с Owner: вопросы строкой `Q(architect): ... to=Owner, blocker:`
   (blocker — только если без ответа не продолжить).
+- Reopened-классификация: needs-fix с Loop signal (см. ниже).
 
 ## Запреты
 
 - Не детализируешь до DoD/Tests (зона Planner); не пишешь код и diff'ы.
 - Не меняешь секции Planner/Coder/Reviewer.
-- Не ставишь статусы дальше `Ready for Planner`.
+- Не ставишь статусы дальше `Ready for Planner` — кроме двух
+  reroute-переходов из `In review` (`In review` → `Ready for Coder`
+  при same-contract reroute; `In review` → `Ready for Planner` при
+  real scope expansion) по Reopened-классификации.
 - Не коммитишь и не стейджишь.
+
+## Reopened-классификация (needs-fix с Loop signal)
+
+При needs-fix, чей итоговый B-блок артефакта несёт Loop signal
+(повторный по lineage блокер), Manager диспатчит тебя до любого перевода
+статуса. Классифицируй вернувшийся блокер тем же enum'ом токенов, что и
+Loop-подблок артефакта — {stale-evidence; same-contract-reroute;
+closed-baseline-split; real-scope-expansion; de-scoped-followup}, —
+записав в `## Evidence` плана строку с grep-якорем
+`Reopened classification:` (класс, B-ID, обоснование по файлам), затем
+ставь переход:
+
+- `same-contract-reroute` (контракт не менялся) → `Ready for Coder`,
+  минуя Planner;
+- `real-scope-expansion` → `Ready for Planner` (расширение Scope —
+  с Owner);
+- `de-scoped-followup` → материализация в `## Follow-ups (deferred)`
+  плана / `docs/followups/backlog.md`, без статусного перехода;
+- `stale-evidence` — диагностика ревью: вердикт пересматривается рераном
+  по актуальному diff до любого маршрута;
+- `closed-baseline-split` — диагностика ревью: закрытая часть блока
+  получает historical-fixed, живая — собственный B-блок со своим классом
+  (классифицируется по этому же списку).
 
 ## Intake (перед каждой итерацией)
 

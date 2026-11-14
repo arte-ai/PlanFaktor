@@ -3,7 +3,9 @@
 # Planfaktor. Источник решений: docs/plans/261111_2243_corpus_lint_ci.md
 # (Solution п.1–8, проверки C1–C10, cutoff C4/C5) + docs/plans/
 # 261112_0111_route_token_accounting.md (C11 — usage-строки, cutoff
-# C3/C8 — секционная версионность).
+# C3/C8 — секционная версионность) + docs/plans/
+# 261113_1642_anti_loop_blocker_ids.md (C13 — грамматика live-блокеров
+# и rerun-цикла review-артефактов, cutoff REVIEW_CUTOFF + exclude-лист).
 #
 # Это dev-инфраструктура репо, НЕ рантайм конвейера: роли не обязаны звать
 # его для маршрутизации, Manager от него не зависит.
@@ -14,15 +16,15 @@
 #
 # Обычный прогон (из корня репо или по абсолютному пути):
 #   scripts/check_corpus.sh
-#   вывод: `OK Cn <имя>` на проверку (C4/C5/C11 печатают `excluded`-планы),
-#   `FAIL Cn <имя>: <детали>` при дефекте, итог `corpus: clean` либо
-#   `corpus: N failures`; exit 0 только при clean.
+#   вывод: `OK Cn <имя>` на проверку (C4/C5/C11/C13 печатают
+#   `excluded`-артефакты), `FAIL Cn <имя>: <детали>` при дефекте,
+#   итог `corpus: clean` либо `corpus: N failures`; exit 0 только при clean.
 #
 # Selftest:
 #   scripts/check_corpus.sh --selftest
 #   строит в ${TMPDIR:-/tmp} копии корпуса, подсаживает по одному дефекту
-#   на каждый класс C1–C12 и проверяет, что каждая проверка ловит свой
-#   дефект; итог `selftest: N/15 caught`; exit 0 только при 15/15.
+#   на каждый класс C1–C13 и проверяет, что каждая проверка ловит свой
+#   дефект; итог `selftest: N/26 caught`; exit 0 только при 26/26.
 
 set -u
 
@@ -47,6 +49,26 @@ USAGE_CHECKPOINT_RE='^- [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} �
 # Done связку DoD<->Tests закрывает Planner + contracts-лан review,
 # план 261112_2236 Solution п.7). Cutoff нужен только для (в).
 REQ_CUTOFF=261112_2236
+
+# Cutoff C13: грамматика live-блокеров/rerun review-артефактов (план
+# 261113_1642, Solution п.8): Plan ID не монотонен по времени создания
+# артефакта, поэтому cutoff + явный exclude-лист, а не чистое число.
+REVIEW_CUTOFF=261113_1642
+
+# Exclude-лист C13: артефакты с Plan ID >= REVIEW_CUTOFF, созданные по
+# старой грамматике до введения чека (первое имя — 261113_2121_review.md,
+# merge 720519f); критерий исторически закрыт — новые имена не добавляются.
+REVIEW_EXCLUDE='261113_2121_review.md'
+
+# Канонические enum'ы C13 (значения — план 261113_1642, Solution п.1–13).
+C13_STATE_RE='^(open|historical-fixed|superseded)$'
+C13_SEV_RE='^(S1|S2|S3)$'
+C13_ROOT_RE='^(stale-evidence|same-contract-reroute|closed-baseline-split|real-scope-expansion|de-scoped-followup)$'
+C13_ARTIFACT_RE='^(current_green|historical_reconciled|current_red|needs_reviewer_rerun)$'
+C13_MODE_RE='^[- ]*\*\*Rerun mode:\*\* (incremental|full)[[:space:]]*$'
+C13_RISK_DOMAINS='regression-behavior edge-cases data-integrity-secrets command-reproducibility brittleness'
+C13_CONTRACTS_DOMAINS='constitution-compliance canon-drift artifact-grammar review-artifact-truthfulness scope-dod-boundaries tests-evidence-trace'
+C13_DISP_RE='(accepted_blocker|accepted_non_blocking_followup|accepted_risk|dismissed|superseded)'
 
 # Реестр внешних требований (план 261112_2236, Solution п.1/п.7): rows —
 # в теле секции `## Требования`, статусы — `## Журнал статусов`.
@@ -796,6 +818,308 @@ EOF
     return $_c12_rc
 }
 
+# C13 (cutoff >= REVIEW_CUTOFF минус REVIEW_EXCLUDE, скоуп — review-
+# артефакты): грамматика канонических live-блокеров и rerun-цикла (план
+# 261113_1642). Базовая часть:
+# (а) каждый присутствующий блок `### B<N>` несёт `Current state:` и
+#     `Severity:` из enum'ов — отсутствие B-блоков не дефект (раунд без
+#     блокеров — норма);
+# (б) ID-пространство блоков артефакта — без дублей заголовков `### B<N>`
+#     и без дыр (множество ID = 1..max подряд);
+# (в) live-блок (`Current state: open`), чей ID упомянут `#B<N>` в строке
+#     с лейблом `superseded (round ...)`, несёт `Root cause class:` из
+#     enum'а (Loop signal).
+# Расширенная часть:
+# (г) `**Artifact state:**` записанной формы (одиночный токен из enum'а;
+#     без superseded-лейбла) — значение из enum'а, а при записанном
+#     (не-superseded) Contracts-вердикте — обязательна; плейсхолдер
+#     шаблона (альтернативы через « | ») — не записанная форма, в окне
+#     между лейнами не валидируется (транзиент-безопасность);
+# (д) `**Round:**` >= 2 — ровно одна (не-superseded) строка
+#     `**Rerun mode:` incremental|full текущего раунда — superseded-строки
+#     прошлых раундов (Round >= 3) изымаются из подсчёта и валидации;
+#     incremental — наличие четырёх полей доверия (Baseline artifact /
+#     Rerun scope / Trusted unaffected surfaces / Reused evidence);
+# (е) при записанном (не-superseded) вердикте лейна — `**Coverage:**` в
+#     секции раунда этого вердикта (токены только из enum'а лейна, без
+#     дублей), а при пустой таблице находок секции — `**No findings
+#     reason:**` с непустым текстом;
+# (ж) при записанном Contracts-вердикте Итог несёт судьбы (строки без
+#     superseded-лейбла) всех заполненных строк находок текущего раунда
+#     (`Finding R<n>` / `Finding C<n>`) либо no-findings placeholder.
+# Транзиент-безопасность (прецедент C7-транзиента 261113_0217): проверяется
+# форма присутствующего — артефакт в промежуточном состоянии между лейнами
+# линт не роняет.
+check_c13() {
+    _c13_corpus=$1
+    _c13_rc=0
+    for _c13_f in "$_c13_corpus"/docs/reviews/[0-9]*.md; do
+        [ -f "$_c13_f" ] || continue
+        _c13_rel=${_c13_f#$_c13_corpus/}
+        _c13_pid=$(plan_prefix "$(basename "$_c13_f")")
+        if [ "$_c13_pid" \< "$REVIEW_CUTOFF" ]; then
+            printf '%s: excluded (pre-review-cutoff %s < %s)\n' \
+                "$_c13_rel" "$_c13_pid" "$REVIEW_CUTOFF"
+            continue
+        fi
+        case " $REVIEW_EXCLUDE " in
+            *" $(basename "$_c13_f") "*) continue ;;
+        esac
+        _c13_check_one "$_c13_f" "$_c13_rel" || _c13_rc=1
+    done
+    return $_c13_rc
+}
+
+# _c13_check_one <file> <relpath> — все ветки C13 по одному артефакту.
+_c13_check_one() {
+    _c13o_f=$1
+    _c13o_rel=$2
+    _c13o_rc=0
+
+    # --- (а)+(в): B-блоки; reused-IDs — `#B<N>` в superseded-строках.
+    _c13o_reused=$(grep -E 'superseded \(round [0-9]+\)' "$_c13o_f" \
+        | grep -oE '#B[0-9]+' | sed 's/^#B//' | sort -nu || true)
+    _c13o_ids=''
+    while IFS= read -r _c13o_h; do
+        [ -n "$_c13o_h" ] || continue
+        _c13o_ln=${_c13o_h%%:*}
+        _c13o_n=$(printf '%s\n' "$_c13o_h" | sed 's/^[0-9]*:### B//; s/[[:space:]]*$//')
+        _c13o_ids="$_c13o_ids $_c13o_n"
+        _c13o_end=$(awk -v s="$_c13o_ln" 'NR>s && /^#{2,3} /{print NR; exit}' "$_c13o_f")
+        if [ -n "$_c13o_end" ]; then
+            _c13o_body=$(sed -n "$((_c13o_ln+1)),$((_c13o_end-1))p" "$_c13o_f")
+        else
+            _c13o_body=$(tail -n +"$((_c13o_ln+1))" "$_c13o_f")
+        fi
+        _c13o_state=$(printf '%s\n' "$_c13o_body" \
+            | sed -n 's/^Current state: //p' | head -n 1)
+        if [ -z "$_c13o_state" ] \
+           || ! printf '%s\n' "$_c13o_state" | grep -qE "$C13_STATE_RE"; then
+            printf '%s: B%s: bad/missing Current state: %s\n' \
+                "$_c13o_rel" "$_c13o_n" "${_c13o_state:-<none>}"
+            _c13o_rc=1
+        fi
+        _c13o_sev=$(printf '%s\n' "$_c13o_body" \
+            | sed -n 's/^Severity: //p' | head -n 1)
+        if [ -z "$_c13o_sev" ] \
+           || ! printf '%s\n' "$_c13o_sev" | grep -qE "$C13_SEV_RE"; then
+            printf '%s: B%s: bad/missing Severity: %s\n' \
+                "$_c13o_rel" "$_c13o_n" "${_c13o_sev:-<none>}"
+            _c13o_rc=1
+        fi
+        if [ "$_c13o_state" = open ] \
+           && printf '%s\n' "$_c13o_reused" | grep -qxF "$_c13o_n"; then
+            _c13o_root=$(printf '%s\n' "$_c13o_body" \
+                | sed -n 's/^Root cause class: //p' | head -n 1)
+            if [ -z "$_c13o_root" ] \
+               || ! printf '%s\n' "$_c13o_root" | grep -qE "$C13_ROOT_RE"; then
+                printf '%s: B%s: live reused-ID block lacks Root cause class (Loop signal): %s\n' \
+                    "$_c13o_rel" "$_c13o_n" "${_c13o_root:-<none>}"
+                _c13o_rc=1
+            fi
+        fi
+    done <<EOF
+$(grep -nE '^### B[0-9]+[[:space:]]*$' "$_c13o_f" || true)
+EOF
+
+    # --- (б): дубли заголовков и дыры ID-пространства.
+    if [ -n "$_c13o_ids" ]; then
+        _c13o_dup=$(printf '%s\n' $_c13o_ids | sort -n | uniq -d)
+        if [ -n "$_c13o_dup" ]; then
+            printf '%s: duplicate B-block headers: %s\n' \
+                "$_c13o_rel" "$(printf '%s ' $_c13o_dup)"
+            _c13o_rc=1
+        fi
+        _c13o_exp=1
+        for _c13o_id in $(printf '%s\n' $_c13o_ids | sort -nu); do
+            if [ "$_c13o_id" -ne "$_c13o_exp" ]; then
+                printf '%s: hole in B-ID space at B%s (want B%s)\n' \
+                    "$_c13o_rel" "$_c13o_id" "$_c13o_exp"
+                _c13o_rc=1
+                break
+            fi
+            _c13o_exp=$((_c13o_exp + 1))
+        done
+    fi
+
+    # --- (г): Artifact state. Валидируется значение записанной формы —
+    # одиночный токен из enum'а; плейсхолдер шаблона (перечисление
+    # альтернатив через « | ») и superseded-строки истории раундов не
+    # валидируются и записанной формой не считаются (транзиент-
+    # безопасность окна между лейнами: risk создаёт артефакт из шаблона,
+    # Итог ещё за плейсхолдерами). Обязательность — при записанном
+    # (не-superseded) Contracts-вердикте: нужна хотя бы одна строка
+    # записанной формы.
+    _c13o_astate_recorded=''
+    while IFS= read -r _c13o_st; do
+        [ -n "$_c13o_st" ] || continue
+        _c13o_val=$(printf '%s\n' "$_c13o_st" \
+            | sed -n 's/^[- ]*\*\*Artifact state:\*\* *//p')
+        case $_c13o_val in
+            *' | '*) continue ;;
+        esac
+        if ! printf '%s\n' "$_c13o_val" | grep -qE "$C13_ARTIFACT_RE"; then
+            printf '%s: bad **Artifact state:** value: %s\n' \
+                "$_c13o_rel" "${_c13o_val:-<empty>}"
+            _c13o_rc=1
+        else
+            _c13o_astate_recorded=1
+        fi
+    done <<EOF
+$(grep -E '^[- ]*\*\*Artifact state:\*\*' "$_c13o_f" \
+    | grep -v 'superseded (round' || true)
+EOF
+    if grep -qE '^### Contracts verdict: (pass|needs-fix)[[:space:]]*$' "$_c13o_f" \
+       && [ -z "$_c13o_astate_recorded" ]; then
+        printf '%s: recorded Contracts verdict without **Artifact state:**\n' "$_c13o_rel"
+        _c13o_rc=1
+    fi
+
+    # --- (д): Rerun mode. Подсчёт/валидация — только по строкам текущего
+    # раунда: superseded-строки прошлых раундов изымаются (артефакт
+    # Round >= 3 с накопленными секциями раундов легально несёт по
+    # одной Rerun mode-строке на раунд >= 2; действительна последняя).
+    _c13o_round=$(sed -n 's/^\*\*Round:\*\* //p' "$_c13o_f" | head -n 1)
+    _c13o_modes=$(grep -E '^[- ]*\*\*Rerun mode:\*\*' "$_c13o_f" \
+        | grep -cv 'superseded (round' || true)
+    if [ -n "$_c13o_round" ] && [ "$_c13o_round" -ge 2 ] 2>/dev/null \
+       && [ "$_c13o_modes" -ne 1 ]; then
+        printf '%s: Round %s without exactly one **Rerun mode:** line\n' \
+            "$_c13o_rel" "$_c13o_round"
+        _c13o_rc=1
+    fi
+    while IFS= read -r _c13o_m; do
+        [ -n "$_c13o_m" ] || continue
+        if ! printf '%s\n' "$_c13o_m" | grep -qE "$C13_MODE_RE"; then
+            printf '%s: malformed **Rerun mode:** line: %s\n' \
+                "$_c13o_rel" "$_c13o_m"
+            _c13o_rc=1
+        fi
+    done <<EOF
+$(grep -E '^[- ]*\*\*Rerun mode:\*\*' "$_c13o_f" \
+    | grep -v 'superseded (round' || true)
+EOF
+    if grep -E '^[- ]*\*\*Rerun mode:\*\*' "$_c13o_f" \
+       | grep -v 'superseded (round' \
+       | grep -qE '^[- ]*\*\*Rerun mode:\*\* incremental[[:space:]]*$'; then
+        for _c13o_p in 'Baseline artifact' 'Rerun scope' \
+                       'Trusted unaffected surfaces' 'Reused evidence'; do
+            if ! grep -qE "^[- ]*\*\*$_c13o_p:\*\* .+" "$_c13o_f"; then
+                printf '%s: incremental lacks trust field **%s:**\n' \
+                    "$_c13o_rel" "$_c13o_p"
+                _c13o_rc=1
+            fi
+        done
+    fi
+
+    # --- (е): Coverage / No findings reason / заполненные находки секций
+    # раунда с записанным (не-superseded) вердиктом лейна.
+    _c13o_rfilled=''
+    _c13o_cfilled=''
+    for _c13o_lane in Risk Contracts; do
+        _c13o_vln=$(grep -nE "^### $_c13o_lane verdict: (pass|needs-fix)[[:space:]]*$" \
+            "$_c13o_f" | tail -n 1 | cut -d: -f1)
+        [ -n "$_c13o_vln" ] || continue
+        _c13o_hln=$(grep -nE "^## Findings — $_c13o_lane lane" "$_c13o_f" \
+            | cut -d: -f1 | awk -v v="$_c13o_vln" '$1<v' | tail -n 1)
+        if [ -z "$_c13o_hln" ]; then
+            printf '%s: %s verdict outside its lane section\n' \
+                "$_c13o_rel" "$_c13o_lane"
+            _c13o_rc=1
+            continue
+        fi
+        _c13o_end=$(awk -v s="$_c13o_hln" 'NR>s && /^## /{print NR; exit}' "$_c13o_f")
+        if [ -n "$_c13o_end" ]; then
+            _c13o_sec=$(sed -n "$((_c13o_hln+1)),$((_c13o_end-1))p" "$_c13o_f")
+        else
+            _c13o_sec=$(tail -n +"$((_c13o_hln+1))" "$_c13o_f")
+        fi
+        _c13o_cov=$(printf '%s\n' "$_c13o_sec" \
+            | grep -E '^[- ]*\*\*Coverage:\*\*' | head -n 1)
+        if [ -z "$_c13o_cov" ]; then
+            printf '%s: %s round section lacks **Coverage:**\n' \
+                "$_c13o_rel" "$_c13o_lane"
+            _c13o_rc=1
+        else
+            case $_c13o_lane in
+                Risk) _c13o_dom=$C13_RISK_DOMAINS ;;
+                *)    _c13o_dom=$C13_CONTRACTS_DOMAINS ;;
+            esac
+            _c13o_seen=''
+            for _c13o_tok in $(printf '%s\n' "$_c13o_cov" \
+                | sed 's/^[- ]*\*\*Coverage:\*\* *//' | tr ';' ' '); do
+                if ! printf '%s\n' $_c13o_dom | grep -qxF "$_c13o_tok"; then
+                    printf '%s: %s Coverage token outside lane enum: %s\n' \
+                        "$_c13o_rel" "$_c13o_lane" "$_c13o_tok"
+                    _c13o_rc=1
+                fi
+                case " $_c13o_seen " in
+                    *" $_c13o_tok "*)
+                        printf '%s: %s Coverage duplicate token: %s\n' \
+                            "$_c13o_rel" "$_c13o_lane" "$_c13o_tok"
+                        _c13o_rc=1
+                        ;;
+                esac
+                _c13o_seen="$_c13o_seen $_c13o_tok"
+            done
+        fi
+        _c13o_filled=''
+        while IFS= read -r _c13o_row; do
+            _c13o_rest=$(printf '%s\n' "$_c13o_row" | sed 's/^| [0-9]\{1,\} |//')
+            if printf '%s' "$_c13o_rest" | grep -q '[^|[:space:]]'; then
+                _c13o_num=$(printf '%s\n' "$_c13o_row" \
+                    | sed 's/^| \([0-9]\{1,\}\) |.*/\1/')
+                _c13o_filled="$_c13o_filled $_c13o_num"
+            fi
+        done <<EOF
+$(printf '%s\n' "$_c13o_sec" | grep -E '^\| [0-9]+ \|' || true)
+EOF
+        if [ -z "$_c13o_filled" ] \
+           && ! printf '%s\n' "$_c13o_sec" | grep -qE '^[- ]*\*\*No findings reason:\*\* .+'; then
+            printf '%s: %s round section: empty findings table without **No findings reason:**\n' \
+                "$_c13o_rel" "$_c13o_lane"
+            _c13o_rc=1
+        fi
+        if [ "$_c13o_lane" = Risk ]; then
+            _c13o_rfilled=$_c13o_filled
+        else
+            _c13o_cfilled=$_c13o_filled
+        fi
+    done
+
+    # --- (ж): судьбы в Итоге при записанном Contracts-вердикте.
+    if grep -qE '^### Contracts verdict: (pass|needs-fix)[[:space:]]*$' "$_c13o_f"; then
+        _c13o_sum=$(sect_body "$_c13o_f" 'Итог') || _c13o_sum=''
+        if [ -n "${_c13o_rfilled}${_c13o_cfilled}" ]; then
+            for _c13o_n in $_c13o_rfilled; do
+                if ! printf '%s\n' "$_c13o_sum" \
+                    | grep -E "^- Finding R$_c13o_n → $C13_DISP_RE" \
+                    | grep -qv 'superseded (round'; then
+                    printf '%s: Итог lacks disposition for Finding R%s\n' \
+                        "$_c13o_rel" "$_c13o_n"
+                    _c13o_rc=1
+                fi
+            done
+            for _c13o_n in $_c13o_cfilled; do
+                if ! printf '%s\n' "$_c13o_sum" \
+                    | grep -E "^- Finding C$_c13o_n → $C13_DISP_RE" \
+                    | grep -qv 'superseded (round'; then
+                    printf '%s: Итог lacks disposition for Finding C%s\n' \
+                        "$_c13o_rel" "$_c13o_n"
+                    _c13o_rc=1
+                fi
+            done
+        else
+            if ! printf '%s\n' "$_c13o_sum" | grep -qE '^[- ]*\*\*No findings reason:\*\* .+'; then
+                printf '%s: Итог lacks no-findings placeholder\n' "$_c13o_rel"
+                _c13o_rc=1
+            fi
+        fi
+    fi
+
+    return $_c13o_rc
+}
+
 # ------------------------------------------------------------------ report
 
 # report <id> <name> <corpus> <func> — печать `OK/FAIL Cn name(: details)`
@@ -825,7 +1149,7 @@ report() {
     return "$_rp_rc"
 }
 
-# run_all <corpus> — прогон C1–C12; rc = число проваленных проверок.
+# run_all <corpus> — прогон C1–C13; rc = число проваленных проверок.
 run_all() {
     _ra_corpus=$1
     _ra_fails=0
@@ -841,6 +1165,7 @@ run_all() {
     report C10 roles-vs-agents     "$_ra_corpus" check_c10 || _ra_fails=$((_ra_fails + 1))
     report C11 token-usage-lines   "$_ra_corpus" check_c11 || _ra_fails=$((_ra_fails + 1))
     report C12 requirements-traceability "$_ra_corpus" check_c12 || _ra_fails=$((_ra_fails + 1))
+    report C13 review-blocker-grammar "$_ra_corpus" check_c13 || _ra_fails=$((_ra_fails + 1))
     return $_ra_fails
 }
 
@@ -865,7 +1190,7 @@ selftest() {
     _st_bad=0
     for _st_fn in check_c1 check_c2 check_c3 check_c4 check_c5 \
                   check_c6 check_c7 check_c8 check_c9 check_c10 check_c11 \
-                  check_c12
+                  check_c12 check_c13
     do
         if ! "$_st_fn" "$_st_base/base" > /dev/null 2>&1; then
             printf 'selftest baseline: %s fails on clean corpus copy\n' "$_st_fn"
@@ -878,7 +1203,7 @@ selftest() {
     fi
 
     _st_caught=0
-    _st_total=15
+    _st_total=26
 
     # C1: недопустимое значение статуса.
     _st_dir=$_st_base/c1
@@ -1101,6 +1426,349 @@ selftest() {
     else
         printf 'caught C12c (R-DoD uncovered in Tests)\n'
         _st_caught=$((_st_caught + 1))
+    fi
+
+    # make_c13_bait <dir> — синтетический bait-артефакт C13: Plan ID >=
+    # REVIEW_CUTOFF, полная новая грамматика (Round 2, incremental,
+    # B1 live с Loop-подблоком, судьбы, Coverage, Artifact state).
+    # Живёт только в selftest-копиях ${TMPDIR} (прецедент bait C6/C8/C9),
+    # в репо не появляется; чист против C13/C7 — дефекты подсаживаются
+    # кейсами C13a–C13j точечно.
+    make_c13_bait() {
+        mkdir -p "$1/docs/reviews"
+        cat > "$1/docs/reviews/261130_0000_c13bait.md" <<'EOF'
+# Review — 261130_0000
+
+**Plan:** docs/plans/261130_0000_c13bait_plan.md
+**Reviewed:** staged-изменения против HEAD
+**Status плана на момент review:** In review
+**Created:** 2026-11-14 02:00:00
+**Round:** 2
+**Round 2 started:** 2026-11-14 02:30:00
+**Lanes:** risk → contracts (последовательно; contracts читает секцию risk)
+
+## Findings — Risk lane
+<!-- owner: reviewer-risk -->
+
+| # | Серьёзность | Файл:строка | Суть | Почему риск |
+|---|---|---|---|---|
+| 1 — superseded (round 2) | minor | bait.md:1 | Round 1 finding | bait |
+
+**Coverage:** edge-cases; brittleness
+
+### Risk verdict: pass — superseded (round 2)
+superseded verdict of round 1
+2026-11-14 02:10:00 — round 1 verdict
+
+## Findings — Risk lane — Round 2
+<!-- owner: reviewer-risk -->
+
+| # | Серьёзность | Файл:строка | Суть | Почему риск |
+|---|---|---|---|---|
+| 1 | minor | bait.md:2 | Round 2 finding | bait |
+
+**Coverage:** regression-behavior; edge-cases
+
+**Rerun mode:** incremental
+**Baseline artifact:** Round 1 pass 2026-11-14 02:10:00
+**Rerun scope:** bait.md delta
+**Trusted unaffected surfaces:** templates unchanged
+**Reused evidence:** Round 1 finding 1
+
+### Risk verdict: pass
+round 2 clean
+2026-11-14 02:35:00 — round 2 verdict
+
+## Findings — Contracts lane
+<!-- owner: reviewer-contracts -->
+
+| # | Серьёзность | Проверка | Статус | Комментарий |
+|---|---|---|---|---|
+| 1 | — | DoD bait | ok | bait |
+
+**Coverage:** artifact-grammar; scope-dod-boundaries
+
+### Contracts verdict: pass
+bait dod ok
+2026-11-14 02:40:00 — contracts verdict
+
+## Итог
+<!-- owner: reviewer-contracts собирает; итог действителен только при двух записанных вердиктах выше -->
+
+- Risk: pass (Round 2)
+- Contracts: pass (Round 2)
+- **Итоговый вердикт:** pass → Owner-гейт merge
+- **Artifact state:** current_green
+
+Судьбы находок (текущий раунд):
+- Finding R1 → accepted_risk → —
+- Finding C1 → dismissed → —
+- Finding R1 → superseded (round 2) → #B1
+
+### B1
+Current state: open
+Severity: S1
+Primary owner gap: coder
+Loop signal: ID B1 переиспользован из Round 1
+Root cause class: stale-evidence
+Next owner: reviewer-risk
+
+- **Состав staged (канонизация merge-состава):** дословный вывод
+  `git diff --cached --name-only` на момент contracts-вердикта
+
+  docs/plans/261130_0000_c13bait_plan.md
+EOF
+    }
+
+    # make_c13_bait3 <dir> — bait Round 3: накопленные superseded-секции
+    # раундов 1–2 при действующем раунде 3 (регрессия superseded-изъятия
+    # C13(д)/(г): старые Rerun mode/Artifact state-строки с лейблами не
+    # считаются и не валидируются; ровно одна действующая Rerun mode).
+    make_c13_bait3() {
+        mkdir -p "$1/docs/reviews"
+        cat > "$1/docs/reviews/261130_0001_c13bait3.md" <<'EOF'
+# Review — 261130_0001
+
+**Plan:** docs/plans/261130_0001_c13bait3_plan.md
+**Reviewed:** staged-изменения против HEAD
+**Status плана на момент review:** In review
+**Created:** 2026-11-14 02:00:00
+**Round:** 3
+**Round 2 started:** 2026-11-14 02:30:00
+**Round 3 started:** 2026-11-14 03:00:00
+**Lanes:** risk → contracts (последовательно; contracts читает секцию risk)
+
+## Findings — Risk lane — Round 2
+<!-- owner: reviewer-risk -->
+
+| # | Серьёзность | Файл:строка | Суть | Почему риск |
+|---|---|---|---|---|
+| 1 — superseded (round 3) | minor | bait3.md:1 | Round 2 finding | bait |
+
+**Coverage:** edge-cases
+
+**Rerun mode:** incremental — superseded (round 3)
+**Baseline artifact:** Round 1 pass
+**Rerun scope:** bait3 delta
+**Trusted unaffected surfaces:** templates unchanged
+**Reused evidence:** Round 1 finding 1
+
+### Risk verdict: pass — superseded (round 3)
+round 2 superseded
+2026-11-14 02:35:00
+
+## Findings — Risk lane — Round 3
+<!-- owner: reviewer-risk -->
+
+| # | Серьёзность | Файл:строка | Суть | Почему риск |
+|---|---|---|---|---|
+| 1 | minor | bait3.md:2 | Round 3 finding | bait |
+
+**Coverage:** regression-behavior; edge-cases
+
+**Rerun mode:** full
+
+### Risk verdict: pass
+round 3 clean
+2026-11-14 03:05:00
+
+## Findings — Contracts lane
+<!-- owner: reviewer-contracts -->
+
+| # | Серьёзность | Проверка | Статус | Комментарий |
+|---|---|---|---|---|
+| 1 | — | DoD bait3 | ok | bait |
+
+**Coverage:** artifact-grammar
+
+### Contracts verdict: pass
+bait3 dod ok
+2026-11-14 03:10:00
+
+## Итог
+<!-- owner: reviewer-contracts собирает; итог действителен только при двух записанных вердиктах выше -->
+
+- Risk: pass (Round 3)
+- Contracts: pass (Round 3)
+- **Итоговый вердикт:** pass → Owner-гейт merge
+- **Artifact state:** current_green — superseded (round 3)
+- **Artifact state:** current_red
+
+Судьбы находок (текущий раунд):
+- Finding R1 → dismissed → — superseded (round 3)
+- Finding R1 → accepted_risk → —
+- Finding C1 → dismissed → —
+
+- **Состав staged (канонизация merge-состава):** дословный вывод
+  `git diff --cached --name-only` на момент contracts-вердикта
+
+  docs/plans/261130_0001_c13bait3_plan.md
+EOF
+    }
+
+    # Позитивные утверждения чистоты bait'ов (finding 3 Round 1,
+    # 261113_1642_review): C13/C7 обязаны проходить на корректных
+    # артефактах новой грамматики — базовый контур corpus не несёт
+    # артефактов >= cutoff вне exclude-листа, поэтому без этих
+    # утверждений регрессия C13 в сторону ложных срабатываний
+    # оставляла бы selftest зелёным. Вне счётчика caught (26): это
+    # baseline-класс, падение — abort selftest.
+    _st_dir=$_st_base/c13clean
+    seed_corpus "$_st_dir"
+    make_c13_bait "$_st_dir"
+    make_c13_bait3 "$_st_dir"
+    if ! check_c13 "$_st_dir" > /dev/null 2>&1; then
+        printf 'selftest baseline: check_c13 fails on clean c13 bait (round 2/3 grammar)\n'
+        return 1
+    fi
+    if ! check_c7 "$_st_dir" > /dev/null 2>&1; then
+        printf 'selftest baseline: check_c7 fails on clean c13 bait (round 2/3 grammar)\n'
+        return 1
+    fi
+
+    # C13 (а): Current state вне enum.
+    _st_dir=$_st_base/c13a
+    seed_corpus "$_st_dir"
+    make_c13_bait "$_st_dir"
+    mutate "$_st_dir/docs/reviews/261130_0000_c13bait.md" \
+        's/^Current state: open$/Current state: pending/'
+    if check_c13 "$_st_dir" > /dev/null 2>&1; then
+        printf 'MISSED C13a\n'
+    else
+        printf 'caught C13a (Current state outside enum)\n'
+        _st_caught=$((_st_caught + 1))
+    fi
+
+    # C13 (а): Severity вне enum.
+    _st_dir=$_st_base/c13b
+    seed_corpus "$_st_dir"
+    make_c13_bait "$_st_dir"
+    mutate "$_st_dir/docs/reviews/261130_0000_c13bait.md" \
+        's/^Severity: S1$/Severity: S4/'
+    if check_c13 "$_st_dir" > /dev/null 2>&1; then
+        printf 'MISSED C13b\n'
+    else
+        printf 'caught C13b (Severity outside enum)\n'
+        _st_caught=$((_st_caught + 1))
+    fi
+
+    # C13 (б): дубль заголовка `### B<N>`.
+    _st_dir=$_st_base/c13c
+    seed_corpus "$_st_dir"
+    make_c13_bait "$_st_dir"
+    printf '\n### B1\nCurrent state: open\nSeverity: S1\n' \
+        >> "$_st_dir/docs/reviews/261130_0000_c13bait.md"
+    if check_c13 "$_st_dir" > /dev/null 2>&1; then
+        printf 'MISSED C13c\n'
+    else
+        printf 'caught C13c (duplicate B-block header)\n'
+        _st_caught=$((_st_caught + 1))
+    fi
+
+    # C13 (б): дыра в ID-пространстве (B1 → B2 без B1).
+    _st_dir=$_st_base/c13d
+    seed_corpus "$_st_dir"
+    make_c13_bait "$_st_dir"
+    mutate "$_st_dir/docs/reviews/261130_0000_c13bait.md" \
+        's/^### B1$/### B2/'
+    if check_c13 "$_st_dir" > /dev/null 2>&1; then
+        printf 'MISSED C13d\n'
+    else
+        printf 'caught C13d (hole in B-ID space)\n'
+        _st_caught=$((_st_caught + 1))
+    fi
+
+    # C13 (в): live-блок с переиспользованным ID без Root cause class.
+    _st_dir=$_st_base/c13e
+    seed_corpus "$_st_dir"
+    make_c13_bait "$_st_dir"
+    mutate "$_st_dir/docs/reviews/261130_0000_c13bait.md" \
+        '/^Root cause class: /d'
+    if check_c13 "$_st_dir" > /dev/null 2>&1; then
+        printf 'MISSED C13e\n'
+    else
+        printf 'caught C13e (live reused-ID block without Root cause class)\n'
+        _st_caught=$((_st_caught + 1))
+    fi
+
+    # C13 (д): Round >= 2 без Rerun mode.
+    _st_dir=$_st_base/c13f
+    seed_corpus "$_st_dir"
+    make_c13_bait "$_st_dir"
+    mutate "$_st_dir/docs/reviews/261130_0000_c13bait.md" \
+        '/^\*\*Rerun mode:\*\* incremental$/d'
+    if check_c13 "$_st_dir" > /dev/null 2>&1; then
+        printf 'MISSED C13f\n'
+    else
+        printf 'caught C13f (Round >= 2 without Rerun mode)\n'
+        _st_caught=$((_st_caught + 1))
+    fi
+
+    # C13 (д): incremental без полей доверия.
+    _st_dir=$_st_base/c13g
+    seed_corpus "$_st_dir"
+    make_c13_bait "$_st_dir"
+    mutate "$_st_dir/docs/reviews/261130_0000_c13bait.md" \
+        '/^\*\*Baseline artifact:\*\*/d'
+    if check_c13 "$_st_dir" > /dev/null 2>&1; then
+        printf 'MISSED C13g\n'
+    else
+        printf 'caught C13g (incremental without trust fields)\n'
+        _st_caught=$((_st_caught + 1))
+    fi
+
+    # C13 (е): вердикт лейна без Coverage (секция с заполненной таблицей —
+    # No findings reason не применим).
+    _st_dir=$_st_base/c13h
+    seed_corpus "$_st_dir"
+    make_c13_bait "$_st_dir"
+    mutate "$_st_dir/docs/reviews/261130_0000_c13bait.md" \
+        '/^\*\*Coverage:\*\* regression-behavior; edge-cases$/d'
+    if check_c13 "$_st_dir" > /dev/null 2>&1; then
+        printf 'MISSED C13h\n'
+    else
+        printf 'caught C13h (lane verdict without Coverage)\n'
+        _st_caught=$((_st_caught + 1))
+    fi
+
+    # C13 (ж): Contracts-вердикт при судьбах-находках — Итог без судеб.
+    _st_dir=$_st_base/c13i
+    seed_corpus "$_st_dir"
+    make_c13_bait "$_st_dir"
+    mutate "$_st_dir/docs/reviews/261130_0000_c13bait.md" \
+        '/^- Finding R1 → accepted_risk/d; /^- Finding C1 → dismissed/d'
+    if check_c13 "$_st_dir" > /dev/null 2>&1; then
+        printf 'MISSED C13i\n'
+    else
+        printf 'caught C13i (Итог without dispositions)\n'
+        _st_caught=$((_st_caught + 1))
+    fi
+
+    # C13 (г): Artifact state вне enum при записанном Contracts-вердикте.
+    _st_dir=$_st_base/c13j
+    seed_corpus "$_st_dir"
+    make_c13_bait "$_st_dir"
+    mutate "$_st_dir/docs/reviews/261130_0000_c13bait.md" \
+        's/^- \*\*Artifact state:\*\* current_green$/- **Artifact state:** green/'
+    if check_c13 "$_st_dir" > /dev/null 2>&1; then
+        printf 'MISSED C13j\n'
+    else
+        printf 'caught C13j (Artifact state outside enum)\n'
+        _st_caught=$((_st_caught + 1))
+    fi
+
+    # C13: эффективность exclude-листа — дефект, подсаженный в копию
+    # 261113_2121_review.md (Plan ID >= cutoff, старая грамматика),
+    # C13 не роняет.
+    _st_dir=$_st_base/c13k
+    seed_corpus "$_st_dir"
+    printf '\n### B9\nCurrent state: bogus\nSeverity: S9\n' \
+        >> "$_st_dir/docs/reviews/261113_2121_review.md"
+    if check_c13 "$_st_dir" > /dev/null 2>&1; then
+        printf 'caught C13k (exclude-list effective)\n'
+        _st_caught=$((_st_caught + 1))
+    else
+        printf 'MISSED C13k\n'
     fi
 
     printf 'selftest: %s/%s caught\n' "$_st_caught" "$_st_total"

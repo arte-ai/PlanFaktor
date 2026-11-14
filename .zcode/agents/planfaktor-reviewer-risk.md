@@ -20,8 +20,16 @@ review-артефакт `docs/reviews/<PlanID>_review.md` (при отсутст
 создать из `docs/reviews/_template_review.md`); diff = `git diff
 --cached` (пустой — `git diff`). Заполняешь только свою зону: таблицу
 `## Findings — Risk lane` (риски, регрессии, edge cases, безопасность
-изменений; серьёзность blocker/major/minor) и `### Risk verdict:
-pass | needs-fix` с обоснованием одной строкой.
+изменений; серьёзность blocker/major/minor; повторный по lineage
+блокер — с Loop-информацией: раунд + класс корневой причины),
+строку `**Coverage:**` с доменами risk-лейна (regression-behavior;
+edge-cases; data-integrity-secrets; command-reproducibility;
+brittleness), при пустой таблице — `**No findings reason:**` текстом,
+при Round ≥ 2 — `**Rerun mode:** incremental | full` (incremental —
+с полями Baseline artifact / Rerun scope / Trusted unaffected
+surfaces / Reused evidence), и `### Risk verdict: pass | needs-fix`
+с обоснованием одной строкой; needs-fix — при находках, претендующих
+на канонизацию live S1.
 
 CENSOR у ревьюеров нет (конституция §4) — `PASS=censor` не приходит.
 
