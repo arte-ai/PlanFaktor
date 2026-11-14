@@ -5,8 +5,8 @@ Derived-сводка открытых follow-ups из `docs/followups/backlog.md
 не правится. Формат строк носителя — row-грамматика
 `docs/followups/_template.md`.
 
-Счётчик: открытых — 11, закрытых (promoted/handled/cancelled) — 1
-(состояние на 2026-11-13).
+Счётчик: открытых — 10, закрытых (promoted/handled/cancelled) — 2
+(состояние на 2026-11-14).
 
 ## Открытые по приоритетам
 
@@ -27,15 +27,15 @@ Derived-сводка открытых follow-ups из `docs/followups/backlog.md
 | release-node | P2 | Релизный узел конвейера: конвенция тегов/сборок/release-notes и статус released в реестре | Architect | none | open |
 | ci-v2-static | P2 | CI v2 static-джоба: shellcheck (POSIX) + actionlint + smoke-тест инстанцирования шаблона плана | Architect | none | open |
 
-### P3 (4)
+### P3 (3)
 
 | id | P | summary | to | plan | status |
 | --- | --- | --- | --- | --- | --- |
 | hex-typo-t4 | P3 | Hex-опечатка a2c2faf8 → a2c2faf9 в Tests-цитате T4 | Coder | none | open |
-| ci-hygiene | P3 | CI-гигиена: actions/checkout@v5 + миграция ubuntu-latest | Coder | none | open |
 | history-secret-audit | P3 | History secret audit: периодический gitleaks detect по всей git-истории (C14 — только рабочее дерево) | Architect | none | open |
 | lint-robustness | P3 | Робастность check_corpus.sh: heredoc-раскрытие, cwd-чувствительность, не заявленный awk | Architect | none | open |
 
 ## Закрытые
 
 - merge-untracked-guard — P2 — status=promoted — plan=261113_2121 (Merge-рутина: контроль посторонних untracked; правило вошло в /planfaktor-run планом 261113_2121)
+- ci-hygiene — P3 — status=promoted — plan=261113_1944 (CI-гигиена: checkout@v5, permissions, concurrency, матрица ОС, таймаут; вошли в план 261113_1944)

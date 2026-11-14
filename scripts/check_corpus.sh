@@ -5,7 +5,10 @@
 # 261112_0111_route_token_accounting.md (C11 — usage-строки, cutoff
 # C3/C8 — секционная версионность) + docs/plans/
 # 261113_1642_anti_loop_blocker_ids.md (C13 — грамматика live-блокеров
-# и rerun-цикла review-артефактов, cutoff REVIEW_CUTOFF + exclude-лист).
+# и rerun-цикла review-артефактов, cutoff REVIEW_CUTOFF + exclude-лист)
+# + docs/plans/261113_1944_public_repo_hygiene.md (C14 — safety-scan
+# контента: классы приватных значений по фиксированным поверхностям,
+# явный allowlist, selftest-кейсы на синтетике).
 #
 # Это dev-инфраструктура репо, НЕ рантайм конвейера: роли не обязаны звать
 # его для маршрутизации, Manager от него не зависит.
@@ -23,8 +26,8 @@
 # Selftest:
 #   scripts/check_corpus.sh --selftest
 #   строит в ${TMPDIR:-/tmp} копии корпуса, подсаживает по одному дефекту
-#   на каждый класс C1–C13 и проверяет, что каждая проверка ловит свой
-#   дефект; итог `selftest: N/26 caught`; exit 0 только при 26/26.
+#   на каждый класс C1–C14 и проверяет, что каждая проверка ловит свой
+#   дефект; итог `selftest: N/33 caught`; exit 0 только при 33/33.
 
 set -u
 
@@ -69,6 +72,21 @@ C13_MODE_RE='^[- ]*\*\*Rerun mode:\*\* (incremental|full)[[:space:]]*$'
 C13_RISK_DOMAINS='regression-behavior edge-cases data-integrity-secrets command-reproducibility brittleness'
 C13_CONTRACTS_DOMAINS='constitution-compliance canon-drift artifact-grammar review-artifact-truthfulness scope-dod-boundaries tests-evidence-trace'
 C13_DISP_RE='(accepted_blocker|accepted_non_blocking_followup|accepted_risk|dismissed|superseded)'
+
+# Allowlist C14 — default deny (план 261113_1944, Solution п.3): совпадение
+# класса в файле вне allowlist — FAIL; формат записи `путь|класс` (путь от
+# корня репо), обоснование — комментарием под таблицей. Прецедент явных
+# исключений линта: case-плейсхолдеры C9, `<!--`-фильтр C5/C11/C12.
+# Bait-строки фикстур в репо отсутствуют: selftest-кейсы C14 генерируют
+# синтетику конкатенациями в ${TMPDIR}-копиях, литеральных тел
+# в исходнике нет (D5 плана 261113_1944).
+C14_ALLOWLIST='scripts/check_corpus.sh|gh-token'
+# scripts/check_corpus.sh|gh-token — why: единственный легальный
+# bait-носитель allowlist-кейса selftest (C14g подсаживает bait в копию
+# самого скрипта — прецедент exclude-кейса C13k); попутно исключение
+# страхует эволюцию текста детектора: описания классов в комментариях
+# и ERE-определения этого класса не обязаны самопроверяться на каждом
+# изменении формулировок.
 
 # Реестр внешних требований (план 261112_2236, Solution п.1/п.7): rows —
 # в теле секции `## Требования`, статусы — `## Журнал статусов`.
@@ -530,7 +548,8 @@ _c8_check_one() {
 }
 
 # C9: относительные пути `docs/…`/`.zcode/…` из README, AGENTS.md,
-# роль-доков и команд существуют; плейсхолдеры allowlist'а пропускаются
+# CONTRIBUTING.md, SECURITY.md, роль-доков и команд существуют;
+# плейсхолдеры allowlist'а пропускаются
 # (кириллические `docs/plans/<файл>` и `docs/roles/<роль>.md` обрезаются
 # токенизатором до `docs/<dir>/<`); слэш-команды `/planfaktor-*` требуют
 # `.zcode/commands/<имя>.md`. Glob-паттерн `docs/plans/[0-9]*.md`
@@ -543,6 +562,7 @@ check_c9() {
     _c9_corpus=$1
     _c9_rc=0
     for _c9_src in "$_c9_corpus/README.md" "$_c9_corpus/AGENTS.md" \
+                   "$_c9_corpus/CONTRIBUTING.md" "$_c9_corpus/SECURITY.md" \
                    "$_c9_corpus"/docs/roles/*.md \
                    "$_c9_corpus"/.zcode/commands/*.md
     do
@@ -1120,6 +1140,90 @@ EOF
     return $_c13o_rc
 }
 
+# C14: safety-scan контента (план 261113_1944, Solution п.2–3) — машинный
+# барьер против утечек приватных значений в публичный корпус. Поверхности —
+# фиксированный явный список по прецеденту C9; классы — POSIX ERE
+# с payload-принципом: каждый паттерн требует значащий payload (сегмент
+# имени / тело токена), чтобы документационные плейсхолдеры `<...>`,
+# `<REDACTED>` и упоминания классов в прозе без тел не матчились — это
+# минимизирует allowlist. Классы (имена — идентификаторы allowlist'а,
+# формулировки без триггерных литералов, D2 плана 261113_1944):
+#   home-path — абсолютный домашний путь: префикс Users либо home
+#               с сегментом имени пользователя (минимум 2 латинские
+#               буквы/цифры) до следующего слэша или конца токена;
+#   gh-token  — короткий префиксный класс токена хостинга: gh + одна
+#               латинская буква + подчёркивание, тело от 20
+#               букв/цифр/подчёркиваний/дефисов;
+#   gh-pat    — составной префиксный класс fine-grained токена: имя
+#               сервиса с двумя подчёркиваниями-разделителями, тело
+#               от 20 тех же символов;
+#   pem-key   — маркер заголовка PEM-блока приватного ключа
+#               канонического вида: пять дефисов, слово начала блока,
+#               уточнение вида ключа из семейства приватных, закрывающие
+#               дефисы;
+#   bearer    — заголовок авторизации Bearer: слово-схема с телом
+#               от 20 букв/цифр после разделителя;
+#   jwt       — JWT-подобное значение: три base64url-сегмента,
+#               разделённые точками, каждый не короче 10 символов,
+#               первый начинается с канонического префикса base64url-
+#               кодировки открывающей фигурной скобки JSON.
+# Полный класс приватных идентификаторов (имена, сессии) машинными
+# классами не покрывается — направленный ручной просмотр перед
+# публикацией (SECURITY.md; Problem п.2 плана 261113_1944).
+check_c14() {
+    _c14_corpus=$1
+    _c14_rc=0
+    _c14_surfaces=''
+    for _c14_s in docs .zcode scripts .github/workflows \
+                  README.md AGENTS.md CONTRIBUTING.md SECURITY.md LICENSE
+    do
+        [ -e "$_c14_corpus/$_c14_s" ] \
+            && _c14_surfaces="$_c14_surfaces $_c14_s"
+    done
+    [ -n "$_c14_surfaces" ] || return 0
+    for _c14_cls in home-path gh-token gh-pat pem-key bearer jwt; do
+        _c14_re=$(_c14_re_of "$_c14_cls")
+        _c14_hits=$(cd "$_c14_corpus" \
+            && grep -rnE -- "$_c14_re" $_c14_surfaces 2>/dev/null || true)
+        while IFS= read -r _c14_hit; do
+            [ -n "$_c14_hit" ] || continue
+            _c14_file=${_c14_hit%%:*}
+            if _c14_allowed "$_c14_file" "$_c14_cls"; then continue; fi
+            printf 'c14-%s: %s\n' "$_c14_cls" "$_c14_hit"
+            _c14_rc=1
+        done <<EOF
+$_c14_hits
+EOF
+    done
+    return $_c14_rc
+}
+
+# _c14_re_of <class> — ERE класса (единственное место с телами паттернов).
+_c14_re_of() {
+    case $1 in
+        home-path) printf '%s\n' '/(Users|home)/[A-Za-z0-9][A-Za-z0-9]+' ;;
+        gh-token)  printf '%s\n' 'gh[A-Za-z]_[A-Za-z0-9_-]{20,}' ;;
+        gh-pat)    printf '%s\n' 'github_pat_[A-Za-z0-9_-]{20,}' ;;
+        pem-key)   printf '%s\n' '-----BEGIN [A-Z ]*PRIVATE KEY-----' ;;
+        bearer)    printf '%s\n' 'Bearer[[:space:]]+[A-Za-z0-9]{20,}' ;;
+        jwt)       printf '%s\n' 'eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}' ;;
+    esac
+}
+
+# _c14_allowed <relpath> <class> — rc 0, если пара `путь|класс` в
+# C14_ALLOWLIST (default deny: всё вне таблицы — FAIL).
+_c14_allowed() {
+    while IFS='|' read -r _c14a_path _c14a_cls; do
+        [ -n "$_c14a_path" ] || continue
+        if [ "$_c14a_path" = "$1" ] && [ "$_c14a_cls" = "$2" ]; then
+            return 0
+        fi
+    done <<EOF
+$C14_ALLOWLIST
+EOF
+    return 1
+}
+
 # ------------------------------------------------------------------ report
 
 # report <id> <name> <corpus> <func> — печать `OK/FAIL Cn name(: details)`
@@ -1149,7 +1253,7 @@ report() {
     return "$_rp_rc"
 }
 
-# run_all <corpus> — прогон C1–C13; rc = число проваленных проверок.
+# run_all <corpus> — прогон C1–C14; rc = число проваленных проверок.
 run_all() {
     _ra_corpus=$1
     _ra_fails=0
@@ -1166,17 +1270,25 @@ run_all() {
     report C11 token-usage-lines   "$_ra_corpus" check_c11 || _ra_fails=$((_ra_fails + 1))
     report C12 requirements-traceability "$_ra_corpus" check_c12 || _ra_fails=$((_ra_fails + 1))
     report C13 review-blocker-grammar "$_ra_corpus" check_c13 || _ra_fails=$((_ra_fails + 1))
+    report C14 safety-scan         "$_ra_corpus" check_c14 || _ra_fails=$((_ra_fails + 1))
     return $_ra_fails
 }
 
 # ----------------------------------------------------------------- selftest
 
 # seed_corpus <dir> — свежая копия корпуса для подсадки дефектов.
+# Копируются все поверхности C14 (docs/, .zcode/, scripts/,
+# .github/workflows/ через .github/, корневые файлы — включая
+# CONTRIBUTING.md, SECURITY.md, LICENSE) со структурой корня — иначе
+# кейсы C14 в копиях невоспроизводимы (D7 плана 261113_1944).
 seed_corpus() {
     mkdir -p "$1"
     cp -R "$ROOT/docs" "$1/docs"
     cp -R "$ROOT/.zcode" "$1/.zcode"
-    cp "$ROOT/README.md" "$ROOT/AGENTS.md" "$1/"
+    cp -R "$ROOT/scripts" "$1/scripts"
+    cp -R "$ROOT/.github" "$1/.github"
+    cp "$ROOT/README.md" "$ROOT/AGENTS.md" "$ROOT/CONTRIBUTING.md" \
+       "$ROOT/SECURITY.md" "$ROOT/LICENSE" "$1/"
 }
 
 selftest() {
@@ -1190,7 +1302,7 @@ selftest() {
     _st_bad=0
     for _st_fn in check_c1 check_c2 check_c3 check_c4 check_c5 \
                   check_c6 check_c7 check_c8 check_c9 check_c10 check_c11 \
-                  check_c12 check_c13
+                  check_c12 check_c13 check_c14
     do
         if ! "$_st_fn" "$_st_base/base" > /dev/null 2>&1; then
             printf 'selftest baseline: %s fails on clean corpus copy\n' "$_st_fn"
@@ -1203,7 +1315,7 @@ selftest() {
     fi
 
     _st_caught=0
-    _st_total=26
+    _st_total=33
 
     # C1: недопустимое значение статуса.
     _st_dir=$_st_base/c1
@@ -1769,6 +1881,103 @@ EOF
         _st_caught=$((_st_caught + 1))
     else
         printf 'MISSED C13k\n'
+    fi
+
+    # _st14_rep <n> <char> — синтетический bait-репитер: n повторов одного
+    # символа. Bait-строки C14 собираются конкатенациями префикса и
+    # синтетики (повторённые символы), не литеральными телами в исходнике
+    # скрипта — иначе линт поймает собственный selftest (D5 плана
+    # 261113_1944); bait живёт только в ${TMPDIR}-копиях поверхностей.
+    _st14_rep() {
+        printf '%*s' "$1" '' | sed "s/ /$2/g"
+    }
+
+    # C14 (класс 1): абсолютный домашний путь с сегментом имени.
+    _st_dir=$_st_base/c14a
+    seed_corpus "$_st_dir"
+    printf '\nlint bait: /Users/%s\n' "$(_st14_rep 8 q)" \
+        >> "$_st_dir/README.md"
+    if check_c14 "$_st_dir" > /dev/null 2>&1; then
+        printf 'MISSED C14a\n'
+    else
+        printf 'caught C14a (home path with name segment)\n'
+        _st_caught=$((_st_caught + 1))
+    fi
+
+    # C14 (класс 2): короткий префиксный токен хостинга с телом.
+    _st_dir=$_st_base/c14b
+    seed_corpus "$_st_dir"
+    printf '\nlint bait: %s\n' "ghp_$(_st14_rep 22 b)" \
+        >> "$_st_dir/README.md"
+    if check_c14 "$_st_dir" > /dev/null 2>&1; then
+        printf 'MISSED C14b\n'
+    else
+        printf 'caught C14b (short-prefix hosting token)\n'
+        _st_caught=$((_st_caught + 1))
+    fi
+
+    # C14 (класс 3): составной префиксный fine-grained токен с телом.
+    _st_dir=$_st_base/c14c
+    seed_corpus "$_st_dir"
+    printf '\nlint bait: %s\n' "github_pat_$(_st14_rep 24 c)" \
+        >> "$_st_dir/README.md"
+    if check_c14 "$_st_dir" > /dev/null 2>&1; then
+        printf 'MISSED C14c\n'
+    else
+        printf 'caught C14c (composite-prefix fine-grained token)\n'
+        _st_caught=$((_st_caught + 1))
+    fi
+
+    # C14 (класс 4): маркер заголовка PEM-блока приватного ключа.
+    _st_dir=$_st_base/c14d
+    seed_corpus "$_st_dir"
+    printf '\nlint bait: %s\n' "-----BEGIN PRIVATE KEY$(_st14_rep 5 -)" \
+        >> "$_st_dir/README.md"
+    if check_c14 "$_st_dir" > /dev/null 2>&1; then
+        printf 'MISSED C14d\n'
+    else
+        printf 'caught C14d (private key PEM header)\n'
+        _st_caught=$((_st_caught + 1))
+    fi
+
+    # C14 (класс 5): заголовок авторизации Bearer с телом.
+    _st_dir=$_st_base/c14e
+    seed_corpus "$_st_dir"
+    printf '\nlint bait: %s\n' "Bearer $(_st14_rep 22 e)" \
+        >> "$_st_dir/README.md"
+    if check_c14 "$_st_dir" > /dev/null 2>&1; then
+        printf 'MISSED C14e\n'
+    else
+        printf 'caught C14e (bearer authorization value)\n'
+        _st_caught=$((_st_caught + 1))
+    fi
+
+    # C14 (класс 6): JWT-подобное значение из трёх base64url-сегментов.
+    _st_dir=$_st_base/c14f
+    seed_corpus "$_st_dir"
+    printf '\nlint bait: %s\n' \
+        "eyJ$(_st14_rep 9 j).$(_st14_rep 11 k).$(_st14_rep 11 l)" \
+        >> "$_st_dir/README.md"
+    if check_c14 "$_st_dir" > /dev/null 2>&1; then
+        printf 'MISSED C14f\n'
+    else
+        printf 'caught C14f (JWT-like value)\n'
+        _st_caught=$((_st_caught + 1))
+    fi
+
+    # C14: эффективность allowlist — bait класса gh-token, подсаженный
+    # в копию allowlisted-носителя (сам скрипт, запись
+    # `scripts/check_corpus.sh|gh-token`), C14 не роняет (прецедент
+    # exclude-кейса C13k).
+    _st_dir=$_st_base/c14g
+    seed_corpus "$_st_dir"
+    printf '\nlint bait: %s\n' "ghp_$(_st14_rep 22 g)" \
+        >> "$_st_dir/scripts/check_corpus.sh"
+    if check_c14 "$_st_dir" > /dev/null 2>&1; then
+        printf 'caught C14g (allowlist effective)\n'
+        _st_caught=$((_st_caught + 1))
+    else
+        printf 'MISSED C14g\n'
     fi
 
     printf 'selftest: %s/%s caught\n' "$_st_caught" "$_st_total"

@@ -333,6 +333,11 @@ Observations:
 ## 8. Коммиты и ветки
 
 - Коммит делает только Manager и только после явного Owner-«да» на merge-гейте.
+- Инвариант pre-merge verify: merge-коммит делается только при свежем
+  green-прогоне corpus-линта (`scripts/check_corpus.sh` → `corpus: clean`
+  по актуальному дереву); green линта ≠ семантическая приёмка — семантику
+  подтверждают два pass-вердикта review и Owner-гейт; текущий failure
+  не глушится историческим green — прогон всегда свежий.
 - Формат: `type(PlanID): summary`, где type ∈ `feat|fix|docs|chore`,
   PlanID = `YYMMDD_HHMM` из имени плана. Пример: `feat(261111_0315): add review template`.
 - Работа идёт в рабочем дереве main (MVP); изменения стейджит Coder, не

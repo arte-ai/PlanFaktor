@@ -5,12 +5,30 @@ name: corpus-lint
 
 on: [push, pull_request]
 
+# Минимальные права джобы (lint/selftest только читают репозиторий).
+permissions:
+  contents: read
+
+# Сверхнабегающие прогоны того же workflow на том же ref снимаются.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    # ubuntu-latest и macos-latest — движущиеся ссылки на актуальный
+    # runner-образ GitHub; пин раннер-образа не вводим (осознанно —
+    # матрица ловит BSD/GNU-расхождения тулчейна, канон окружения —
+    # README, секция supported verification environment).
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Corpus lint
         run: scripts/check_corpus.sh
       - name: Corpus lint selftest
