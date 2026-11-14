@@ -1,7 +1,7 @@
 # Анти-луп: классификация повторных блокеров и канонические ID ревью
 
 **Plan ID:** 261113_1642
-**Status:** Merged
+**Status:** Done
 **Created:** 2026-11-13
 **Owner gates:** merge (`In review` → `Merged`); вопросы `to=Owner` — по мере возникновения
 
@@ -977,6 +977,8 @@ Observations:
 - Fixes: ничего (дефектов своей зоны в fixes-handoff не найдено; план перестейджен с Manager-ремонтом 11:05:39 — хаускипинг).
 - Final censor verdict: OK
 - 2026-11-14 15:24:49 — Manager: Owner-«да» на merge-гейте («мержим»); контроли (а) пройдены — unstaged: только план (append-only-дельта), untracked: 4 Draft-черновика очереди (все `**Status:** Draft`, информационно) + review-артефакт (оба класса в исключениях), staged = 16, гейт терминальности: `**Artifact state:** current_green` записанной формой (артефакт :115), свежий линт: corpus: clean, selftest: 26/26 caught; статус Merged, merge-коммит по явному списку из Итога
+- 2026-11-14 15:27:12 — Manager: merge-коммит a53592b (`feat(261113_1642): anti-loop blocker ids and review rerun grammar`, 17 файлов) — сверка (г) со списком Итога пройдена: 16 файлов дословно + единственное расхождение docs/reviews/261113_1642_review.md — санкционированное шагом (в) добавление, иное расхождение отсутствует; рабочее дерево после коммита чистое (untracked — только 4 Draft-черновика, в коммит не вошли); push/CI — за Owner (в текущих указаниях не запрашивались)
+- 2026-11-14 15:27:12 — Manager: closeout, статус Done — `## Follow-ups` плана заполнен (`NO FOLLOW-UPS — why: covered-by-out-of-scope`); терминальное условие выполнено (current_green); хвост — отдельным коммитом `chore(261113_1642): closeout tail`
 
 ## Token usage (append-only)
 <!-- owner: manager; dispatch-форма: `- YYYY-MM-DD HH:MM:SS — usage: <role>.<work|censor|rN> <N|unknown (why=...)> tokens — <dispatch|sendmessage|unknown>`; чекпоинт-форма: `- YYYY-MM-DD HH:MM:SS — usage: manager-context checkpoint ~<N> tokens-left — approximate`; числа — учёт харнесса ZCode (subagent_tokens), приближение, не биллинг провайдера; пишет только Manager из tool-результата вызова -->
