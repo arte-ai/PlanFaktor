@@ -373,8 +373,8 @@ specialist input и intake-чеклист Architect'а из 11 классов; C
 Coder'а следует DoD/Tests ниже; протокол AC-to-test для этой итерации
 не требуется (первое применение — итерации после мерджа). Базы «сейчас»
 для всех инвариантов сняты Planner'ом 2026-11-14 (Evidence) и
-воспроизведены в Tests (T0–T14). R-DoD: пунктов с `[R: <ID>]` нет —
-метки в Scope отсутствуют, внешних требований план не реализует.
+воспроизведены в Tests (T0–T14). R-DoD: пунктов с R-метками нет —
+R-метки в Scope отсутствуют, внешних требований план не реализует.
 
 - [ ] **D1. AGENTS.md §2 — условие перехода `Planning` → `Ready for
   Coder`.** Условие в таблице §2 — «DoD/Tests заполнены; finalize
@@ -713,6 +713,7 @@ Observations:
 - 2026-11-14 18:13:56 — Manager: Owner-«да» на merge-гейте («мержим»); контроли (а) пройдены — unstaged: только план (append-only-дельта), untracked: 3 Draft-черновика очереди (все `**Status:** Draft`, информационно) + review-артефакт (в исключениях), staged = 10, гейт терминальности: `**Artifact state:** current_green` записанной формой (артефакт :88), свежий линт: corpus: clean, selftest: 26/26 caught; статус Merged, merge-коммит по явному списку из Итога; после коммита — push + проверка CI (обновлённое указание Owner)
 - 2026-11-14 18:15:12 — Manager: merge-коммит 8274d86 (`feat(261113_1644): honest handoff selfchecks`, 11 файлов) — сверка (г) со списком Итога пройдена: 10 файлов дословно + единственное расхождение docs/reviews/261113_1644_review.md — санкционированное шагом (в) добавление, иное расхождение отсутствует; рабочее дерево после коммита чистое (untracked — только 3 Draft-черновика, в коммит не вошли)
 - 2026-11-14 18:15:12 — Manager: closeout, статус Done — `## Follow-ups` плана заполнен (`NO FOLLOW-UPS — why:` с факт-базой backlog); терминальное условие выполнено (current_green); хвост — отдельным коммитом `chore(261113_1644): closeout tail`; далее push + проверка CI
+- 2026-11-14 18:18:30 — Manager: fail loud — после tail-коммита (статус Done) корпус-линт красный: C12(в) R-DoD-покрытие гейтится на статус Done (весь конвейер при In review/In progress дефект был невидим): преамбула DoD (зона Planner, строка 376) несёт иллюстративный литерал `[R: <ID>]` без Dn-метки — ложное срабатывание C12 на «R-DoD отсутствуют»; selftest падает на baseline. Push задержан до зелёного корпуса; дефект возвращён владельцу зоны (диспатч Planner на точечный фикс формулировки), класс — пост-мердж-аномалия линта до push, причина ясна (не broken-evidence-неясность)
 - 2026-11-14 16:28:42 — Coder: миграции §3 п.7 (D12) — смена digest'ов 9 контрактов этим планом (новые значения сняты shasum после правок, 16:28:42):
   AGENTS.md@ae39388a → @3b937eed
   docs/roles/planner.md@d390e46a → @f013858b
@@ -736,6 +737,7 @@ Observations:
 - Addendum (new angle): сверх чек-листа сверил соответствие новой формы receipt §4 этому самому receipt'у: Fixes-строка ниже несёт контент-факты по новой форме (доревьюерный проход — метку `Review verdict seen` по §4 не несёт, rN-грамматика не применима); сверил носители узла §2 «finalize completion-pass» — условие перехода синхронно продублировано ровно в двух навигационных копиях (plans/README.md таблица, lifecycle.md фаза Planning), канон единственный (AGENTS.md §2); перепроверил, что позитивная зона coder.md не расширила молча его Zone-контракт: перечень (а)–(в) и граница дословно из Solution п.12, фиксация в Changes/Evidence.
 - Fixes: none (NO FINDINGS; сверены: шапка/статус/Plan ID — grep; digest'ы — shasum против миграций; D1–D14 — re-прогоны T1–T14 фактическими командами; Changes vs staged-дельта — построчный просмотр всех 9 контрактов; чужие секции — DoD-чекбоксы 14 нетронуты, Problem/Solution/Scope правок не несут; мусор-маркеры — grep по дельте 0; Follow-ups — чтение; линт — двойной перепрогон clean/26-26; якорные инварианты баз — same-contract reroute/Q#n/Loop signal/No findings/Rerun mode).
 - Final censor verdict: OK
+- 2026-11-14 18:24:42 — Planner: пост-мердж-фикс линта (fresh-диспатч §7, конверт Manager'а; зона Planner): иллюстративный литерал `[R: <ID>]` в преамбуле DoD (строка 376) устранён точечной переформулировкой — «R-DoD: пунктов с R-метками нет — R-метки в Scope отсутствуют, внешних требований план не реализует»; смысл «R-DoD отсутствуют» сохранён, термин «R-метка» — канон линта (шапка C12 check_corpus.sh); форма метки остаётся определена в секционном комментарии DoD (строки с `<!--` линтом исключаются по прецеденту C5/C11); статус Done не тронут, иные секции не менялись (дельта плана: 2 строки преамбулы + intake + эта запись); контроль после правки: scripts/check_corpus.sh → corpus: clean, exit 0 (до правки — 1 failure C12(в), воспроизведено прогоном), --selftest → selftest: 26/26 caught, exit 0; тела Scope/DoD без <!---строк: вхождений литерала `\[R: ` — 0/0
 
 
 ## Token usage (append-only)
@@ -753,6 +755,7 @@ Observations:
 - 2026-11-14 16:49:26 — usage: reviewer-risk.work 1874540 tokens — dispatch
 - 2026-11-14 17:01:25 — usage: reviewer-contracts.work 2366904 tokens — dispatch
 - 2026-11-14 17:01:25 — usage: manager-context checkpoint ~14959531 tokens-left — approximate
+- 2026-11-14 18:26:07 — usage: planner.r1 1921776 tokens — dispatch
 
 ## Q&A log (chronological, append-only)
 <!-- owner: все роли; intake: `Intake (YYYY-MM-DD HH:MM:SS): AGENTS.md@<8hex> <role>.md@<8hex>` (локальное время) + NO QUESTIONS / NO SUGGESTIONS / NO OBJECTIONS; вопросы `Q(<роль>): ... to=Owner|to=<роль>, blocker: yes|no, needs_owner: yes|no, status=open`; закрытие `A(<кто>): ... status=closed, перенесено в <секция>` -->
@@ -876,6 +879,22 @@ Observations:
 - reviewer-contracts: NO QUESTIONS
 - reviewer-contracts: NO SUGGESTIONS
 - reviewer-contracts: NO OBJECTIONS
+- Intake (2026-11-14 18:22:07): AGENTS.md@3b937eed planner.md@f013858b
+  (fresh-диспатч по §7 — пост-мердж-фикс линта в своей зоне, конверт
+  Manager'а; статус Done совпал с PRE_STATUS_LINE; перечитаны с диска:
+  план целиком, AGENTS.md, planner.md — digest'ы совпали с новыми
+  значениями миграционной записи Evidence 16:28:42 этого же плана
+  (ae39388a→3b937eed, d390e46a→f013858b), §3 п.7 дрейфа нет; падение
+  C12(в) воспроизведено прогоном scripts/check_corpus.sh до правок —
+  FAIL на иллюстративном литерале в преамбуле DoD, строка 376; статус
+  Done сохраняется по конверту — переход Planning для пост-мерджевого
+  точечного фикса не выполняется)
+- planner: NO QUESTIONS (скоуп конверта точечный: устранить литерал
+  в преамбуле DoD переформулировкой с сохранением смысла «R-DoD
+  отсутствуют»; правка секции Planner — DoD, решения Architect
+  и остальные секции не затрагиваются)
+- planner: NO SUGGESTIONS
+- planner: NO OBJECTIONS
 
 ## Suggestions log (chronological, append-only)
 <!-- owner: все роли; несрочные улучшения -->
