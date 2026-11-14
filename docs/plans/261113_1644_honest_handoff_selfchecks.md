@@ -1,7 +1,7 @@
 # Честный handoff: самопроверки Planner/Coder и явная форма отсутствия
 
 **Plan ID:** 261113_1644
-**Status:** Merged
+**Status:** Done
 **Created:** 2026-11-13
 **Owner gates:** merge (`In review` → `Merged`); вопросы `to=Owner` — по мере возникновения
 
@@ -711,6 +711,8 @@ Observations:
 - 2026-11-14 16:15:57 — Manager: CENSOR Planner OK (grep: маркер+TS 16:15:12, dispatch id censor:planner:261114_161114, Observations непустые, verdict OK) — переход Ready for Coder → In progress подтверждён
 - 2026-11-14 16:15:57 — Manager: Q&A чист, открытых вопросов к Owner нет, статус In progress; диспатч Coder (PHASE=work)
 - 2026-11-14 18:13:56 — Manager: Owner-«да» на merge-гейте («мержим»); контроли (а) пройдены — unstaged: только план (append-only-дельта), untracked: 3 Draft-черновика очереди (все `**Status:** Draft`, информационно) + review-артефакт (в исключениях), staged = 10, гейт терминальности: `**Artifact state:** current_green` записанной формой (артефакт :88), свежий линт: corpus: clean, selftest: 26/26 caught; статус Merged, merge-коммит по явному списку из Итога; после коммита — push + проверка CI (обновлённое указание Owner)
+- 2026-11-14 18:15:12 — Manager: merge-коммит 8274d86 (`feat(261113_1644): honest handoff selfchecks`, 11 файлов) — сверка (г) со списком Итога пройдена: 10 файлов дословно + единственное расхождение docs/reviews/261113_1644_review.md — санкционированное шагом (в) добавление, иное расхождение отсутствует; рабочее дерево после коммита чистое (untracked — только 3 Draft-черновика, в коммит не вошли)
+- 2026-11-14 18:15:12 — Manager: closeout, статус Done — `## Follow-ups` плана заполнен (`NO FOLLOW-UPS — why:` с факт-базой backlog); терминальное условие выполнено (current_green); хвост — отдельным коммитом `chore(261113_1644): closeout tail`; далее push + проверка CI
 - 2026-11-14 16:28:42 — Coder: миграции §3 п.7 (D12) — смена digest'ов 9 контрактов этим планом (новые значения сняты shasum после правок, 16:28:42):
   AGENTS.md@ae39388a → @3b937eed
   docs/roles/planner.md@d390e46a → @f013858b
