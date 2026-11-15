@@ -29,7 +29,7 @@ merge-коммита. Что такое конвейер и как читать 
 | Роль-доки | `docs/roles/*.md` | Пять доков ролей + индекс и шаблон |
 | Шаблон плана | `docs/plans/_template.md` | Единственная форма артефакта задачи |
 | Шаблон ревью | `docs/reviews/_template_review.md` | Артефакт двух ревью-лейнов |
-| Команды Manager'а | `.zcode/commands/planfaktor-*.md` | `/planfaktor-plan`, `/planfaktor-run`, `/planfaktor-status` |
+| Команды Manager'а | `.zcode/commands/planfaktor-*.md` | `/planfaktor-init`, `/planfaktor-plan`, `/planfaktor-run`, `/planfaktor-status` |
 | Субагенты ролей | `.zcode/agents/planfaktor-*.md` | Architect, Planner, Coder, два Reviewer'а |
 
 Команды для копирования (из корня вашего репозитория):
@@ -64,7 +64,13 @@ cp "$PF"/.zcode/agents/planfaktor-*.md .zcode/agents/
 - `AGENTS.md` в корне — инструкция проекта: сессия-Manager читает её
   как конституцию;
 - `.zcode/agents/` — в сессии появляются субагенты пяти ролей;
-- `.zcode/commands/` — в чате работают три команды Manager'а.
+- `.zcode/commands/` — в чате работают четыре команды Manager'а:
+  `/planfaktor-init`, `/planfaktor-plan`, `/planfaktor-run`,
+  `/planfaktor-status`.
+
+Первое действие — `/planfaktor-init`: разовая инициализация
+Manager-сессии (Manager перечитает контракты с диска и настроит
+режим сессии).
 
 Проверка без ожидания: выполните `/planfaktor-status` — Manager
 перечитает `docs/plans/`, найдёт планов нет и отчитается пустой
@@ -104,6 +110,7 @@ cp "$PF"/.zcode/agents/planfaktor-*.md .zcode/agents/
 
 | Команда | Что делает |
 | --- | --- |
+| `/planfaktor-init` | Разовый старт Manager-сессии: свежее чтение контрактов, режим сессии |
 | `/planfaktor-plan` | Создаёт план из вашего брифа |
 | `/planfaktor-run` | Один шаг конвейера по старейшему активному плану |
 | `/planfaktor-status` | Статусы планов и очередь работ — без изменений |
