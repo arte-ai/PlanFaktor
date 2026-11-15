@@ -1,7 +1,7 @@
 # Команды управления конвейером: разовый /planfaktor-init и /planfaktor-run [PLAN_PATH]
 
 **Plan ID:** 261114_0151
-**Status:** Merged
+**Status:** Done
 **Created:** 2026-11-14
 **Owner gates:** merge (`In review` → `Merged`); вопросы `to=Owner` — по мере возникновения
 
@@ -696,6 +696,8 @@ Observations:
 - 2026-11-15 03:51:28 — Manager: ревью-фаза завершена — оба вердикта pass (Risk 03:34:58, Contracts 03:48:40, Round 1), итог pass, Artifact state: current_green; открыт Owner-гейт merge — выжимка доложена Owner'у в чате; ночное делегирование merge не давалось → owner-silence до явного «да» (утро)
 
 - 2026-11-15 11:07:24 — Manager: Owner-«да» на merge-гейте (дословно: «мержим. а мы сняли модельный прогон? жду отчет»); контроли (а): unstaged — только план, untracked — только review-артефакт (шаг (в)), staged = 7; свежий pre-merge verify: corpus: clean (C1–C14), selftest 33/33 caught (03:28); запретный grep по staged: 0; терминальность: current_green; гейт-переход — статус Merged; merge-коммит feat(261114_0151) — первичные коммиты afe047d/653cd2b созданы до записи узла (сбой связки: py-скрипт падал, git-команды выполнялись) — исправлено amend'ом до push; итоговый merge-коммит несёт статус Merged и Owner-узел (fail loud)
+
+- 2026-11-15 11:08:52 — Manager: closeout — статус Done. Follow-ups (deferred) заполнен; терминальность review: current_green. Harvest-инвентарь: (а) пересъёмка 01-install-tree.png → судьба open (backlog id=install-tree-reshoot); (б) R1 risk-находка S3 (init.md:27 stderr) → судьба open (backlog id=init-grep-stderr); (в) Out of scope п.5 «новые lint-чеки — расширение» → already-tracked-elsewhere (backlog: id=lint-v2-digest-verify, id=qa-lint, id=ci-v2-static, id=lint-robustness); пункты п.1–п.4, п.6 — границы дизайна/платформы, не de-scoped debt; открытых Q&A/suggestions/objections нет. Candidates без судьбы нет — lost follow-up отсутствует
 
 ## Token usage (append-only)
 <!-- owner: manager; dispatch-форма: `- YYYY-MM-DD HH:MM:SS — usage: <role>.<work|censor|rN> <N|unknown (why=...)> tokens — <dispatch|sendmessage|unknown>`; чекпоинт-форма: `- YYYY-MM-DD HH:MM:SS — usage: manager-context checkpoint ~<N> tokens-left — approximate`; числа — учёт харнесса ZCode (subagent_tokens), приближение, не биллинг провайдера; пишет только Manager из tool-результата вызова -->
