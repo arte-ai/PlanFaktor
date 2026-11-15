@@ -333,6 +333,12 @@ Observations:
 ## 8. Коммиты и ветки
 
 - Коммит делает только Manager и только после явного Owner-«да» на merge-гейте.
+- Closeout-хвост: «да» Owner на merge-гейте покрывает и хвост-коммит —
+  отдельный коммит сразу после merge-коммита, несущий closeout плана
+  (переход `Merged` → `Done` по §2: closeout Evidence-узлы, заполнение
+  `## Follow-ups`, статус `Done`); дополнительный Owner-гейт на хвост
+  не открывается. Формат: `chore(<PlanID>): closeout tail` — пример:
+  `chore(261114_0151): closeout tail`.
 - Инвариант pre-merge verify: merge-коммит делается только при свежем
   green-прогоне corpus-линта (`scripts/check_corpus.sh` → `corpus: clean`
   по актуальному дереву); green линта ≠ семантическая приёмка — семантику

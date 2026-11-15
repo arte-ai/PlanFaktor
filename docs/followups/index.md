@@ -5,16 +5,15 @@ Derived-сводка открытых follow-ups из `docs/followups/backlog.md
 не правится. Формат строк носителя — row-грамматика
 `docs/followups/_template.md`.
 
-Счётчик: открытых — 14, закрытых (promoted/handled/cancelled) — 2
+Счётчик: открытых — 13, закрытых (promoted/handled/cancelled) — 3
 (состояние на 2026-11-15).
 
 ## Открытые по приоритетам
 
-### P1 (2)
+### P1 (1)
 
 | id | P | summary | to | plan | status |
 | --- | --- | --- | --- | --- | --- |
-| closeout-tail-convention | P1 | Конвенция closeout-хвоста: решение (а) принято Owner 2026-11-12 (Evidence 261112_0111:276) — внести в AGENTS.md §8 | Owner | none | open |
 | token-budgets | P1 | Бюджеты/алерты/лимиты расхода токенов на план | Owner | none | open |
 
 ### P2 (5)
@@ -41,5 +40,6 @@ Derived-сводка открытых follow-ups из `docs/followups/backlog.md
 
 ## Закрытые
 
+- closeout-tail-convention — P1 — status=promoted — plan=261115_1610 (Конвенция closeout-хвоста: решение (а) принято Owner 2026-11-12 (Evidence 261112_0111:276) — внести в AGENTS.md §8)
 - merge-untracked-guard — P2 — status=handled — plan=261113_2121 (Merge-рутина: контроль посторонних untracked; merge-коммит по явному списку + контроли; disposition — merge 720519f; терминально закрыто 2026-11-15)
 - ci-hygiene — P3 — status=handled — plan=261113_1944 (CI-гигиена: checkout@v5, permissions, concurrency, матрица ОС, таймаут; disposition — merge 6596b7f, `.github/workflows/corpus.yml`; терминально закрыто при closeout 2026-11-15)
