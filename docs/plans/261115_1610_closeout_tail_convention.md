@@ -1,7 +1,7 @@
 # Конвенция closeout-хвоста: внести решение Owner (вариант а) в §8
 
 **Plan ID:** 261115_1610
-**Status:** Merged
+**Status:** Done
 **Created:** 2026-11-15
 **Owner gates:** merge (`In review` → `Merged`); вопросы `to=Owner` — по мере возникновения
 
@@ -465,6 +465,8 @@ Observations:
   index 13/3/13, миграционная digest-запись)
 - Final censor verdict: OK
 - 2026-11-15 22:39:17 — Manager: Owner-гейт merge — Owner ответил «мержим» (чат, дословно); контроли (а) пройдены: unstaged-дельта tracked пуста; untracked — только файлы мерджимого плана (план, review-артефакт; санкционированы шагом (в)) и посторонний `.playwright-cli/` (доложен Owner'у на гейте как не входящий в коммит, в merge не попадает — санкция известного отклонения, §1(d)); staged ровно 3 файла Scope; свежий pre-merge verify `sh scripts/check_corpus.sh` → `corpus: clean`, EXIT=0 (C1–C14 OK); ручной leak-контроль запретных токенов по staged-диффу → 0 совпадений; review Round 1: Risk pass / Contracts pass / Итог pass / Artifact state current_green. Статус Merged
+- 2026-11-15 22:41:20 — Manager: merge-коммит `9ebcd8a` (`feat(261115_1610): closeout tail convention in AGENTS.md §8`, 5 файлов: staged-состав Итога — AGENTS.md, docs/followups/backlog.md, docs/followups/index.md — плюс санкционированные шагом (в) план и review-артефакт); сверка состава (г) по `git show --stat` — расхождений нет; рабочее дерево после коммита чистое (посторонний untracked `.playwright-cli/` не входит)
+- 2026-11-15 22:44:24 — Manager: closeout, статус Done. Условия: `## Follow-ups (deferred)` заполнен (один deferred-пункт); review-артефакт терминален (`current_green`, Round 1 pass/pass). Harvest-инвентарь de-scoped хвостов по §2: источник (а) Follow-ups (deferred) — терминальное закрытие backlog id=closeout-tail-convention → судьба handled, disposition merge `9ebcd8a`, материализовано (backlog.md: `status=handled` + disposition; index.md: пересборка, счётчик 12/4); источник (б) открытые Q&A/suggestions/objections — Q-строк 0 (`grep -cE '^- Q\(' → 0`), Suggestions/Objections логи пусты — candidates нет; источник (в) Out of scope: п.2 — тот же candidate (дедуп по id=closeout-tail-convention, судьба handled); п.1 синхрон-правки — обоснованное отсутствие («добавление = дрейф»), не отложенная работа — не кандидат; п.3 статусная машина — не debt; п.4 исторические хвосты — закрытое решение («остаются как есть»), не откладывание — не кандидат. Все candidates с судьбой, `lost follow-up during harvest` нет. Хвост-коммит по новой конвенции §8 (внесена этим merge): `chore(261115_1610): closeout tail`, без дополнительного Owner-гейта
 
 ## Token usage (append-only)
 <!-- owner: manager; dispatch-форма: `- YYYY-MM-DD HH:MM:SS — usage: <role>.<work|censor|rN> <N|unknown (why=...)> tokens — <dispatch|sendmessage|unknown>`; чекпоинт-форма: `- YYYY-MM-DD HH:MM:SS — usage: manager-context checkpoint ~<N> tokens-left — approximate`; числа — учёт харнесса ZCode (subagent_tokens), приближение, не биллинг провайдера; пишет только Manager из tool-результата вызова -->
