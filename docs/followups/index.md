@@ -5,7 +5,7 @@ Derived-сводка открытых follow-ups из `docs/followups/backlog.md
 не правится. Формат строк носителя — row-грамматика
 `docs/followups/_template.md`.
 
-Счётчик: открытых — 12, закрытых (promoted/handled/cancelled) — 4
+Счётчик: открытых — 13, закрытых (promoted/handled/cancelled) — 4
 (состояние на 2026-11-15).
 
 ## Открытые по приоритетам
