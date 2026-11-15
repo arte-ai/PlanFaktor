@@ -757,7 +757,7 @@ check_c12() {
                 _c12_rc=1
             fi
             if ! printf '%s\n' "$_c12_pipe" | cut -d'|' -f7 | grep -qE \
-                '^статус=(open|planned|verified)$'
+                '^статус=(open|planned|verified|released)$'
             then
                 printf '%s: row %s: bad `статус=` field\n' \
                     "$REQ_REGISTRY" "$_c12_id"

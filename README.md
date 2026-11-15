@@ -107,6 +107,8 @@ macos-latest) — hosted-приближение к канону, а не его 
   ГОСТ Р 56939-2024: какими механизмами и артефактами конвейер закрывает
   пункты стандарта; вход трассы внешних требований —
   `docs/requirements/registry.md`, регламент — `docs/requirements/README.md`;
+- `docs/releases/README.md` — релизная конвенция конвейера: аннотированные
+  теги `vX.Y.Z`, верифицированный снапшот как «сборка», release-ноты;
 - `docs/playbooks/manual_terminal_recovery.md` — ручное восстановление,
   если конвейер встал;
 - `docs/playbooks/manager_snapshot_restart.md` — snapshot-рестарт
