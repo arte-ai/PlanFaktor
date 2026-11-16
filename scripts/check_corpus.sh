@@ -9,33 +9,39 @@
 # и rerun-цикла review-артефактов, cutoff REVIEW_CUTOFF + exclude-лист)
 # + docs/plans/261113_1944_public_repo_hygiene.md (C14 — safety-scan
 # контента: классы приватных значений по фиксированным поверхностям,
-# явный allowlist, selftest-кейсы на синтетике).
+# явный allowlist, selftest-кейсы на синтетике) + docs/plans/
+# 261116_1321_lint_v2_digest_qa.md (C15 — digest-verify intake-цитат:
+# membership множеству исторических состояний git, cutoff
+# DIGEST_CUTOFF; C16 — qa-lint: парность Q#n→A#n секции ## Q&A log,
+# cutoff CUTOFF; selftest 33→36; seed_corpus переносит .git).
 #
 # Это dev-инфраструктура репо, НЕ рантайм конвейера: роли не обязаны звать
 # его для маршрутизации, Manager от него не зависит.
 #
-# POSIX sh + grep/sed/cut/head/tail/mktemp; python и внешние зависимости
-# не используются. Временные файлы — только mktemp -d под ${TMPDIR:-/tmp},
-# удаляются при любом исходе (trap).
+# POSIX sh + grep/sed/cut/head/tail/mktemp/git/shasum (git/shasum — C15:
+# исторические дайджесты контрактов); python не используется. Временные
+# файлы — только mktemp -d под ${TMPDIR:-/tmp}, удаляются при любом
+# исходе (trap).
 #
 # Обычный прогон (из корня репо или по абсолютному пути):
 #   scripts/check_corpus.sh
-#   вывод: `OK Cn <имя>` на проверку (C4/C5/C11/C13 печатают
+#   вывод: `OK Cn <имя>` на проверку (C4/C5/C11/C13/C15/C16 печатают
 #   `excluded`-артефакты), `FAIL Cn <имя>: <детали>` при дефекте,
 #   итог `corpus: clean` либо `corpus: N failures`; exit 0 только при clean.
 #
 # Selftest:
 #   scripts/check_corpus.sh --selftest
-#   строит в ${TMPDIR:-/tmp} копии корпуса, подсаживает по одному дефекту
-#   на каждый класс C1–C14 и проверяет, что каждая проверка ловит свой
-#   дефект; итог `selftest: N/33 caught`; exit 0 только при 33/33.
+#   строит в ${TMPDIR:-/tmp} копии корпуса (с перенесённой .git-историей
+#   — C15 требует реальные исторические состояния), подсаживает по одному
+#   дефекту на каждый класс C1–C16 и проверяет, что каждая проверка ловит
+#   свой дефект; итог `selftest: N/36 caught`; exit 0 только при 36/36.
 #
 # Smoke:
 #   scripts/check_corpus.sh --smoke
 #   строит в ${TMPDIR:-/tmp} копию корпуса (механика selftest), инстанцирует
 #   план из живого docs/plans/_template.md детерминированными подстановками
 #   (Plan ID — константа кода; имя файла по нему; статусная строка — из
-#   шаблона) и прогоняет все проверки C1–C14 по копии; итог `smoke: clean`;
+#   шаблона) и прогоняет все проверки C1–C16 по копии; итог `smoke: clean`;
 #   exit 0 только при clean. Ловит рассинхрон шаблона плана и линта до
 #   первого живого плана; smoke-план живёт только в копии, в репо не
 #   появляется.
@@ -98,6 +104,13 @@ C14_ALLOWLIST='scripts/check_corpus.sh|gh-token'
 # страхует эволюцию текста детектора: описания классов в комментариях
 # и ERE-определения этого класса не обязаны самопроверяться на каждом
 # изменении формулировок.
+
+# Cutoff C15 digest-verify (план 261116_1321, Solution п.2): эмпирическая
+# граница чистоты — планы <= 261113_1642 цитируют состояния рабочего
+# дерева/истории до перезаписи (append-only историю править нельзя),
+# >= 261113_1644 — только реальные исторические состояния. Pre-cutoff
+# планы с intake-цитатами — excluded-вывод (прецедент C4/C5/C11/C13).
+DIGEST_CUTOFF=261113_1644
 
 # Реестр внешних требований (план 261112_2236, Solution п.1/п.7): rows —
 # в теле секции `## Требования`, статусы — `## Журнал статусов`.
@@ -1292,6 +1305,229 @@ EOF
     return 1
 }
 
+# C15 (cutoff >= DIGEST_CUTOFF, скоуп — intake-строки секции ## Q&A log):
+# каждая digest-цитата intake-строки (`AGENTS.md@<8hex>` /
+# `<role>.md@<8hex>`, форма — зона C5) обязана состоять во множестве
+# исторических состояний цитируемого файла: дайджесты всех коммитов,
+# трогавших файл (git log --format=%H -- <f> → git show <H>:<f>),
+# ∪ текущий shasum рабочего дерева (план 261116_1321, Solution п.1).
+# Легитимная смена контракта в полёте проходит (старое состояние реально
+# существовало — роль перечитала и записала новую строку); value-опечатка
+# — значение, которого никогда не было → FAIL. Git-зависимость
+# (Solution п.4): fast-path — 0 цитат в скоупе → pass без обращения к git
+# (корпус без git-зависимости, напр. мини-корпус из smoke-инстанса
+# шаблона); цитаты есть, но корень корпуса — не git-репозиторий →
+# fail-loud с диагностикой, не молчаливый skip.
+check_c15() {
+    _c15_corpus=$1
+    _c15_rc=0
+    _c15_quotes=''
+    # Фаза 1 — сбор цитат (без обращения к git): fast-path опирается
+    # на то, что до сверки ни одной git-команды не выполнялось.
+    for _c15_f in "$_c15_corpus"/docs/plans/[0-9]*.md; do
+        [ -f "$_c15_f" ] || continue
+        # shellcheck disable=SC2295
+        # why: ${_c15_corpus}/ — литеральный префикс пути копии, glob-символов не несёт
+        _c15_rel=${_c15_f#$_c15_corpus/}
+        _c15_pid=$(plan_prefix "$(basename "$_c15_f")")
+        if [ "$_c15_pid" \< "$DIGEST_CUTOFF" ]; then
+            if grep -q '^- Intake (' "$_c15_f"; then
+                printf '%s: excluded (pre-digest-cutoff %s < %s)\n' \
+                    "$_c15_rel" "$_c15_pid" "$DIGEST_CUTOFF"
+            fi
+            continue
+        fi
+        _c15_h=$(grep -n '^## Q&A log' "$_c15_f" | head -n 1 | cut -d: -f1)
+        [ -n "$_c15_h" ] || continue
+        _c15_body=$(sect_body "$_c15_f" 'Q&A log') || continue
+        [ -n "$_c15_body" ] || continue
+        _c15_n=0
+        while IFS= read -r _c15_line; do
+            _c15_n=$((_c15_n + 1))
+            case $_c15_line in
+                '- Intake ('*) ;;
+                *) continue ;;
+            esac
+            case $_c15_line in
+                *'<!--'*) continue ;;
+            esac
+            # shellcheck disable=SC2013
+            # why: word splitting цитат строки — намеренный (по одной на итерацию)
+            for _c15_q in $(printf '%s\n' "$_c15_line" | grep -oE \
+                '(AGENTS|architect|planner|coder|reviewer-risk|reviewer-contracts)\.md@[0-9A-Fa-f]{8}' || true); do
+                # Intake-строка цитирует короткое имя (AGENTS.md /
+                # <role>.md, грамматика C5); git-история живёт по
+                # реальному пути носителя в репо.
+                case $_c15_q in
+                    AGENTS.md@*) _c15_p=AGENTS.md ;;
+                    *) _c15_p="docs/roles/${_c15_q%@*}" ;;
+                esac
+                _c15_quotes="$_c15_quotes
+$_c15_rel|$((_c15_h + _c15_n))|${_c15_p}@${_c15_q#*@}"
+            done
+        done <<EOF
+$_c15_body
+EOF
+    done
+    # Fast-path: цитат в скоупе нет — git не требуется и не вызывается.
+    [ -n "$_c15_quotes" ] || return 0
+    # Fail-loud: цитаты есть — корень корпуса обязан быть git-репозиторием
+    # (D4: не молчаливый skip).
+    if ! git -C "$_c15_corpus" rev-parse --git-dir > /dev/null 2>&1; then
+        printf 'c15: digest quotes in scope but corpus is not a git repository: %s (selftest/smoke seeded-copies carry .git; plain corpus without git history cannot be value-verified)\n' \
+            "$_c15_corpus"
+        return 1
+    fi
+    # Фаза 2 — membership-сверка (множества кэшируются по файлу).
+    while IFS= read -r _c15_q; do
+        [ -n "$_c15_q" ] || continue
+        _c15_rel=${_c15_q%%|*}
+        _c15_rest=${_c15_q#*|}
+        _c15_ln=${_c15_rest%%|*}
+        _c15_cit=${_c15_rest#*|}
+        _c15_p=${_c15_cit%@*}
+        _c15_v=${_c15_cit#*@}
+        _c15_set=$(_c15_set_of "$_c15_corpus" "$_c15_p")
+        # shellcheck disable=SC2086
+        # why: word splitting множества дайджестов — намеренный (по элементу на строку grep)
+        if ! printf '%s\n' $_c15_set | grep -qxF "$_c15_v"; then
+            printf '%s:%s: intake digest %s not in historical set of %s (members:%s)\n' \
+                "$_c15_rel" "$_c15_ln" "$_c15_cit" "$_c15_p" "$_c15_set"
+            _c15_rc=1
+        fi
+    done <<EOF
+$_c15_quotes
+EOF
+    return $_c15_rc
+}
+
+# _C15_CACHE — кэш множеств исторических дайджестов текущего прогона:
+# `<path> <d1> <d2> ...` по строке на путь (сборка — _c15_set_of).
+_C15_CACHE=''
+
+# _c15_set_of <corpus> <path> — множество 8hex-дайджестов <path> на
+# stdout: каждый коммит, трогавший файл, плюс текущее рабочее дерево
+# (Solution п.1). Строится один раз на уникальный цитируемый файл.
+_c15_set_of() {
+    _c15s_corpus=$1
+    _c15s_path=$2
+    _c15s_got=$(printf '%s\n' "$_C15_CACHE" | awk -v p="$_c15s_path" \
+        '$1 == p { $1 = ""; print; exit }')
+    if [ -n "$_c15s_got" ]; then
+        printf '%s\n' "$_c15s_got"
+        return 0
+    fi
+    _c15s_set=''
+    # shellcheck disable=SC2013
+    # why: word splitting списка коммитов — намеренный (по хэшу на итерацию)
+    for _c15s_h in $(git -C "$_c15s_corpus" log --format=%H -- "$_c15s_path" 2>/dev/null || true); do
+        _c15s_d=$(git -C "$_c15s_corpus" show "${_c15s_h}:$_c15s_path" 2>/dev/null \
+            | shasum -a 256 | cut -c1-8)
+        _c15s_set="$_c15s_set $_c15s_d"
+    done
+    if [ -f "$_c15s_corpus/$_c15s_path" ]; then
+        _c15s_set="$_c15s_set $(shasum -a 256 "$_c15s_corpus/$_c15s_path" | cut -c1-8)"
+    fi
+    _C15_CACHE="$_C15_CACHE
+$_c15s_path$_c15s_set"
+    printf '%s\n' "$_c15s_set"
+}
+
+# C16 (cutoff >= CUTOFF, скоуп — секция ## Q&A log): парность Q#n→A#n
+# (план 261116_1321, Solution п.3; грамматика Q#n — конституция §3 п.4,
+# план 261113_2121). Якоря — только строки секции `^- Q(` / `^- A(`:
+# (а) осиротевший `A(<кто>#<n>)` без парного `Q(<роль>#<n>)` в той же
+#     секции — FAIL при любом статусе плана;
+# (б) непарный `Q#n` без `A#n` ниже — FAIL только для статусов
+#     Merged/Done (в активных планах открытый Q легитимен — ждёт
+#     ответа; Superseded исключён — заморожен в полёте).
+# Безномерные `- A(owner):` (записи решений Owner, прецедент ночных
+# делегаций) — не кандидаты парности; упоминания Q(...)/A(...) в прозе
+# вне секции не считаются.
+check_c16() {
+    _c16_corpus=$1
+    _c16_rc=0
+    for _c16_f in "$_c16_corpus"/docs/plans/[0-9]*.md; do
+        [ -f "$_c16_f" ] || continue
+        # shellcheck disable=SC2295
+        # why: ${_c16_corpus}/ — литеральный префикс пути копии, glob-символов не несёт
+        _c16_rel=${_c16_f#$_c16_corpus/}
+        _c16_pid=$(plan_prefix "$(basename "$_c16_f")")
+        if [ "$_c16_pid" \< "$CUTOFF" ]; then
+            printf '%s: excluded (pre-cutoff %s < %s)\n' \
+                "$_c16_rel" "$_c16_pid" "$CUTOFF"
+            continue
+        fi
+        _c16_h=$(grep -n '^## Q&A log' "$_c16_f" | head -n 1 | cut -d: -f1)
+        [ -n "$_c16_h" ] || continue
+        _c16_body=$(sect_body "$_c16_f" 'Q&A log') || continue
+        [ -n "$_c16_body" ] || continue
+        _c16_q=''
+        _c16_a=''
+        _c16_n=0
+        while IFS= read -r _c16_line; do
+            _c16_n=$((_c16_n + 1))
+            case $_c16_line in
+                '- Q('*)
+                    _c16_id=$(printf '%s\n' "$_c16_line" \
+                        | sed -n 's/^- Q([a-z-]*#\([0-9][0-9]*\)).*/\1/p')
+                    [ -n "$_c16_id" ] && _c16_q="$_c16_q $_c16_id:$_c16_n"
+                    ;;
+                '- A('*)
+                    _c16_id=$(printf '%s\n' "$_c16_line" \
+                        | sed -n 's/^- A([a-z-]*#\([0-9][0-9]*\)).*/\1/p')
+                    [ -n "$_c16_id" ] && _c16_a="$_c16_a $_c16_id:$_c16_n"
+                    ;;
+            esac
+        done <<EOF
+$_c16_body
+EOF
+        # (а) осиротевший A#n без парного Q#n — при любом статусе.
+        # shellcheck disable=SC2086
+        # why: word splitting списка A-якорей — намеренный (по элементу на итерацию)
+        for _c16_ai in $_c16_a; do
+            _c16_an=${_c16_ai%%:*}
+            # shellcheck disable=SC2086
+            # why: word splitting списка Q-якорей — намеренный (по элементу на строку grep)
+            if ! printf '%s\n' $_c16_q | grep -q "^$_c16_an:"; then
+                printf '%s: orphan answer A#%s (section line %s): no matching Q#%s in Q&A log\n' \
+                    "$_c16_rel" "$_c16_an" \
+                    "$((_c16_h + ${_c16_ai##*:}))" "$_c16_an"
+                _c16_rc=1
+            fi
+        done
+        # (б) непарный Q#n без A#n ниже — FAIL только Merged/Done.
+        _c16_status=$(sed -n 's/^\*\*Status:\*\* //p' "$_c16_f" | head -n 1)
+        case $_c16_status in
+            Merged|Done) ;;
+            *) continue ;;
+        esac
+        # shellcheck disable=SC2086
+        # why: word splitting списка Q-якорей — намеренный (по элементу на итерацию)
+        for _c16_qi in $_c16_q; do
+            _c16_qn=${_c16_qi%%:*}
+            _c16_ql=${_c16_qi##*:}
+            _c16_paired=''
+            # shellcheck disable=SC2086
+            # why: word splitting списка A-якорей — намеренный (по элементу на итерацию)
+            for _c16_ai in $_c16_a; do
+                if [ "${_c16_ai%%:*}" = "$_c16_qn" ] \
+                   && [ "${_c16_ai##*:}" -gt "$_c16_ql" ]; then
+                    _c16_paired=1
+                    break
+                fi
+            done
+            if [ -z "$_c16_paired" ]; then
+                printf '%s: open question Q#%s (section line %s): no matching A#%s below (status %s)\n' \
+                    "$_c16_rel" "$_c16_qn" "$((_c16_h + _c16_ql))" \
+                    "$_c16_qn" "$_c16_status"
+                _c16_rc=1
+            fi
+        done
+    done
+    return $_c16_rc
+}
+
 # ------------------------------------------------------------------ report
 
 # report <id> <name> <corpus> <func> — печать `OK/FAIL Cn name(: details)`
@@ -1321,7 +1557,7 @@ report() {
     return "$_rp_rc"
 }
 
-# run_all <corpus> — прогон C1–C14; rc = число проваленных проверок.
+# run_all <corpus> — прогон C1–C16; rc = число проваленных проверок.
 run_all() {
     _ra_corpus=$1
     _ra_fails=0
@@ -1339,6 +1575,8 @@ run_all() {
     report C12 requirements-traceability "$_ra_corpus" check_c12 || _ra_fails=$((_ra_fails + 1))
     report C13 review-blocker-grammar "$_ra_corpus" check_c13 || _ra_fails=$((_ra_fails + 1))
     report C14 safety-scan         "$_ra_corpus" check_c14 || _ra_fails=$((_ra_fails + 1))
+    report C15 digest-verify       "$_ra_corpus" check_c15 || _ra_fails=$((_ra_fails + 1))
+    report C16 qa-lint             "$_ra_corpus" check_c16 || _ra_fails=$((_ra_fails + 1))
     return $_ra_fails
 }
 
@@ -1348,13 +1586,27 @@ run_all() {
 # Копируются все поверхности C14 (docs/, .zcode/, scripts/,
 # .github/workflows/ через .github/, корневые файлы — включая
 # CONTRIBUTING.md, SECURITY.md, LICENSE) со структурой корня — иначе
-# кейсы C14 в копиях невоспроизводимы (D7 плана 261113_1944).
+# кейсы C14 в копиях невоспроизводимы (D7 плана 261113_1944), плюс
+# .git — полная git-история исходного репо переносом каталога, не
+# init+commit: одно-коммитная история несла бы только текущие состояния
+# файлов, а планы >= DIGEST_CUTOFF цитируют не-текущие исторические
+# дайджесты — C15 FAILил бы baseline selftest/smoke на чистой копии
+# (план 261116_1321, Solution п.4; post-cutoff цитаты входят в
+# перенесённую историю — membership-зелёные). trap-очистка temp
+# изолирует и .git. Отсутствие .git у исходного репо — fail-loud:
+# selftest/smoke гоняют C15 по реальному код-пути, не стабу.
 seed_corpus() {
+    if [ ! -d "$ROOT/.git" ]; then
+        printf 'seed_corpus: selftest requires git history: %s/.git missing (C15 membership needs commit-time states)\n' \
+            "$ROOT" >&2
+        exit 1
+    fi
     mkdir -p "$1"
     cp -R "$ROOT/docs" "$1/docs"
     cp -R "$ROOT/.zcode" "$1/.zcode"
     cp -R "$ROOT/scripts" "$1/scripts"
     cp -R "$ROOT/.github" "$1/.github"
+    cp -R "$ROOT/.git" "$1/.git"
     cp "$ROOT/README.md" "$ROOT/AGENTS.md" "$ROOT/CONTRIBUTING.md" \
        "$ROOT/SECURITY.md" "$ROOT/LICENSE" "$1/"
 }
@@ -1370,7 +1622,7 @@ selftest() {
     _st_bad=0
     for _st_fn in check_c1 check_c2 check_c3 check_c4 check_c5 \
                   check_c6 check_c7 check_c8 check_c9 check_c10 check_c11 \
-                  check_c12 check_c13 check_c14
+                  check_c12 check_c13 check_c14 check_c15 check_c16
     do
         if ! "$_st_fn" "$_st_base/base" > /dev/null 2>&1; then
             printf 'selftest baseline: %s fails on clean corpus copy\n' "$_st_fn"
@@ -1383,7 +1635,7 @@ selftest() {
     fi
 
     _st_caught=0
-    _st_total=33
+    _st_total=36
 
     # C1: недопустимое значение статуса.
     _st_dir=$_st_base/c1
@@ -2046,6 +2298,64 @@ EOF
         _st_caught=$((_st_caught + 1))
     else
         printf 'MISSED C14g\n'
+    fi
+
+    # C15: intake-цитата с дайджестом вне множества исторических
+    # состояний (git log/show ∪ текущий shasum). Bait deadbeef —
+    # фиксированное значение, проверенное на отсутствие пересечений
+    # с множествами контрактов (Evidence плана 261116_1321).
+    _st_dir=$_st_base/c15
+    seed_corpus "$_st_dir"
+    _st_plan=$(post_cutoff_plan_with "$_st_dir" "$DIGEST_CUTOFF" '^- Intake \(')
+    if [ -z "$_st_plan" ]; then
+        printf 'selftest: cannot seed C15 (no post-digest-cutoff intake in corpus)\n'
+        return 1
+    fi
+    mutate "$_st_plan" \
+        's/^\(- Intake .*AGENTS\.md@\)[0-9A-Fa-f]\{8\}/\1deadbeef/'
+    if check_c15 "$_st_dir" > /dev/null 2>&1; then
+        printf 'MISSED C15\n'
+    else
+        printf 'caught C15 (intake digest outside historical set)\n'
+        _st_caught=$((_st_caught + 1))
+    fi
+
+    # C16 (а): осиротевший A(<кто>#<n>) без парного Q#n в секции
+    # ## Q&A log — FAIL при любом статусе плана.
+    _st_dir=$_st_base/c16a
+    seed_corpus "$_st_dir"
+    _st_plan=$(post_cutoff_plan_with "$_st_dir" "$CUTOFF" '^- NO QUESTIONS')
+    if [ -z "$_st_plan" ]; then
+        printf 'selftest: cannot seed C16a (no post-cutoff NO QUESTIONS in corpus)\n'
+        return 1
+    fi
+    mutate "$_st_plan" \
+        's/^- NO QUESTIONS$/- A(manager#9): orphan answer bait status=closed/'
+    if check_c16 "$_st_dir" > /dev/null 2>&1; then
+        printf 'MISSED C16a\n'
+    else
+        printf 'caught C16a (orphan answer without paired Q)\n'
+        _st_caught=$((_st_caught + 1))
+    fi
+
+    # C16 (б): непарный Q#n без A#n ниже в плане со статусом Done
+    # (в активных статусах открытый Q легитимен — ждёт ответа;
+    # негативные контроли In review/Superseded — Tests (D7) плана).
+    _st_dir=$_st_base/c16b
+    seed_corpus "$_st_dir"
+    _st_plan=$(post_cutoff_plan_with "$_st_dir" "$CUTOFF" '^- NO QUESTIONS')
+    if [ -z "$_st_plan" ]; then
+        printf 'selftest: cannot seed C16b (no post-cutoff NO QUESTIONS in corpus)\n'
+        return 1
+    fi
+    mutate "$_st_plan" 's/^\*\*Status:\*\* .*/**Status:** Done/'
+    mutate "$_st_plan" \
+        's/^- NO QUESTIONS$/- Q(coder#5): open question bait to=Owner, blocker: no, needs_owner: no, status=open/'
+    if check_c16 "$_st_dir" > /dev/null 2>&1; then
+        printf 'MISSED C16b\n'
+    else
+        printf 'caught C16b (open question in Done plan)\n'
+        _st_caught=$((_st_caught + 1))
     fi
 
     printf 'selftest: %s/%s caught\n' "$_st_caught" "$_st_total"
