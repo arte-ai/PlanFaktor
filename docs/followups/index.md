@@ -5,8 +5,8 @@ Derived-сводка открытых follow-ups из `docs/followups/backlog.md
 не правится. Формат строк носителя — row-грамматика
 `docs/followups/_template.md`.
 
-Счётчик: открытых — 12, закрытых (promoted/handled/cancelled) — 7
-(состояние на 2026-11-16).
+Счётчик: открытых — 13, закрытых (promoted/handled/cancelled) — 7
+(состояние на 2026-11-17).
 
 ## Открытые по приоритетам
 
@@ -22,7 +22,7 @@ Derived-сводка открытых follow-ups из `docs/followups/backlog.md
 | --- | --- | --- | --- | --- | --- |
 | stale-intake-digest | P2 | Edge «Всегда»: протухший intake-digest после зафиксированной смены контракта не ловится | Architect | none | open |
 
-### P3 (10)
+### P3 (11)
 
 | id | P | summary | to | plan | status |
 | --- | --- | --- | --- | --- | --- |
@@ -36,6 +36,7 @@ Derived-сводка открытых follow-ups из `docs/followups/backlog.md
 | release-notes-lint | P3 | Машинная проверка релиз-нот и тег↔файл (кандидат C15/v2; включает finding R2 плана 261115_2252) | Architect | none | open |
 | release-automation | P3 | Автоматизация выпуска: релиз-скрипт, автогенерация нот/матрицы (кандидат v2) | Architect | none | open |
 | supply-chain-pinning | P3 | Supply-chain hardening CI: SHA-пиннинг checkout + checksum бинарников (вкл. finding R1 плана 261115_2254) | Architect | none | open |
+| c15-shallow-fail-loud | P3 | C15: явная диагностика shallow-истории (fetch-depth) вместо каскада not-in-set | Architect | none | open |
 
 ## Закрытые
 
