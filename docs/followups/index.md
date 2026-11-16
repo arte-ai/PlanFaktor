@@ -5,7 +5,7 @@ Derived-сводка открытых follow-ups из `docs/followups/backlog.md
 не правится. Формат строк носителя — row-грамматика
 `docs/followups/_template.md`.
 
-Счётчик: открытых — 14, закрытых (promoted/handled/cancelled) — 4
+Счётчик: открытых — 14, закрытых (promoted/handled/cancelled) — 5
 (состояние на 2026-11-16).
 
 ## Открытые по приоритетам
@@ -16,16 +16,15 @@ Derived-сводка открытых follow-ups из `docs/followups/backlog.md
 | --- | --- | --- | --- | --- | --- |
 | token-budgets | P1 | Бюджеты/алерты/лимиты расхода токенов на план | Owner | none | open |
 
-### P2 (4)
+### P2 (3)
 
 | id | P | summary | to | plan | status |
 | --- | --- | --- | --- | --- | --- |
 | lint-v2-digest-verify | P2 | Corpus lint v2 — сверка digest-цитат с shasum | Architect | none | open |
 | qa-lint | P2 | Q&A-линт: пары Q#n→A#n (грамматика 261113_2121) | Architect | none | open |
 | stale-intake-digest | P2 | Edge «Всегда»: протухший intake-digest после зафиксированной смены контракта не ловится | Architect | none | open |
-| ci-v2-static | P2 | CI v2 static-джоба: shellcheck (POSIX) + actionlint + smoke-тест инстанцирования шаблона плана | Architect | none | open |
 
-### P3 (9)
+### P3 (10)
 
 | id | P | summary | to | plan | status |
 | --- | --- | --- | --- | --- | --- |
@@ -38,6 +37,7 @@ Derived-сводка открытых follow-ups из `docs/followups/backlog.md
 | init-grep-stderr | P3 | /planfaktor-init: идемпотентный grep без 2>/dev/null (init.md:27) — stderr-шум на пустой очереди | Coder | none | open |
 | release-notes-lint | P3 | Машинная проверка релиз-нот и тег↔файл (кандидат C15/v2; включает finding R2 плана 261115_2252) | Architect | none | open |
 | release-automation | P3 | Автоматизация выпуска: релиз-скрипт, автогенерация нот/матрицы (кандидат v2) | Architect | none | open |
+| supply-chain-pinning | P3 | Supply-chain hardening CI: SHA-пиннинг checkout + checksum бинарников (вкл. finding R1 плана 261115_2254) | Architect | none | open |
 
 ## Закрытые
 
@@ -45,3 +45,4 @@ Derived-сводка открытых follow-ups из `docs/followups/backlog.md
 - merge-untracked-guard — P2 — status=handled — plan=261113_2121 (Merge-рутина: контроль посторонних untracked; merge-коммит по явному списку + контроли; disposition — merge 720519f; терминально закрыто 2026-11-15)
 - ci-hygiene — P3 — status=handled — plan=261113_1944 (CI-гигиена: checkout@v5, permissions, concurrency, матрица ОС, таймаут; disposition — merge 6596b7f, `.github/workflows/corpus.yml`; терминально закрыто при closeout 2026-11-15)
 - release-node — P2 — status=handled — plan=261115_2252 (Релизный узел конвейера: конвенция тегов/сборок/release-notes и статус released в реестре; disposition — merge c5371e7; терминально закрыто при closeout 2026-11-16)
+- ci-v2-static — P2 — status=handled — plan=261115_2254 (CI v2 static-джоба: shellcheck + actionlint + smoke `--smoke`; disposition — merge 62563c7; терминально закрыто при closeout 2026-11-16)
