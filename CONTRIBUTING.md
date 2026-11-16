@@ -81,9 +81,12 @@ Manager-сессии; указание конкретного плана — ф�
 ```zsh
 ./scripts/check_corpus.sh             # инварианты корпуса (все чеки линта), итог `corpus: clean`
 ./scripts/check_corpus.sh --selftest  # линт проверяет сам себя: все кейсы caught
+./scripts/check_corpus.sh --smoke     # свежий план из живого шаблона проходит линт, итог `smoke: clean`
 ```
 
-CI (`.github/workflows/corpus.yml`) гоняет обе команды на каждый push и PR.
+CI (`.github/workflows/corpus.yml`) на каждый push и PR прогоняет линт и
+selftest в lint-матрице ubuntu/macos плюс static-джобу (shellcheck,
+actionlint, smoke) на ubuntu-latest.
 Строка `**Status:**` в шапке плана — parser-контракт: Manager и линт грепают
 её в фиксированной форме (одно из девяти значений §2), формат менять нельзя.
 

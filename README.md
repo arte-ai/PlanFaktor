@@ -80,15 +80,17 @@ needs-fix маршрут зависит от повторяемости: вер�
 ## Окружение верификации (supported verification environment)
 
 Канон верификации корпуса — локальный POSIX sh и стандартные grep/sed:
-линт и его selftest (`scripts/check_corpus.sh`, `--selftest`) прогоняются
+линт, его selftest и smoke-инстанцирование плана из живого шаблона
+(`scripts/check_corpus.sh`, флаги `--selftest` и `--smoke`) прогоняются
 там же, где пишется корпус. Запускайте линт из корня репо — прогон из
 другого каталога даёт ложный C9 на macOS (cwd-чувствительность).
 
-CI (`.github/workflows/corpus.yml`, матрица ubuntu-latest +
-macos-latest) — hosted-приближение к канону, а не его доказательство:
-«зелёный CI — не hosted-run result» и не семантическая приёмка (green
-линта ≠ семантика, §8 `AGENTS.md`); CI не заменяет свежий локальный
-прогон перед merge.
+CI (`.github/workflows/corpus.yml`) — lint-матрица (ubuntu-latest +
+macos-latest) плюс static-джоба (shellcheck, actionlint, smoke) —
+hosted-приближение к канону, а не его доказательство: «зелёный CI —
+не hosted-run result» и не семантическая приёмка (green линта ≠
+семантика, §8 `AGENTS.md`); CI не заменяет свежий локальный прогон
+перед merge.
 
 Как вносить изменения — [`CONTRIBUTING.md`](CONTRIBUTING.md); политика
 безопасности и обращение с приватными значениями —

@@ -33,3 +33,37 @@ jobs:
         run: scripts/check_corpus.sh
       - name: Corpus lint selftest
         run: scripts/check_corpus.sh --selftest
+
+  # Static-джоба (план 261115_2254): статический анализ поверхностей,
+  # не покрытых lint-матрицей — shellcheck единственного исполняемого
+  # артефакта репо, actionlint workflow-файлов, smoke-инстанцирование
+  # плана из живого шаблона. Без ОС-матрицы (анализаторы платформо-
+  # нейтральны); версии инструментов пиннены литералом тега upstream-
+  # релиза — стабильность прогона от движущихся runner-образов важнее
+  # предустановленных версий; third-party actions не используются.
+  static:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Install shellcheck v0.11.0 (upstream release)
+        run: |
+          curl -fsSL \
+            https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.x86_64.tar.xz \
+            | tar -xJ -C "$RUNNER_TEMP"
+          sudo install -m 0755 \
+            "$RUNNER_TEMP/shellcheck-v0.11.0/shellcheck" /usr/local/bin/shellcheck
+      - name: Install actionlint v1.7.12 (upstream release)
+        run: |
+          curl -fsSL \
+            https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz \
+            | tar -xz -C "$RUNNER_TEMP"
+          sudo install -m 0755 \
+            "$RUNNER_TEMP/actionlint_1.7.12_linux_amd64/actionlint" /usr/local/bin/actionlint
+      - name: Shellcheck
+        run: shellcheck scripts/check_corpus.sh
+      - name: Actionlint
+        run: actionlint
+      - name: Corpus lint smoke
+        run: scripts/check_corpus.sh --smoke

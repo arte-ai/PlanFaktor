@@ -1,4 +1,5 @@
 #!/bin/sh
+# shellcheck shell=sh disable=SC2016,SC3012,SC2012,SC1007
 # check_corpus.sh — corpus lint v1: машинная проверка инвариантов конвейера
 # Planfaktor. Источник решений: docs/plans/261111_2243_corpus_lint_ci.md
 # (Solution п.1–8, проверки C1–C10, cutoff C4/C5) + docs/plans/
@@ -28,6 +29,16 @@
 #   строит в ${TMPDIR:-/tmp} копии корпуса, подсаживает по одному дефекту
 #   на каждый класс C1–C14 и проверяет, что каждая проверка ловит свой
 #   дефект; итог `selftest: N/33 caught`; exit 0 только при 33/33.
+#
+# Smoke:
+#   scripts/check_corpus.sh --smoke
+#   строит в ${TMPDIR:-/tmp} копию корпуса (механика selftest), инстанцирует
+#   план из живого docs/plans/_template.md детерминированными подстановками
+#   (Plan ID — константа кода; имя файла по нему; статусная строка — из
+#   шаблона) и прогоняет все проверки C1–C14 по копии; итог `smoke: clean`;
+#   exit 0 только при clean. Ловит рассинхрон шаблона плана и линта до
+#   первого живого плана; smoke-план живёт только в копии, в репо не
+#   появляется.
 
 set -u
 
@@ -194,6 +205,8 @@ check_c1() {
         _c1_valid=$(grep -cE '^\*\*Status:\*\* (Draft|Ready for Planner|Planning|Ready for Coder|In progress|In review|Merged|Done|Superseded)[[:space:]]*$' "$_c1_f" || true)
         _c1_total=$(grep -c '^\*\*Status:\*\*' "$_c1_f" || true)
         if [ "$_c1_valid" -ne 1 ] || [ "$_c1_total" -ne 1 ]; then
+            # shellcheck disable=SC2295
+            # why: ${_c1_corpus}/ — литеральный префикс пути копии, glob-символов не несёт
             printf '%s: status lines total=%s valid=%s (want exactly 1 of 9 allowed)\n' \
                 "${_c1_f#$_c1_corpus/}" "$_c1_total" "$_c1_valid"
             _c1_rc=1
@@ -216,6 +229,8 @@ check_c2() {
         if [ "$_c2_cnt" -ne 1 ] \
            || ! printf '%s\n' "$_c2_got" | grep -qE '^[0-9]{6}_[0-9]{4}$' \
            || [ "$_c2_got" != "$_c2_prefix" ]; then
+            # shellcheck disable=SC2295
+            # why: ${_c2_corpus}/ — литеральный префикс пути копии, glob-символов не несёт
             printf '%s: Plan ID line "%s" (want %s), count=%s\n' \
                 "${_c2_f#$_c2_corpus/}" "${_c2_got:-<none>}" "$_c2_prefix" "$_c2_cnt"
             _c2_rc=1
@@ -294,6 +309,8 @@ EOF
         while IFS= read -r _c3_sec; do
             [ -n "$_c3_sec" ] || continue
             if ! grep -qxF "$_c3_sec" "$_c3_f"; then
+                # shellcheck disable=SC2295
+                # why: ${_c3_corpus}/ — литеральный префикс пути копии, glob-символов не несёт
                 printf '%s: missing template section: %s\n' \
                     "${_c3_f#$_c3_corpus/}" "$_c3_sec"
                 _c3_rc=1
@@ -317,6 +334,8 @@ check_c4() {
         [ -f "$_c4_f" ] || continue
         _c4_pid=$(plan_prefix "$(basename "$_c4_f")")
         if [ "$_c4_pid" \< "$CUTOFF" ]; then
+            # shellcheck disable=SC2295
+            # why: ${_c4_corpus}/ — литеральный префикс пути копии, glob-символов не несёт
             printf '%s: excluded (pre-cutoff %s < %s)\n' \
                 "${_c4_f#$_c4_corpus/}" "$_c4_pid" "$CUTOFF"
             continue
@@ -325,6 +344,8 @@ check_c4() {
         [ -n "$_c4_ev" ] || continue
         # 1) маркер без префикса метки времени (класс 261111_0427).
         if _c4_bad=$(printf '%s\n' "$_c4_ev" | grep -nE '^\(Role CENSOR\) (OK|FAIL):'); then
+            # shellcheck disable=SC2295
+            # why: ${_c4_corpus}/ — литеральный префикс пути копии, glob-символов не несёт
             printf '%s: receipt marker(s) without timestamp prefix:\n' \
                 "${_c4_f#$_c4_corpus/}"
             printf '%s\n' "$_c4_bad" | sed 's/^/  /'
@@ -342,6 +363,8 @@ check_c4() {
             then
                 if [ "$_c4_open" -eq 1 ] \
                    && { [ "$_c4_have_id" -eq 0 ] || [ "$_c4_have_v" -eq 0 ]; }; then
+                    # shellcheck disable=SC2295
+                    # why: ${_c4_corpus}/ — литеральный префикс пути копии, glob-символов не несёт
                     printf '%s: receipt #%s incomplete (dispatch id=%s, final verdict=%s)\n' \
                         "${_c4_f#$_c4_corpus/}" "$_c4_idx" "$_c4_have_id" "$_c4_have_v"
                     _c4_block_rc=1
@@ -364,6 +387,8 @@ $_c4_ev
 EOF
         if [ "$_c4_open" -eq 1 ] \
            && { [ "$_c4_have_id" -eq 0 ] || [ "$_c4_have_v" -eq 0 ]; }; then
+            # shellcheck disable=SC2295
+            # why: ${_c4_corpus}/ — литеральный префикс пути копии, glob-символов не несёт
             printf '%s: receipt #%s incomplete (dispatch id=%s, final verdict=%s)\n' \
                 "${_c4_f#$_c4_corpus/}" "$_c4_idx" "$_c4_have_id" "$_c4_have_v"
             _c4_block_rc=1
@@ -384,6 +409,8 @@ check_c5() {
         [ -f "$_c5_f" ] || continue
         _c5_pid=$(plan_prefix "$(basename "$_c5_f")")
         if [ "$_c5_pid" \< "$CUTOFF" ]; then
+            # shellcheck disable=SC2295
+            # why: ${_c5_corpus}/ — литеральный префикс пути копии, glob-символов не несёт
             printf '%s: excluded (pre-cutoff %s < %s)\n' \
                 "${_c5_f#$_c5_corpus/}" "$_c5_pid" "$CUTOFF"
             continue
@@ -400,6 +427,8 @@ check_c5() {
             then
                 :
             else
+                # shellcheck disable=SC2295
+                # why: ${_c5_corpus}/ — литеральный префикс пути копии, glob-символов не несёт
                 printf '%s: malformed intake line: %s\n' \
                     "${_c5_f#$_c5_corpus/}" "$_c5_line"
                 _c5_rc=1
@@ -422,6 +451,8 @@ check_c6() {
         for _c6_d in $(sed 's/@8hex/@/g' "$_c6_f" | grep -oE '@[0-9A-Fa-f]+' | sort -u || true); do
             _c6_h=${_c6_d#@}
             if [ "${#_c6_h}" -ne 8 ]; then
+                # shellcheck disable=SC2295
+                # why: ${_c6_corpus}/ — литеральный префикс пути копии, glob-символов не несёт
                 printf '%s: digest %s has %s hex chars (want 8)\n' \
                     "${_c6_f#$_c6_corpus/}" "$_c6_d" "${#_c6_h}"
                 _c6_rc=1
@@ -441,6 +472,8 @@ check_c7() {
     _c7_rc=0
     for _c7_f in "$_c7_corpus"/docs/reviews/[0-9]*.md; do
         [ -f "$_c7_f" ] || continue
+        # shellcheck disable=SC2295
+        # why: ${_c7_corpus}/ — литеральный префикс пути копии, glob-символов не несёт
         _c7_rel=${_c7_f#$_c7_corpus/}
         _c7_pid=$(plan_prefix "$(basename "$_c7_f")")
         _c7_rounds=$(sed -n 's/^\*\*Round:\*\* //p' "$_c7_f")
@@ -527,6 +560,9 @@ _c8_check_one() {
     _c8o_f=$2
     _c8o_pid=$3
     _c8o_rc=0
+    # shellcheck disable=SC2013
+    # why: вывод пайпа — номера строк по одному на строку, word-splitting
+    # по пробелам/переводам — намеренный (последовательность номеров)
     for _c8o_ln in $(grep -n '^## ' "$_c8o_f" | cut -d: -f1); do
         _c8o_next=$(sed -n "$((_c8o_ln + 1))p" "$_c8o_f")
         case $_c8o_next in
@@ -539,6 +575,8 @@ _c8_check_one() {
                 continue
             fi
         fi
+        # shellcheck disable=SC2295
+        # why: ${_c8o_corpus}/ — литеральный префикс пути копии, glob-символов не несёт
         printf '%s: section at line %s lacks owner marker: %s\n' \
             "${_c8o_f#$_c8o_corpus/}" "$_c8o_ln" \
             "$(sed -n "${_c8o_ln}p" "$_c8o_f")"
@@ -567,6 +605,8 @@ check_c9() {
                    "$_c9_corpus"/.zcode/commands/*.md
     do
         [ -f "$_c9_src" ] || continue
+        # shellcheck disable=SC2295
+        # why: ${_c9_corpus}/ — литеральный префикс пути копии, glob-символов не несёт
         _c9_rel=${_c9_src#$_c9_corpus/}
         for _c9_tok in $(grep -hoE '(docs|\.zcode)/[A-Za-z0-9_./<>*-]+' "$_c9_src" | sort -u || true); do
             case $_c9_tok in
@@ -618,11 +658,15 @@ reviewer-risk'
     _c10_roles=$(ls "$_c10_corpus/docs/roles" 2>/dev/null | sed -n 's/\.md$//p' | grep -vE '^_|^index$' | sort)
     _c10_agents=$(ls "$_c10_corpus/.zcode/agents" 2>/dev/null | sed -n 's/^planfaktor-\(.*\)\.md$/\1/p' | sort)
     if [ "$_c10_roles" != "$_c10_want" ]; then
+        # shellcheck disable=SC2086
+        # why: word splitting списка ролей — намеренный (склейка в одну строку)
         printf 'docs/roles: got [%s] want [architect coder planner reviewer-contracts reviewer-risk]\n' \
             "$(printf '%s ' $_c10_roles)"
         _c10_rc=1
     fi
     if [ "$_c10_agents" != "$_c10_want" ]; then
+        # shellcheck disable=SC2086
+        # why: word splitting списка ролей — намеренный (склейка в одну строку)
         printf '.zcode/agents: got [%s] want [architect coder planner reviewer-contracts reviewer-risk]\n' \
             "$(printf '%s ' $_c10_agents)"
         _c10_rc=1
@@ -649,6 +693,8 @@ check_c11() {
         [ -f "$_c11_f" ] || continue
         _c11_pid=$(plan_prefix "$(basename "$_c11_f")")
         if [ "$_c11_pid" \< "$USAGE_CUTOFF" ]; then
+            # shellcheck disable=SC2295
+            # why: ${_c11_corpus}/ — литеральный префикс пути копии, glob-символов не несёт
             printf '%s: excluded (pre-usage-cutoff %s < %s)\n' \
                 "${_c11_f#$_c11_corpus/}" "$_c11_pid" "$USAGE_CUTOFF"
             continue
@@ -667,6 +713,8 @@ check_c11() {
             then
                 :
             else
+                # shellcheck disable=SC2295
+                # why: ${_c11_corpus}/ — литеральный префикс пути копии, glob-символов не несёт
                 printf '%s: malformed usage line: %s\n' \
                     "${_c11_f#$_c11_corpus/}" "$_c11_line"
                 _c11_rc=1
@@ -782,8 +830,12 @@ check_c12() {
         done <<EOF
 $_c12_rows
 EOF
+        # shellcheck disable=SC2086
+        # why: word splitting списка ID — намеренный (по элементу на строку)
         _c12_dup=$(printf '%s\n' $_c12_ids | sed '/^$/d' | sort | uniq -d)
         if [ -n "$_c12_dup" ]; then
+            # shellcheck disable=SC2086
+            # why: word splitting списка дублей — намеренный (склейка в одну строку)
             printf '%s: duplicate row IDs: %s\n' \
                 "$REQ_REGISTRY" "$(printf '%s ' $_c12_dup)"
             _c12_rc=1
@@ -793,6 +845,8 @@ EOF
     # --- (а) R-метки планов существуют в реестре ---
     for _c12_f in "$_c12_corpus"/docs/plans/[0-9]*.md; do
         [ -f "$_c12_f" ] || continue
+        # shellcheck disable=SC2295
+        # why: ${_c12_corpus}/ — литеральный префикс пути копии, glob-символов не несёт
         _c12_rel=${_c12_f#$_c12_corpus/}
         _c12_tags=$({ sect_body "$_c12_f" 'Scope' || true
                       sect_body "$_c12_f" 'Acceptance criteria / DoD' || true
@@ -800,6 +854,8 @@ EOF
                       | sed 's/^\[R: //; s/\]$//' | sort -u || true)
         while IFS= read -r _c12_tag; do
             [ -n "$_c12_tag" ] || continue
+            # shellcheck disable=SC2086
+            # why: word splitting списка ID — намеренный (по элементу на строку)
             if ! printf '%s\n' $_c12_ids | grep -qxF "$_c12_tag"; then
                 printf '%s: R-tag `%s` not in %s\n' \
                     "$_c12_rel" "$_c12_tag" "$REQ_REGISTRY"
@@ -875,6 +931,8 @@ check_c13() {
     _c13_rc=0
     for _c13_f in "$_c13_corpus"/docs/reviews/[0-9]*.md; do
         [ -f "$_c13_f" ] || continue
+        # shellcheck disable=SC2295
+        # why: ${_c13_corpus}/ — литеральный префикс пути копии, glob-символов не несёт
         _c13_rel=${_c13_f#$_c13_corpus/}
         _c13_pid=$(plan_prefix "$(basename "$_c13_f")")
         if [ "$_c13_pid" \< "$REVIEW_CUTOFF" ]; then
@@ -944,13 +1002,19 @@ EOF
 
     # --- (б): дубли заголовков и дыры ID-пространства.
     if [ -n "$_c13o_ids" ]; then
+        # shellcheck disable=SC2086
+        # why: word splitting списка ID — намеренный (по элементу на строку)
         _c13o_dup=$(printf '%s\n' $_c13o_ids | sort -n | uniq -d)
         if [ -n "$_c13o_dup" ]; then
+            # shellcheck disable=SC2086
+            # why: word splitting списка дублей — намеренный (склейка в одну строку)
             printf '%s: duplicate B-block headers: %s\n' \
                 "$_c13o_rel" "$(printf '%s ' $_c13o_dup)"
             _c13o_rc=1
         fi
         _c13o_exp=1
+        # shellcheck disable=SC2086
+        # why: word splitting списка ID — намеренный (по элементу на итерацию)
         for _c13o_id in $(printf '%s\n' $_c13o_ids | sort -nu); do
             if [ "$_c13o_id" -ne "$_c13o_exp" ]; then
                 printf '%s: hole in B-ID space at B%s (want B%s)\n' \
@@ -1066,6 +1130,8 @@ EOF
                 *)    _c13o_dom=$C13_CONTRACTS_DOMAINS ;;
             esac
             _c13o_seen=''
+            # shellcheck disable=SC2086
+            # why: word splitting токенов Coverage — намеренный (по токену на итерацию)
             for _c13o_tok in $(printf '%s\n' "$_c13o_cov" \
                 | sed 's/^[- ]*\*\*Coverage:\*\* *//' | tr ';' ' '); do
                 if ! printf '%s\n' $_c13o_dom | grep -qxF "$_c13o_tok"; then
@@ -1183,6 +1249,8 @@ check_c14() {
     [ -n "$_c14_surfaces" ] || return 0
     for _c14_cls in home-path gh-token gh-pat pem-key bearer jwt; do
         _c14_re=$(_c14_re_of "$_c14_cls")
+        # shellcheck disable=SC2086
+        # why: word splitting списка поверхностей — намеренный (аргументы grep)
         _c14_hits=$(cd "$_c14_corpus" \
             && grep -rnE -- "$_c14_re" $_c14_surfaces 2>/dev/null || true)
         while IFS= read -r _c14_hit; do
@@ -1987,11 +2055,59 @@ EOF
     return 1
 }
 
+# -------------------------------------------------------------------- smoke
+
+# smoke — регрессионный smoke-тест инстанцирования плана из живого
+# шаблона (план 261115_2254, Solution п.5): копия корпуса механикой
+# seed_corpus в ${TMPDIR:-/tmp}, план из docs/plans/_template.md копии
+# детерминированными подстановками (Plan ID — константа кода валидной
+# формы YYMMDD_HHMM; имя файла по нему; статусная строка остаётся из
+# шаблона), полный прогон C1–C14 по копии. Ловит рассинхрон шаблона и
+# линта до первого живого плана; smoke-план живёт только в TMPDIR-копии
+# и в репо не появляется ни при каком исходе. Подстановки не зависят от
+# времени прогона и mktemp-пути: повторный прогон даёт те же Plan ID,
+# имя smoke-плана и тот же исход.
+smoke() {
+    _sm_pid=261130_0000
+    _sm_topic=smoke
+    _sm_base=$(mktemp -d "${TMPDIR:-/tmp}/check_corpus_smoke.XXXXXXXX")
+    trap 'rm -rf "$_sm_base"' 0
+    trap 'rm -rf "$_sm_base"; exit 1' HUP INT TERM
+
+    seed_corpus "$_sm_base/corpus"
+    _sm_plan=$_sm_base/corpus/docs/plans/${_sm_pid}_${_sm_topic}.md
+    if [ -e "$_sm_plan" ]; then
+        printf 'smoke: plan id %s collides with existing plan in corpus copy\n' \
+            "$_sm_pid"
+        return 1
+    fi
+    sed "s/^\*\*Plan ID:\*\* YYMMDD_HHMM\$/**Plan ID:** $_sm_pid/" \
+        "$_sm_base/corpus/docs/plans/_template.md" > "$_sm_plan"
+    if ! grep -q "^\*\*Plan ID:\*\* $_sm_pid\$" "$_sm_plan"; then
+        printf 'smoke: template Plan ID substitution failed\n'
+        return 1
+    fi
+    printf 'smoke: plan %s_%s.md instantiated from docs/plans/_template.md\n' \
+        "$_sm_pid" "$_sm_topic"
+    _sm_fails=0
+    run_all "$_sm_base/corpus" || _sm_fails=$?
+    if [ "$_sm_fails" -eq 0 ]; then
+        printf 'smoke: clean\n'
+        return 0
+    fi
+    printf 'smoke: %s failures\n' "$_sm_fails"
+    return 1
+}
+
 # -------------------------------------------------------------------- main
 
 case ${1:-} in
     --selftest)
         selftest
+        exit $?
+        ;;
+    --smoke)
+        smoke
         exit $?
         ;;
     '')
@@ -2005,7 +2121,7 @@ case ${1:-} in
         exit 1
         ;;
     *)
-        printf 'usage: %s [--selftest]\n' "$0" >&2
+        printf 'usage: %s [--selftest] [--smoke]\n' "$0" >&2
         exit 2
         ;;
 esac
