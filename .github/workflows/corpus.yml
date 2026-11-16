@@ -28,7 +28,13 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout
+        # fetch-depth: 0 — полная git-история: C15 digest-verify строит
+        # множества исторических состояний контрактов из git log (план
+        # 261116_1321); shallow-клон по умолчанию роняет чек (инцидент
+        # релизного прогона v0.1.0 — run 43933331254)
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - name: Corpus lint
         run: scripts/check_corpus.sh
       - name: Corpus lint selftest
@@ -46,7 +52,12 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout
+        # fetch-depth: 0 — полная git-история: selftest/smoke переносят .git
+        # в seeded-копию (план 261116_1321, Solution п.4), shallow-.git
+        # роняет baseline C15 (инцидент релизного прогона v0.1.0)
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - name: Install shellcheck v0.11.0 (upstream release)
         run: |
           set -o pipefail
