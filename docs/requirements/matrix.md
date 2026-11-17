@@ -33,18 +33,18 @@ DoD(Dn) → Tests(Tn) → review → коммиты → статус.
     # коммиты плана <PlanID>:
     git log --oneline --grep='<PlanID>'
 
-## Матрица (состояние: 2026-11-15 — кодинг-чейнджсет плана 261115_2252 (release-node): G56939-5.4, G56939-5.20 → planned (plan=261115_2252), метки DoD/Tests проставлены; G56939-5.5.3.3 += второй план 261115_2252; план 261112_2236 — merge-гейт пройден, Round 1 pass/pass)
+## Матрица (состояние: 2026-11-17 — перевод G56939-5.4, G56939-5.20 planned → verified → released по указанию Owner: verified — 261115_2252 (план-реализация релизного узла), released — v0.2.0 (выпуск-приёмка); синхронизирован derived-дрейф: 5.3.3.x/5.5.2.5/4.13 → released (v0.1.0), 5.5.3.3 — план 261115_2252 merged c5371e7)
 
 | ID | Планы | DoD | Tests | Review | Коммиты | Статус |
 |---|---|---|---|---|---|---|
-| G56939-5.3.3.1 | 261112_2236 | D2 | T6 | 261112_2236_review.md — Round 1: risk pass (2026-11-13 01:46:36), contracts pass (2026-11-13 01:51:51), итог pass | feat(261112_2236) — merge-коммит | verified |
-| G56939-5.3.3.2 | 261112_2236 | D1 | T2 | 261112_2236_review.md — Round 1: pass/pass | feat(261112_2236) — merge-коммит | verified |
-| G56939-5.3.3.3 | 261112_2236 | D1, D3 | T2, T7 | 261112_2236_review.md — Round 1: pass/pass | feat(261112_2236) — merge-коммит | verified |
-| G56939-5.5.2.5 | 261112_2236 | D3, D4 | T7, T4 | 261112_2236_review.md — Round 1: pass/pass | feat(261112_2236) — merge-коммит | verified |
-| G56939-5.5.3.3 | 261112_2236, 261115_2252 | D7, D7 | T8, T7 | 261112_2236_review.md — Round 1: pass/pass; 261115_2252 — предстоит | feat(261112_2236) — merge-коммит; 261115_2252 — до merge | verified |
-| G56939-4.13 | 261112_2236 | D1, D3, D4, D9 | T2, T7, T4, T3 | 261112_2236_review.md — Round 1: pass/pass | feat(261112_2236) — merge-коммит | verified |
-| G56939-5.4 | 261115_2252 | D1, D2, D5, D7 | T1, T2, T5, T7 | предстоит | до merge | planned |
-| G56939-5.20 | 261115_2252 | D1, D2, D6, D7 | T1, T2, T6, T7 | предстоит | до merge | planned |
+| G56939-5.3.3.1 | 261112_2236 | D2 | T6 | 261112_2236_review.md — Round 1: risk pass (2026-11-13 01:46:36), contracts pass (2026-11-13 01:51:51), итог pass | feat(261112_2236) — merge-коммит | released (v0.1.0) |
+| G56939-5.3.3.2 | 261112_2236 | D1 | T2 | 261112_2236_review.md — Round 1: pass/pass | feat(261112_2236) — merge-коммит | released (v0.1.0) |
+| G56939-5.3.3.3 | 261112_2236 | D1, D3 | T2, T7 | 261112_2236_review.md — Round 1: pass/pass | feat(261112_2236) — merge-коммит | released (v0.1.0) |
+| G56939-5.5.2.5 | 261112_2236 | D3, D4 | T7, T4 | 261112_2236_review.md — Round 1: pass/pass | feat(261112_2236) — merge-коммит | released (v0.1.0) |
+| G56939-5.5.3.3 | 261112_2236, 261115_2252 | D7, D7 | T8, T7 | 261112_2236_review.md — Round 1: pass/pass; 261115_2252_review.md — Round 2: pass/pass (incremental) | feat(261112_2236) — merge-коммит; feat(261115_2252) — merge c5371e7 | released (v0.1.0) |
+| G56939-4.13 | 261112_2236 | D1, D3, D4, D9 | T2, T7, T4, T3 | 261112_2236_review.md — Round 1: pass/pass | feat(261112_2236) — merge-коммит | released (v0.1.0) |
+| G56939-5.4 | 261115_2252 | D1, D2, D5, D7 | T1, T2, T5, T7 | 261115_2252_review.md — Round 2: pass/pass (incremental) | feat(261115_2252) — merge c5371e7; v0.2.0 — приёмка выпуском | released (v0.2.0) |
+| G56939-5.20 | 261115_2252 | D1, D2, D6, D7 | T1, T2, T6, T7 | 261115_2252_review.md — Round 2: pass/pass (incremental) | feat(261115_2252) — merge c5371e7; v0.2.0 — приёмка выпуском | released (v0.2.0) |
 
 Примечания к связям:
 
