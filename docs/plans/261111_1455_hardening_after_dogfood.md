@@ -1259,6 +1259,7 @@ Observations:
   от Planner'а; два non-gating хвоста Round 2 перенесены из Evidence
   17:56:19 по указанию Owner на closeout: hex-опечатка Tests-цитаты T4 и
   risk-minor edge оговорки «Всегда»); статус Done.
+- 2026-11-17 20:59:00 — Coder: резолвинг merge-хеша после пересборки публичной истории 2026-11-13: цитата 782971a (merge-коммит плана 261111_0320) → 7a668f0 (feat(261111_0320): add HH:MM:SS timing marks and phase durations); историческая строка не правится — append-only (волна 261117_2002, D2).
 
 
 

@@ -55,7 +55,7 @@
 | `In review` → `Ready for Coder` | Architect | Reopened-классификация `same-contract reroute` (контракт не менялся); диспатч Architect по Loop signal |
 | `In review` → `Ready for Planner` | Architect | Reopened-классификация `real scope expansion`; диспатч Architect по Loop signal |
 | `In review` → `Merged` | Manager | Два pass-вердикта; Owner-гейт merge; коммит |
-| `Merged` → `Done` | Manager | Closeout: `## Follow-ups` заполнен; review-артефакт в терминальном состоянии |
+| `Merged` → `Done` | Manager | Closeout: `## Follow-ups` заполнен; harvest-инвентарь §2 (источники а/б/в) с судьбами; review-артефакт в терминальном состоянии |
 | `*` → `Superseded` | Architect/Owner | План заменён; строка-ссылка на преемника |
 
 Порядок CENSOR: роль ставит handoff-статус → Manager шлёт CENSOR-проход

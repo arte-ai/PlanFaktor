@@ -1,7 +1,7 @@
 # Жизненный цикл плана Planfaktor
 
 Справочник для человека: путь плана от Draft до Done; точные правила и форматы —
-в конституции `AGENTS.md` (§§1–8).
+в конституции `AGENTS.md` (§§1–10).
 
 ## Карта цикла
 
@@ -98,7 +98,9 @@ scope / отдельно потом» — candidate de-scoped debt), кажды�
 `already-tracked-elsewhere`; судьбы переиспользуют row-грамматику
 followups; дедуп по canonical ref `id=`/`source_ref`/`#B<N>`);
 candidate без судьбы = `lost follow-up during harvest` — стоп-код,
-`Done` не ставится (§2) — статус `Done`.
+`Done` не ставится (§2) — статус `Done`. Closeout несёт ту же бюджетную
+заметку §8: сверка сумм `## Token usage` с тирами
+`docs/reference/budgets.md` (warn — инфо, discuss — обоснование расхода).
 
 ## Артефакты
 
@@ -127,7 +129,11 @@ Objections, Token usage) — append-only, историю не переписыв
    коммит делается в рамках этого гейта и только при свежем green-прогоне
    corpus-линта (инвариант pre-merge verify, §8: green линта — не
    семантическая приёмка, текущий failure не глушится историческим
-   green).
+   green). Бюджетная заметка гейта (§8): Manager суммирует numeric
+   usage-строки `## Token usage` плана и сверяет сумму с тирами расхода
+   (`docs/reference/budgets.md`): warn — информационная заметка в
+   GATE-докладе, discuss — обязательное обоснование расхода; сверка —
+   не жёсткий стоп, решение за Owner.
 
 Переход `Ready for Coder` → `In progress` — не гейт: Manager переводит
 сам при чистом `## Q&A log` (перечитывание секции, пары Q→A; открытый

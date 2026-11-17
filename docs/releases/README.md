@@ -27,7 +27,9 @@ AGENTS.md), поэтому выпуск — это аннотированный 
 «Сборка» выпуска — верифицированный снапшот на тегаемом коммите: свежие
 прогоны `sh scripts/check_corpus.sh` → `corpus: clean` (exit 0),
 `sh scripts/check_corpus.sh --selftest` → selftest caught (exit 0) и
-C14-чистота (gitleaks по рабочему дереву). Это тот же fresh-green
+C14 safety-scan (встроенный чек по рабочему дереву); gitleaks по
+истории — кандидат history-secret-audit (строка backlog
+id=history-secret-audit, `docs/followups/backlog.md`). Это тот же fresh-green
 инвариант, что у merge (§8 AGENTS.md): текущий failure не глушится
 историческим green — прогон всегда свежий, на тегаемом коммите.
 Бинарных артефактов нет; публикация GitHub Releases опциональна при

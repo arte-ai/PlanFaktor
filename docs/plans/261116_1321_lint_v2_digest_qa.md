@@ -425,6 +425,12 @@ Observations:
 ## Suggestions log (chronological, append-only)
 <!-- owner: все роли; несрочные улучшения -->
 - 2026-11-16 14:03:35 — Architect: closeout-инвентарь строки id=qa-lint — backlog-описание шире C16 («формат Q/A-строк» против одной парности); при harvest disposition учесть, что формат-часть описания планом не покрыта (парность покрыта C16), чтобы хвост не закрылся как handled целиком.
+- 2026-11-17 20:59:10 — Coder: резолвинг suggestion 14:03:35 — формат-часть
+  описания qa-lint (формат Q/A-строк: `to=`/`blocker:`/`needs_owner:`,
+  парностью C16 не покрыта) материализована отдельной строкой backlog
+  id=qa-format-lint (status=open, план 261117_2002, кандидат v3 рядом с
+  парностью C16) — lost follow-up harvest 1321 резолвнут явно; история
+  append-only не переписывается (волна 261117_2002, Solution п.1/п.7).
 
 ## Objections log (chronological, append-only)
 <!-- owner: все роли; `### <Role> objections`; строка на возражение, blocker: при блокере -->

@@ -55,7 +55,8 @@ Routine основной сессии (Manager). Только чтение: ни
    Маркер тира итога — по границам токен-бюджетов (носитель тиров и
    правило пересчёта — `docs/reference/budgets.md`; константы границ
    здесь синхронны с ним): `[ок]` при сумме < warn, `[warn]` при
-   warn ≤ сумма < discuss, `[discuss]` при discuss ≤ суммы:
+   warn ≤ сумме < discuss, `[discuss]`
+   при discuss ≤ сумме:
 
    ```sh
    PLAN=docs/plans/<активный план>

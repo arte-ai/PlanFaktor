@@ -5,7 +5,7 @@ Planfaktor — не устанавливаемый продукт: нет пак
 вашего проекта; после этого конвейер запускается задачей в чате ZCode.
 Эта страница — пошаговый путь от пустого репозитория до первого
 merge-коммита. Что такое конвейер и как читать планы — в
-[быстром старте](README.md).
+[быстром старте](../README.md).
 
 ## Что понадобится
 
@@ -20,36 +20,93 @@ merge-коммита. Что такое конвейер и как читать 
 
 ## Шаг 1. Положить контракты в репозиторий
 
-Из клона Planfaktor в корень вашего репозитория копируется закрытый
-набор файлов:
+Из клона Planfaktor в корень вашего репозитория копируется канон-каркас
+конвейера — контракты и справочники канона целиком, но без артефактов
+исполнения Planfaktor:
 
 | Что | Откуда в `$PF` | Зачем |
 | --- | --- | --- |
-| Конституция | `AGENTS.md` | Правила конвейера: роли, статусы, гейты |
-| Роль-доки | `docs/roles/*.md` | Пять доков ролей + индекс и шаблон |
-| Шаблон плана | `docs/plans/_template.md` | Единственная форма артефакта задачи |
-| Шаблон ревью | `docs/reviews/_template_review.md` | Артефакт двух ревью-лейнов |
-| Команды Manager'а | `.zcode/commands/planfaktor-*.md` | `/planfaktor-init`, `/planfaktor-plan`, `/planfaktor-run`, `/planfaktor-status` |
-| Субагенты ролей | `.zcode/agents/planfaktor-*.md` | Architect, Planner, Coder, два Reviewer'а |
+| Корневые контракты | `AGENTS.md`, `README.md`, `CONTRIBUTING.md`, `SECURITY.md` | Конституция, быстрый старт, правила контрибьюции, security-политика |
+| Справочники | `docs/getting_started.md`, `docs/lifecycle.md`, `docs/model_run.md` | Этот гайд, путь плана по статусам, модель прогонов |
+| Канон `docs/` | `plans/` (README + `_template.md` + канон-пример-план `261111_2243_corpus_lint_ci.md`), `reviews/_template_review.md`, `roles/*.md`, `playbooks/*.md`, `releases/*.md`, `reference/*.md`, `compliance/*.md` | Шаблоны артефактов, роль-доки, плейбуки, релизный узел, бюджеты, комплаенс |
+| Пустые носители | `requirements/` (README + пустые `registry.md`, `matrix.md`), `followups/` (`_template.md` + пустые `backlog.md`, `index.md`) | Реестр требований и техдолг стартуют пустыми — строки появятся вашими задачами |
+| Инфраструктура | `scripts/check_corpus.sh`, `.github/workflows/corpus.yml` | Corpus-линт и CI: свежий `corpus: clean` — инвариант pre-merge verify (§8) |
+| Конфигурация ZCode | `.zcode/commands/planfaktor-*.md`, `.zcode/agents/planfaktor-*.md` | `/planfaktor-init`, `/planfaktor-plan`, `/planfaktor-run`, `/planfaktor-status` и субагенты пяти ролей |
 
 Команды для копирования (из корня вашего репозитория):
 
 ```bash
-cp "$PF/AGENTS.md" .
-mkdir -p docs/plans docs/reviews docs/roles
+mkdir -p docs/plans docs/reviews docs/roles docs/playbooks docs/releases \
+         docs/requirements docs/reference docs/compliance docs/followups \
+         scripts .github/workflows .zcode/commands .zcode/agents
+cp "$PF/AGENTS.md" "$PF/README.md" "$PF/CONTRIBUTING.md" "$PF/SECURITY.md" .
+cp "$PF"/docs/getting_started.md "$PF"/docs/lifecycle.md "$PF"/docs/model_run.md docs/
+cp "$PF"/docs/plans/README.md "$PF"/docs/plans/_template.md \
+   "$PF"/docs/plans/261111_2243_corpus_lint_ci.md docs/plans/
+cp "$PF"/docs/reviews/_template_review.md docs/reviews/
 cp "$PF"/docs/roles/*.md docs/roles/
-cp "$PF/docs/plans/_template.md" docs/plans/
-cp "$PF/docs/reviews/_template_review.md" docs/reviews/
-mkdir -p .zcode/commands .zcode/agents
-cp "$PF"/.zcode/commands/planfaktor-*.md .zcode/commands/
-cp "$PF"/.zcode/agents/planfaktor-*.md .zcode/agents/
+cp "$PF"/docs/playbooks/*.md docs/playbooks/
+cp "$PF"/docs/releases/*.md docs/releases/
+cp "$PF"/docs/requirements/README.md docs/requirements/
+cp "$PF"/docs/reference/*.md docs/reference/
+cp "$PF"/docs/compliance/*.md docs/compliance/
+cp "$PF"/docs/followups/_template.md docs/followups/
+cp "$PF/scripts/check_corpus.sh" scripts/
+cp "$PF/.github/workflows/corpus.yml" .github/workflows/
+cp "$PF"/.zcode/commands/*.md .zcode/commands/
+cp "$PF"/.zcode/agents/*.md .zcode/agents/
+cat > docs/requirements/registry.md <<'EOF'
+# Реестр внешних требований
+
+Единый носитель внешних требований; row-грамматика —
+`docs/requirements/README.md`, машинные инварианты — линт C12.
+
+## Требования
+EOF
+cat > docs/requirements/matrix.md <<'EOF'
+# Матрица трассируемости — derived view
+
+Производная поверхность над `docs/requirements/registry.md` и корпусом
+планов; руками не ведётся, пересобирается при изменении реестра.
+EOF
+cat > docs/followups/backlog.md <<'EOF'
+# Follow-ups backlog
+
+Единый носитель техдолга между планами; row-грамматика —
+`docs/followups/_template.md`.
+
+## Follow-ups (backlog)
+EOF
+cat > docs/followups/index.md <<'EOF'
+# Follow-ups — index
+
+Derived-сводка открытых follow-ups из `docs/followups/backlog.md`;
+пересобирается после каждого изменения backlog.md.
+
+Счётчик: открытых — 0, закрытых (promoted/handled/cancelled) — 0
+EOF
 ```
 
-Опционально — справочник [`docs/lifecycle.md`](docs/lifecycle.md)
+Первый линт — сразу после копирования, из корня вашего репозитория:
+
+```bash
+sh scripts/check_corpus.sh
+```
+
+Ожидаемый итог — `corpus: clean`: линт машинно проверяет грамматику
+скопированных контрактов (шапки планов, статусную машину, логи).
+Каркас самодостаточен для линта: `corpus: clean` достигается сразу
+после копирования, до создания первых планов. Эта же команда — часть
+merge-рутины конвейера: перед каждым merge-коммитом конституция (§8)
+требует свежий green-прогон `corpus: clean` в целевом репозитории.
+
+Опционально — справочник [`docs/lifecycle.md`](lifecycle.md)
 (путь плана по статусам) и плейбук
-[терминального восстановления](docs/playbooks/manual_terminal_recovery.md)
-(что делать, если конвейер встал). Сами планы и ревью в копировании
-не нуждаются: их создаст конвейер.
+[терминального восстановления](playbooks/manual_terminal_recovery.md)
+(что делать, если конвейер встал). Артефакты исполнения Planfaktor —
+планы вне шаблона и канон-примера, ревью, строки техдолга и требований,
+иллюстрации `img/` — в каркас не входят: планы и ревью создаст конвейер
+вашего репозитория, носители строк стартуют пустыми.
 
 ![Файлы конвейера в репозитории проекта](img/getting_started/01-install-tree.png)
 
@@ -129,11 +186,11 @@ Manager-сессии (Manager перечитает контракты с дис�
 - **Хочу понять, почём задача.** Секция `## Token usage` в плане:
   usage-строка на каждый диспатч роли и CENSOR-проход.
 - **Конвейер встал намертво.** Плейбук ручного восстановления —
-  [терминальное восстановление](docs/playbooks/manual_terminal_recovery.md).
+  [терминальное восстановление](playbooks/manual_terminal_recovery.md).
 
 ## Что дальше
 
-- [Быстрый старт Owner'а](README.md) — роли, гейты, чтение планов;
-- [Конституция](AGENTS.md) — все правила конвейера;
-- [Жизненный цикл плана](docs/lifecycle.md) — путь статусов
+- [Быстрый старт Owner'а](../README.md) — роли, гейты, чтение планов;
+- [Конституция](../AGENTS.md) — все правила конвейера;
+- [Жизненный цикл плана](lifecycle.md) — путь статусов
   от Draft до Done.

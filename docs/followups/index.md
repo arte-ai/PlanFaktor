@@ -5,7 +5,7 @@ Derived-сводка открытых follow-ups из `docs/followups/backlog.md
 не правится. Формат строк носителя — row-грамматика
 `docs/followups/_template.md`.
 
-Счётчик: открытых — 11, закрытых (promoted/handled/cancelled) — 18
+Счётчик: открытых — 14, закрытых (promoted/handled/cancelled) — 18
 (состояние на 2026-11-17).
 
 ## Открытые по приоритетам
@@ -16,7 +16,7 @@ Derived-сводка открытых follow-ups из `docs/followups/backlog.md
 | --- | --- | --- | --- | --- | --- |
 | stale-intake-digest | P2 | Edge «Всегда»: протухший intake-digest после зафиксированной смены контракта не ловится | Architect | none | open |
 
-### P3 (10)
+### P3 (13)
 
 | id | P | summary | to | plan | status |
 | --- | --- | --- | --- | --- | --- |
@@ -24,12 +24,15 @@ Derived-сводка открытых follow-ups из `docs/followups/backlog.md
 | ai-gate-policy-config | P3 | ai_gate policy-as-config: вынесение правил ИИ-гейта в конфигурацию | Architect | none | open |
 | ci-incremental-lint | P3 | Incremental lint CI: прогон линта по изменённым файлам / diff-базе | Architect | none | open |
 | install-tree-reshoot | P3 | Пересъёмка 01-install-tree.png (кадр отстал от четвёртой команды /planfaktor-init) | Owner | none | open |
-| release-notes-lint | P3 | Машинная проверка релиз-нот и тег↔файл (кандидат C15/v2; включает finding R2 плана 261115_2252) | Architect | none | open |
+| release-notes-lint | P3 | Машинная проверка релиз-нот и тег↔файл (кандидат C17/v2; вкл. finding R2 261115_2252) | Architect | none | open |
 | release-automation | P3 | Автоматизация выпуска: релиз-скрипт, автогенерация нот/матрицы (кандидат v2) | Architect | none | open |
 | supply-chain-pinning | P3 | Supply-chain hardening CI: SHA-пиннинг checkout + checksum бинарников (вкл. finding R1 плана 261115_2254) | Architect | none | open |
 | c15-shallow-fail-loud | P3 | C15: явная диагностика shallow-истории (fetch-depth) вместо каскада not-in-set | Architect | none | open |
 | role-tier-norming | P3 | Нормирование расхода по ролям/проходам (per-role тиры; harvest 261117_0221) | Owner | none | open |
 | index-counter-consistency | P3 | Машинная сверка счётчика index со списком/носителем (3-й drift: 8a1d2fa, v0.1.0, 1419) | Architect | none | open |
+| qa-format-lint | P3 | Q&A-format-lint: формат Q/A-строк (v3; резолвинг F3 harvest 1321) | Architect | none | open |
+| site-redeploy | P3 | Редеплой сайта после обеих волн ревью доков (F13) | Owner | none | open |
+| guides-link-lint | P3 | Машинная проверка ссылок гайдов (кандидат C19/v3) | Architect | none | open |
 
 ## Закрытые
 
