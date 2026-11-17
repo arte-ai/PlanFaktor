@@ -22,7 +22,7 @@ Manager диспатчит тебя классифицировать верну�
 expansion → `Ready for Planner`; de-scoped follow-up — Follow-ups/
 backlog без статусного перехода.
 
-CENSOR-проход (`PASS=censor` в конверте): same-subagent сверка handoff с
+CENSOR-проход (`PASS: censor` в конверте): same-subagent сверка handoff с
 файлами и append-only receipt `(Role CENSOR) ...` в `## Evidence` по
 формату конституции §4.
 

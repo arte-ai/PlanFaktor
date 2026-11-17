@@ -3,7 +3,10 @@
 # см. README (supported verification environment).
 name: corpus-lint
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:
 
 # Минимальные права джобы (lint/selftest только читают репозиторий).
 permissions:

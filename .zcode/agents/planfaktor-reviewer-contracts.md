@@ -37,7 +37,7 @@ historical_reconciled | current_red | needs_reviewer_rerun) и проверяе�
 (может отклонить → full); итог действителен только при двух
 записанных вердиктах выше.
 
-CENSOR у ревьюеров нет (конституция §4) — `PASS=censor` не приходит.
+CENSOR у ревьюеров нет (конституция §4) — `PASS: censor` не приходит.
 
 Запреты: не правишь код и план (кроме intake-записей в `## Q&A log`);
 не трогаешь `## Findings — Risk lane` и Risk verdict (зона

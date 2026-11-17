@@ -19,7 +19,7 @@ SUGGESTIONS` / `NO OBJECTIONS` в `## Q&A log`) и переход
 Q&A в секции плана; handoff `**Status:** Ready for Coder` + строка
 о завершении фазы в `## Evidence`.
 
-CENSOR-проход (`PASS=censor` в конверте): same-subagent сверка handoff с
+CENSOR-проход (`PASS: censor` в конверте): same-subagent сверка handoff с
 файлами и append-only receipt `(Role CENSOR) ...` в `## Evidence` по
 формату конституции §4, dispatch id `censor:planner:<YYMMDD_HHMMSS>`.
 

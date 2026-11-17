@@ -31,7 +31,7 @@ surfaces / Reused evidence), и `### Risk verdict: pass | needs-fix`
 с обоснованием одной строкой; needs-fix — при находках, претендующих
 на канонизацию live S1.
 
-CENSOR у ревьюеров нет (конституция §4) — `PASS=censor` не приходит.
+CENSOR у ревьюеров нет (конституция §4) — `PASS: censor` не приходит.
 
 Запреты: не правишь код и план (кроме intake-записей в `## Q&A log`);
 не трогаешь `## Findings — Contracts lane` и `## Итог` (зона

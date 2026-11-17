@@ -13,12 +13,17 @@
 # 261116_1321_lint_v2_digest_qa.md (C15 — digest-verify intake-цитат:
 # membership множеству исторических состояний git, cutoff
 # DIGEST_CUTOFF; C16 — qa-lint: парность Q#n→A#n секции ## Q&A log,
-# cutoff CUTOFF; selftest 33→36; seed_corpus переносит .git).
+# cutoff CUTOFF; selftest 33→36; seed_corpus переносит .git)
+# + docs/plans/261117_1419_corpus_hygiene_sweep.md (C6 — порог {7,}
+# hex-хвостов; C12(б) — диагностика разделителя в формулировке;
+# C9 — итерация токенов без pathname expansion + литеральные
+# glob-формы allowlist; awk в шапке утилит; selftest 36→38).
 #
 # Это dev-инфраструктура репо, НЕ рантайм конвейера: роли не обязаны звать
 # его для маршрутизации, Manager от него не зависит.
 #
-# POSIX sh + grep/sed/cut/head/tail/mktemp/git/shasum (git/shasum — C15:
+# POSIX sh + grep/sed/awk/cut/head/tail/mktemp/git/shasum (awk — C12/C13:
+# подсчёт полей row и поиск границ секций; git/shasum — C15:
 # исторические дайджесты контрактов); python не используется. Временные
 # файлы — только mktemp -d под ${TMPDIR:-/tmp}, удаляются при любом
 # исходе (trap).
@@ -34,7 +39,7 @@
 #   строит в ${TMPDIR:-/tmp} копии корпуса (с перенесённой .git-историей
 #   — C15 требует реальные исторические состояния), подсаживает по одному
 #   дефекту на каждый класс C1–C16 и проверяет, что каждая проверка ловит
-#   свой дефект; итог `selftest: N/36 caught`; exit 0 только при 36/36.
+#   свой дефект; итог `selftest: N/38 caught`; exit 0 только при 38/38.
 #
 # Smoke:
 #   scripts/check_corpus.sh --smoke
@@ -453,15 +458,23 @@ EOF
     return $_c5_rc
 }
 
-# C6: `@`-хвосты digest'ов в планах — ровно 8 hex-символов; литеральный
-# плейсхолдер `@8hex` (и `@<8hex>`) вырезается до проверки. Ловит только
-# формовые нарушения; value-опечатки — v2 (Out of scope п.1 плана).
+# C6: `@`-хвосты digest'ов в планах — ровно 8 hex-символов. Детектор
+# матчит только хвосты >=7 hex: hex-стартующие ники <=6 hex (@coder →
+# хвост c, @c0de → 4, @facade → 6) не считаются digest-хвостами; реальные
+# классы формовых опечаток — 7/9/10/11-hex хвосты; 8-hex ник неотличим
+# от дайджеста — принятая граница (261117_1419, Solution п.2). Литеральный
+# плейсхолдер `@8hex` вырезается sed-заменой до проверки (сохранена:
+# без неё плейсхолдер в примерах форм становится 4-hex хвостом);
+# плейсхолдер `@<8hex>` безопасен `<`-обрывом мача — сразу после `@`
+# стоит `<`, не hex-символ, мача нет, sed-замена его не трогает
+# (между `@` и `8hex` стоит `<`). Ловит только формовые нарушения;
+# value-опечатки — v2 (Out of scope п.1 плана).
 check_c6() {
     _c6_corpus=$1
     _c6_rc=0
     for _c6_f in "$_c6_corpus"/docs/plans/[0-9]*.md; do
         [ -f "$_c6_f" ] || continue
-        for _c6_d in $(sed 's/@8hex/@/g' "$_c6_f" | grep -oE '@[0-9A-Fa-f]+' | sort -u || true); do
+        for _c6_d in $(sed 's/@8hex/@/g' "$_c6_f" | grep -oE '@[0-9A-Fa-f]{7,}' | sort -u || true); do
             _c6_h=${_c6_d#@}
             if [ "${#_c6_h}" -ne 8 ]; then
                 # shellcheck disable=SC2295
@@ -608,7 +621,13 @@ _c8_check_one() {
 # (квадратные скобки не входят в алфавит пути-токена). Дефис — часть
 # алфавита пути-токена (план 261112_2236: файлы вида
 # docs/compliance/gost-r-56939-2024.md без дефиса обрезались
-# до несуществующего префикса).
+# до несуществующего префикса). Итерация токенов идёт без pathname
+# expansion (set -f): поля нецитированной подстановки несут glob-символы
+# (`docs/roles/*`, `.zcode/commands/*` из AGENTS.md/CONTRIBUTING.md) —
+# из корня репо глобились в реальные файлы (проверка молча делала не
+# то, что задумано), из каталога без матчей оставались литералами и
+# падали как dangling; литеральные glob-формы — в case-allowlist
+# (261117_1419, Solution п.10).
 check_c9() {
     _c9_corpus=$1
     _c9_rc=0
@@ -621,6 +640,9 @@ check_c9() {
         # shellcheck disable=SC2295
         # why: ${_c9_corpus}/ — литеральный префикс пути копии, glob-символов не несёт
         _c9_rel=${_c9_src#$_c9_corpus/}
+        # pathname expansion подавлен до конца токен-цикла: инвариант —
+        # итерация полей подстановки как литералов (восстановлено ниже).
+        set -f
         for _c9_tok in $(grep -hoE '(docs|\.zcode)/[A-Za-z0-9_./<>*-]+' "$_c9_src" | sort -u || true); do
             case $_c9_tok in
                 'docs/plans/YYMMDD_HHMM_topic.md' \
@@ -629,7 +651,9 @@ check_c9() {
                 |'docs/roles/<role>.md' \
                 |'docs/plans/[0-9]*.md' \
                 |'docs/plans/<' \
-                |'docs/roles/<')
+                |'docs/roles/<' \
+                |'docs/roles/*' \
+                |'.zcode/commands/*')
                     continue
                     ;;
                 *planfaktor-*\**.md)
@@ -644,6 +668,7 @@ check_c9() {
                 _c9_rc=1
             fi
         done
+        set +f
         for _c9_cmd in $(grep -hoE '/planfaktor-[a-z-]+' "$_c9_src" | sort -u || true); do
             if [ -f "$_c9_corpus/.zcode/commands/${_c9_cmd#/}.md" ]; then
                 :
@@ -776,8 +801,23 @@ check_c12() {
             _c12_pipe=$(printf '%s\n' "$_c12_row" | sed 's/^- //' | sed 's/ — /|/g')
             _c12_nf=$(printf '%s\n' "$_c12_pipe" | awk -F'|' '{print NF}')
             if [ "$_c12_nf" -ne 8 ]; then
-                printf '%s: row has %s fields (want 8): %.60s...\n' \
-                    "$REQ_REGISTRY" "$_c12_nf" "$_c12_row"
+                if [ "$_c12_nf" -gt 8 ]; then
+                    # NF>8 — лишние ` — ` (обычно разделитель внутри
+                    # формулировки; грамматика запрета — registry.md:20-21
+                    # «Формулировка не содержит ` — ` … иначе счёт полей
+                    # ломается»; ссылка DoD-плана :18-19 неточна — там
+                    # пункт ID-грамматики); номер строки реестра —
+                    # grep -nF по содержимому row (ID уникален, дубль —
+                    # отдельный класс FAIL ниже).
+                    _c12_sep=$((_c12_nf - 1))
+                    _c12_ln=$(grep -nF "$_c12_row" "$_c12_reg" \
+                        | head -n 1 | cut -d: -f1)
+                    printf '%s: row has %s fields (want 8) — причина: разделитель ` — ` в формулировке (строка %s реестра, разделителей %s, want 7; грамматика: docs/requirements/registry.md:20-21): %.60s...\n' \
+                        "$REQ_REGISTRY" "$_c12_nf" "${_c12_ln:-?}" "$_c12_sep" "$_c12_row"
+                else
+                    printf '%s: row has %s fields (want 8): %.60s...\n' \
+                        "$REQ_REGISTRY" "$_c12_nf" "$_c12_row"
+                fi
                 _c12_rc=1
                 continue
             fi
@@ -1635,7 +1675,7 @@ selftest() {
     fi
 
     _st_caught=0
-    _st_total=36
+    _st_total=38
 
     # C1: недопустимое значение статуса.
     _st_dir=$_st_base/c1
@@ -1720,6 +1760,20 @@ selftest() {
     else
         printf 'caught C6\n'
         _st_caught=$((_st_caught + 1))
+    fi
+
+    # C6 (позитив): hex-стартующие ники <=6 hex (@coder/@c0de/@facade)
+    # порогом {7,} не матчятся — план с такими упоминаниями остаётся
+    # зелёным (261117_1419, Solution п.2/11); регрессия порога — MISSED.
+    _st_dir=$_st_base/c6b
+    seed_corpus "$_st_dir"
+    _st_plan=$(first_plan "$_st_dir")
+    printf '\nlint-bait nicks: @coder @c0de @facade\n' >> "$_st_plan"
+    if check_c6 "$_st_dir" > /dev/null 2>&1; then
+        printf 'caught C6b (hex-nick mentions <=6 hex stay green)\n'
+        _st_caught=$((_st_caught + 1))
+    else
+        printf 'MISSED C6b\n'
     fi
 
     # C7: superseded-лейбл с номером, не равным текущему Round.
@@ -1840,6 +1894,22 @@ selftest() {
     else
         printf 'caught C12b (bad registry row)\n'
         _st_caught=$((_st_caught + 1))
+    fi
+
+    # C12 (б), разделитель: ` — ` внутри формулировки row — NF>8 с
+    # причиной в диагностике (261117_1419, Solution п.3/11); ловится
+    # именно новая причина, не только rc (вывод грепается на
+    # «разделител»).
+    _st_dir=$_st_base/c12d
+    seed_corpus "$_st_dir"
+    mutate "$_st_dir/docs/requirements/registry.md" \
+        's/Регламент управления требованиями/Регламент — управления требованиями/'
+    _st_out=$(check_c12 "$_st_dir" 2>&1); _st_rc=$?
+    if [ "$_st_rc" -ne 0 ] && printf '%s\n' "$_st_out" | grep -q 'разделител'; then
+        printf 'caught C12d (separator in wording)\n'
+        _st_caught=$((_st_caught + 1))
+    else
+        printf 'MISSED C12d\n'
     fi
 
     # C12 (в): R-DoD без упоминания `(Dn)` в Tests у плана >= cutoff

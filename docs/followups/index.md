@@ -5,33 +5,37 @@ Derived-сводка открытых follow-ups из `docs/followups/backlog.md
 не правится. Формат строк носителя — row-грамматика
 `docs/followups/_template.md`.
 
-Счётчик: открытых — 13, закрытых (promoted/handled/cancelled) — 9
+Счётчик: открытых — 17, закрытых (promoted/handled/cancelled) — 11
 (состояние на 2026-11-17).
 
 ## Открытые по приоритетам
 
-### P2 (1)
+### P2 (2)
 
 | id | P | summary | to | plan | status |
 | --- | --- | --- | --- | --- | --- |
 | stale-intake-digest | P2 | Edge «Всегда»: протухший intake-digest после зафиксированной смены контракта не ловится | Architect | none | open |
+| s2-coder-status-contract | P2 | S2-контракт Coder'а: PRE-сверка без fixes-ветки — ложный стоп на needs-fix-возврате | Architect | 261117_1419 | open |
 
-### P3 (12)
+### P3 (15)
 
 | id | P | summary | to | plan | status |
 | --- | --- | --- | --- | --- | --- |
-| hex-typo-t4 | P3 | Hex-опечатка a2c2faf8 → a2c2faf9 в Tests-цитате T4 | Coder | none | open |
 | history-secret-audit | P3 | History secret audit: периодический gitleaks detect по всей git-истории (C14 — только рабочее дерево) | Architect | none | open |
-| lint-robustness | P3 | Робастность check_corpus.sh: heredoc-раскрытие, cwd-чувствительность, не заявленный awk | Architect | none | open |
 | ai-gate-policy-config | P3 | ai_gate policy-as-config: вынесение правил ИИ-гейта в конфигурацию | Architect | none | open |
 | ci-incremental-lint | P3 | Incremental lint CI: прогон линта по изменённым файлам / diff-базе | Architect | none | open |
 | install-tree-reshoot | P3 | Пересъёмка 01-install-tree.png (кадр отстал от четвёртой команды /planfaktor-init) | Owner | none | open |
-| init-grep-stderr | P3 | /planfaktor-init: идемпотентный grep без 2>/dev/null (init.md:27) — stderr-шум на пустой очереди | Coder | none | open |
 | release-notes-lint | P3 | Машинная проверка релиз-нот и тег↔файл (кандидат C15/v2; включает finding R2 плана 261115_2252) | Architect | none | open |
 | release-automation | P3 | Автоматизация выпуска: релиз-скрипт, автогенерация нот/матрицы (кандидат v2) | Architect | none | open |
 | supply-chain-pinning | P3 | Supply-chain hardening CI: SHA-пиннинг checkout + checksum бинарников (вкл. finding R1 плана 261115_2254) | Architect | none | open |
 | c15-shallow-fail-loud | P3 | C15: явная диагностика shallow-истории (fetch-depth) вместо каскада not-in-set | Architect | none | open |
 | role-tier-norming | P3 | Нормирование расхода по ролям/проходам (per-role тиры; harvest 261117_0221) | Owner | none | open |
+| c6-hex-nick-threshold | P3 | C6: порог длины hex-хвоста @{7,} — hex-стартующие ники ≤6 hex дают ложный FAIL | Architect | 261117_1419 | open |
+| c12-desc-separator | P3 | C12(б): разделитель « — » режет поле описания строки реестра (NF=8 ломается) | Architect | 261117_1419 | open |
+| pass-censor-notation | P3 | PASS=censor → PASS: censor в 5 агент-файлах — единый канон §4 | Architect | 261117_1419 | open |
+| reroute-notation-anchor | P3 | Reroute-таксономия в двух нотациях без якоря эквивалентности | Architect | 261117_1419 | open |
+| status-cmd-link | P3 | planfaktor-status.md:48 — мёртвая ссылка «(шаг 5 ранее)» | Coder | 261117_1419 | open |
+| ci-pr-dedup | P3 | CI: двойной прогон на PR-пуш — разделение триггеров | Architect | 261117_1419 | open |
 
 ## Закрытые
 
@@ -43,3 +47,6 @@ Derived-сводка открытых follow-ups из `docs/followups/backlog.md
 - token-budgets — P1 — status=handled — plan=261117_0221 (Токен-бюджеты: тиры warn=28M/discuss=42M, бюджетные заметки на гейтах; disposition — merge 812d860; терминально закрыто при closeout 2026-11-17)
 - lint-v2-digest-verify — P2 — status=handled — plan=261116_1321 (Corpus lint v2: digest-verify intake-цитат — чек C15; disposition — merge 579863f; терминально закрыто при closeout 2026-11-16)
 - qa-lint — P2 — status=handled — plan=261116_1321 (Q&A-линт: пары Q#n→A#n — чек C16; disposition — merge 579863f; терминально закрыто при closeout 2026-11-16)
+- hex-typo-t4 — P3 — status=promoted — plan=261117_1419 (Hex-опечатка в Tests-цитате T4 плана 261111_1455; промоушен при активации 2026-11-17)
+- lint-robustness — P3 — status=promoted — plan=261117_1419 (Робастность check_corpus.sh: heredoc/cwd/awk; промоушен при активации 2026-11-17)
+- init-grep-stderr — P3 — status=promoted — plan=261117_1419 (/planfaktor-init: grep без 2>/dev/null; промоушен при активации 2026-11-17)

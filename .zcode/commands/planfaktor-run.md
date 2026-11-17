@@ -8,8 +8,12 @@ description: Шаг конвейера Planfaktor — Manager-рутина: rout
 ## 1. Прочитай истину из файлов (не из памяти)
 
 ```sh
-grep -H '^\*\*Status:\*\*' docs/plans/[0-9]*.md 2>/dev/null
+find docs/plans -maxdepth 1 -name '[0-9]*.md' -type f -exec grep -H '^\*\*Status:\*\*' {} +
 ```
+
+(Раскрытие списка планов — find, не shell-glob: пустая очередь даёт
+пустой вывод с exit 0 без stderr-шума нераскрытого glob; реальные
+ошибки чтения grep не маскируются.)
 
 Выбери активный план: старейший по имени в статусе `Ready for *`, `In
 progress`, `In review` или `Merged` (Merged — closeout-ветка

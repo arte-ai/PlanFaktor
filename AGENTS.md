@@ -78,6 +78,7 @@ Reroute-классификация reopened-плана: класс `de-scoped fo
 вердикт ревью (реран по актуальному diff / split блока: закрытая часть —
 `historical-fixed`, живая — собственный B-блок со своим классом) до
 любого маршрута.
+Канон reroute-токенов — дефисные формы enum `C13_ROOT_RE` линта (stale-evidence, same-contract-reroute, closed-baseline-split, real-scope-expansion, de-scoped-followup); пробельные написания (`same contract reroute`, `real scope expansion`) — легальный синоним в прозе.
 
 Harvest-инвентарь closeout (третий конъюнкт условия `Merged → Done`,
 поверх заполненности `## Follow-ups (deferred)` и терминальности

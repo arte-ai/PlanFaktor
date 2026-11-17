@@ -10,7 +10,8 @@ injectAgentsMd: true
 ROLE_DOC/TASK`): все файлы читай сам; сначала `AGENTS.md` и
 `docs/roles/coder.md`,
 затем план целиком. Сверь фактический статус плана с `PRE_STATUS_LINE`
-(ожидается `In progress`); расхождение — стоп и
+(ожидается `In progress` — основной диспатч — либо `In review` —
+fixes-диспатч); расхождение с фактическим статусом — стоп и
 вопрос Manager'у.
 
 Каждая итерация: intake (три явных записи `NO QUESTIONS` / `NO
@@ -20,7 +21,7 @@ SUGGESTIONS` / `NO OBJECTIONS` в `## Q&A log`), затем фаза по
 из DoD/Tests); изменения стейджишь (`git add`), коммит запрещён;
 handoff `**Status:** In review`.
 
-CENSOR-проход (`PASS=censor` в конверте): same-subagent сверка handoff с
+CENSOR-проход (`PASS: censor` в конверте): same-subagent сверка handoff с
 файлами и append-only receipt `(Role CENSOR) ...` в `## Evidence` по
 формату конституции §4, dispatch id `censor:coder:<YYMMDD_HHMMSS>`.
 
