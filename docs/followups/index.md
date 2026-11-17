@@ -5,19 +5,18 @@ Derived-сводка открытых follow-ups из `docs/followups/backlog.md
 не правится. Формат строк носителя — row-грамматика
 `docs/followups/_template.md`.
 
-Счётчик: открытых — 17, закрытых (promoted/handled/cancelled) — 11
+Счётчик: открытых — 11, закрытых (promoted/handled/cancelled) — 18
 (состояние на 2026-11-17).
 
 ## Открытые по приоритетам
 
-### P2 (2)
+### P2 (1)
 
 | id | P | summary | to | plan | status |
 | --- | --- | --- | --- | --- | --- |
 | stale-intake-digest | P2 | Edge «Всегда»: протухший intake-digest после зафиксированной смены контракта не ловится | Architect | none | open |
-| s2-coder-status-contract | P2 | S2-контракт Coder'а: PRE-сверка без fixes-ветки — ложный стоп на needs-fix-возврате | Architect | 261117_1419 | open |
 
-### P3 (15)
+### P3 (10)
 
 | id | P | summary | to | plan | status |
 | --- | --- | --- | --- | --- | --- |
@@ -30,12 +29,7 @@ Derived-сводка открытых follow-ups из `docs/followups/backlog.md
 | supply-chain-pinning | P3 | Supply-chain hardening CI: SHA-пиннинг checkout + checksum бинарников (вкл. finding R1 плана 261115_2254) | Architect | none | open |
 | c15-shallow-fail-loud | P3 | C15: явная диагностика shallow-истории (fetch-depth) вместо каскада not-in-set | Architect | none | open |
 | role-tier-norming | P3 | Нормирование расхода по ролям/проходам (per-role тиры; harvest 261117_0221) | Owner | none | open |
-| c6-hex-nick-threshold | P3 | C6: порог длины hex-хвоста @{7,} — hex-стартующие ники ≤6 hex дают ложный FAIL | Architect | 261117_1419 | open |
-| c12-desc-separator | P3 | C12(б): разделитель « — » режет поле описания строки реестра (NF=8 ломается) | Architect | 261117_1419 | open |
-| pass-censor-notation | P3 | PASS=censor → PASS: censor в 5 агент-файлах — единый канон §4 | Architect | 261117_1419 | open |
-| reroute-notation-anchor | P3 | Reroute-таксономия в двух нотациях без якоря эквивалентности | Architect | 261117_1419 | open |
-| status-cmd-link | P3 | planfaktor-status.md:48 — мёртвая ссылка «(шаг 5 ранее)» | Coder | 261117_1419 | open |
-| ci-pr-dedup | P3 | CI: двойной прогон на PR-пуш — разделение триггеров | Architect | 261117_1419 | open |
+| index-counter-consistency | P3 | Машинная сверка счётчика index со списком/носителем (3-й drift: 8a1d2fa, v0.1.0, 1419) | Architect | none | open |
 
 ## Закрытые
 
@@ -47,6 +41,13 @@ Derived-сводка открытых follow-ups из `docs/followups/backlog.md
 - token-budgets — P1 — status=handled — plan=261117_0221 (Токен-бюджеты: тиры warn=28M/discuss=42M, бюджетные заметки на гейтах; disposition — merge 812d860; терминально закрыто при closeout 2026-11-17)
 - lint-v2-digest-verify — P2 — status=handled — plan=261116_1321 (Corpus lint v2: digest-verify intake-цитат — чек C15; disposition — merge 579863f; терминально закрыто при closeout 2026-11-16)
 - qa-lint — P2 — status=handled — plan=261116_1321 (Q&A-линт: пары Q#n→A#n — чек C16; disposition — merge 579863f; терминально закрыто при closeout 2026-11-16)
-- hex-typo-t4 — P3 — status=promoted — plan=261117_1419 (Hex-опечатка в Tests-цитате T4 плана 261111_1455; промоушен при активации 2026-11-17)
-- lint-robustness — P3 — status=promoted — plan=261117_1419 (Робастность check_corpus.sh: heredoc/cwd/awk; промоушен при активации 2026-11-17)
-- init-grep-stderr — P3 — status=promoted — plan=261117_1419 (/planfaktor-init: grep без 2>/dev/null; промоушен при активации 2026-11-17)
+- hex-typo-t4 — P3 — status=handled — plan=261117_1419 (Hex-опечатка T4: правка :493 плана 261111_1455; disposition — merge 9ed4cf1; терминально закрыто при closeout 2026-11-17)
+- lint-robustness — P3 — status=handled — plan=261117_1419 (Робастность линта: cwd-фикс C9 + awk в шапке; heredoc-часть опровергнута верификацией; disposition — merge 9ed4cf1; терминально закрыто при closeout 2026-11-17)
+- init-grep-stderr — P3 — status=handled — plan=261117_1419 (Инверсия носителя: run.md без 2>/dev/null + find-guard; disposition — merge 9ed4cf1; терминально закрыто при closeout 2026-11-17)
+- s2-coder-status-contract — P2 — status=handled — plan=261117_1419 (S2-контракт Coder: оба легальных PRE-статуса; disposition — merge 9ed4cf1; терминально закрыто при closeout 2026-11-17)
+- c6-hex-nick-threshold — P3 — status=handled — plan=261117_1419 (C6-порог @{7,}; disposition — merge 9ed4cf1; терминально закрыто 2026-11-17)
+- c12-desc-separator — P3 — status=handled — plan=261117_1419 (C12-диагностика + selftest-кейс; disposition — merge 9ed4cf1; терминально закрыто 2026-11-17)
+- pass-censor-notation — P3 — status=handled — plan=261117_1419 (PASS: censor ×5; disposition — merge 9ed4cf1; терминально закрыто 2026-11-17)
+- reroute-notation-anchor — P3 — status=handled — plan=261117_1419 (Reroute-якорь AGENTS §2; disposition — merge 9ed4cf1; терминально закрыто 2026-11-17)
+- status-cmd-link — P3 — status=handled — plan=261117_1419 (status.md:49 — факт переноса; disposition — merge 9ed4cf1; терминально закрыто 2026-11-17)
+- ci-pr-dedup — P3 — status=handled — plan=261117_1419 (CI-триггеры раздельно; disposition — merge 9ed4cf1; терминально закрыто 2026-11-17)

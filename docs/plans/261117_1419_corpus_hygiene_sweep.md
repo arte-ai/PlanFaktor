@@ -1,7 +1,7 @@
 # Corpus hygiene sweep: контракт Coder'а, линт-хрупкости, канон-дрейфы
 
 **Plan ID:** 261117_1419
-**Status:** Merged
+**Status:** Done
 **Created:** 2026-11-17
 **Owner gates:** merge (`In review` → `Merged`); вопросы `to=Owner` — по мере возникновения
 
@@ -814,6 +814,8 @@ Observations:
   вердикт и Observations не менялись. Контрольный прогон после
   фикса — `corpus: clean`.
 - 2026-11-17 19:53:33 — Manager: Owner-гейт merge — Owner ответил «мержим» (чат; сопроводительно: пре-мердж фикс зоны Manager — счётчик index «закрытых — 12» → 11, список/носитель = 11, drift унаследован от closeout 0221 (9 при факте 8), пачка 1419 посчитана от неверной базы; третий экземпляр класса — кандидат index-counter-consistency на closeout-harvest). Контроли (а) пройдены: unstaged — план (рестейдж (в)), backlog/index (зона Manager: промоушен-пачка 15:02:57 + данный фикс — санкционированы указанием Owner, входят в merge-коммит); staged 12 = дословный список Итога; свежий pre-merge verify → `corpus: clean`, EXIT=0; ручной leak-контроль → 0. Review Round 1: Risk pass (R1 major S2 + R2/R3 minor, все accepted_non_blocking_followup) / Contracts pass / Итог pass / Artifact state current_green. Бюджетная заметка (гейт, тир 27/40): 22,031,950 (22.0M) → [ок] (awk, чекпоинты/unknown исключены). Статус Merged
+- 2026-11-17 19:53:33 — Manager: merge-коммит `9ed4cf1` (`fix(261117_1419): corpus hygiene sweep`, 15 файлов: staged-состав Итога (12) + рестейдж плана + санкционированные backlog/index (промоушен-пачка + пре-мердж фикс счётчика) + review-артефакт шага (в)); сверка (г) — расхождений нет; дерево после — чистое
+- 2026-11-17 20:05:00 — Manager: closeout, статус Done. Условия: `## Follow-ups (deferred)` — пункты пачки (зона Manager, исполнены); review-артефакт терминален (Round 1 `current_green`). Harvest по §2: (а) Follow-ups — пачка: 7 open (s2-coder-status-contract, c6-hex-nick-threshold, c12-desc-separator, pass-censor-notation, reroute-notation-anchor, status-cmd-link, ci-pr-dedup) → судьбы handled, disposition merge `9ed4cf1`; 3 promoted (hex-typo-t4 — правка :493; lint-robustness — cwd/awk исполнены, heredoc опровергнут верификацией; init-grep-stderr — инверсия в run.md-фикс + find-guard) → судьбы handled с индивидуальными disposition; (б) открытых Q/A/suggestions/objections нет (objection Architect→Planner снят в фазе Planning; Assumption 16:22:10 закрыта верифицированным адресом); (в) Out of scope: п.1 supply-chain → already-tracked-elsewhere (id=supply-chain-pinning, open); п.2 stale-intake/role-tier → already-tracked (id=, open); п.3 наблюдения без действий — границы наблюдений (C15-удаления, C14-бинарные, ls-парсинг) — не отложенная работа, не кандидаты; п.4 PR-флоу — подготовка исполнена (ci-pr-dedup handled), сам флоу — инфраструктурное будущее, не кандидат; п.5 исторические строки 1455 — исполнено (не тронуты), не кандидат. Плюс кандидат Owner: index-counter-consistency → судьба open, материализована (третий экземпляр drift-класса: 8a1d2fa, v0.1.0-пре-шаг, текущий 12→11). Все candidates с судьбой, lost follow-up нет. Derived index: открытых 11 (−7 пачка, +1 counter), закрытых 18 (+7); счётчик сверен со списком/носителем. Бюджетная заметка closeout: финальная сумма 24,941,494 (24.9M) → [ок] (тир 27/40). Хвост-коммит по конвенции §8: `chore(261117_1419): closeout tail`
 
 
 ## Token usage (append-only)
