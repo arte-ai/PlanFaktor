@@ -1,7 +1,7 @@
 # Docs wave 1: архив исполнения и пользовательская поверхность
 
 **Plan ID:** 261117_2002
-**Status:** Merged
+**Status:** Done
 **Created:** 2026-11-17
 **Owner gates:** merge (`In review` → `Merged`); вопросы `to=Owner` — по мере возникновения
 
@@ -1007,6 +1007,8 @@ Observations:
   единственная находка устранена).
 - Final censor verdict: OK
 - 2026-11-18 00:53:41 — Manager: Owner-гейт merge — Owner ответил merge-указанием (чат; сопроводительно два пре-шага зоны Manager, оба исполнены до этого узла): (1) дозакрыт терминал 1419 в носителе — backlog s2-coder-status-contract `[ ]`→`[x]` при status=handled/disposition merge 9ed4cf1 (наполовину исполненный closeout 1419; носитель 14/18 = index); (2) настоящая заметка. Контроли (а): staged 17 = дословный список Итога Round 2; unstaged — план (рестейдж (в)) и backlog (пре-шаг 1, санкционирован указанием Owner); untracked — review-артефакт (санкция (в)); свежий pre-merge verify → `corpus: clean`, EXIT=0; ручной leak-контроль → 0. Review Round 2: Risk pass (0 находок) / Contracts pass / Итог pass / Artifact state current_green (#B1 historical-fixed, R2/C2 closed). Бюджетная заметка (merge-узел): текущая сумма numeric usage-строк — 42,795,368 (42.8M) → [discuss] (порог 40M пересечён записями после гейт-заметки 38.6M [warn]). Обоснование расхода (discuss, дословно из гейт-доклада): «Разбивка: 15 диспатчей (architect ×3, planner ×3, coder ×3, risk ×3, contracts ×3) — полный конвейер + полноценный fixes-раунд: B1-дизайн (Architect r1) + доводка DoD (Planner r1) + реализация (Coder r1) + Round 2 full-rerun обоих лейнов с третьей независимой репродукцией D14. Волна честно дорогая: 17 файлов, из них 6 планов append-only-резолвингом». Статус Merged
+- 2026-11-18 00:53:41 — Manager: merge-коммит `9d65f5b` (`fix(261117_2002): docs wave 1 — archive integrity and user surface`, 18 файлов: staged-состав Итога Round 2 (17) + санкционированные: backlog (пре-шаг 1 — терминал s2), review-артефакт шага (в); план рестейджнут); сверка (г) — расхождений нет; рабочее дерево после — чистое
+- 2026-11-18 01:00:00 — Manager: closeout, статус Done. Условия: `## Follow-ups (deferred)` заполнен (2 хвоста с судьбами); review-артефакт терминален (Round 2 `current_green`, full-rerun). Harvest по §2: (а) Follow-ups: материализация 3+2 исполнена при активации/после CENSOR (Evidence-оговорка 20:21:46); судьбы трёх open-строк — остаются открытыми (qa-format-lint v3, site-redeploy — после обеих волн, guides-link-lint v3: классы будущей работы, закрытий пачка не несла — Solution п.7); (б) открытых Q/A/objections нет; suggestion Planner'а 22:24:30 (img-рендер) → судьба open, материализована id=guides-img-renders (конвенция 1321: открытая suggestion не теряется); (в) Out of scope: п.1 вторая волна → судьба open, материализована id=docs-wave2-contract-layer; п.2 сайт → already-tracked-elsewhere (id=site-redeploy, open); п.3 append-only история — граница конвенции, не кандидат; п.4 линк-линт → already-tracked (id=guides-link-lint); п.5 push — исполнен этим циклом по санкции Owner, не кандидат. Все candidates с судьбой, lost follow-up нет. Derived index: открытых 16 (P2 +1, P3 +1), закрытых 18. Бюджетная заметка closeout: финальная сумма 42,795,368 (42.8M) → [discuss] — тождественна merge-узлу (пост-гейт записей numeric не добавлялось); обоснование — в merge-узле дословно. Хвост-коммит по конвенции §8: `chore(261117_2002): closeout tail`; далее push всего накопленного по санкции Owner
 
 ## Token usage (append-only)
 <!-- owner: manager; dispatch-форма и чекпоинт-форма — грамматика шаблона -->

@@ -5,18 +5,19 @@ Derived-сводка открытых follow-ups из `docs/followups/backlog.md
 не правится. Формат строк носителя — row-грамматика
 `docs/followups/_template.md`.
 
-Счётчик: открытых — 14, закрытых (promoted/handled/cancelled) — 18
+Счётчик: открытых — 16, закрытых (promoted/handled/cancelled) — 18
 (состояние на 2026-11-17).
 
 ## Открытые по приоритетам
 
-### P2 (1)
+### P2 (2)
 
 | id | P | summary | to | plan | status |
 | --- | --- | --- | --- | --- | --- |
 | stale-intake-digest | P2 | Edge «Всегда»: протухший intake-digest после зафиксированной смены контракта не ловится | Architect | none | open |
+| docs-wave2-contract-layer | P2 | Docs wave 2: контрактный слой F5–F9 + S3.1–8 (отдельный план) | Owner | none | open |
 
-### P3 (13)
+### P3 (14)
 
 | id | P | summary | to | plan | status |
 | --- | --- | --- | --- | --- | --- |
@@ -33,6 +34,7 @@ Derived-сводка открытых follow-ups из `docs/followups/backlog.md
 | qa-format-lint | P3 | Q&A-format-lint: формат Q/A-строк (v3; резолвинг F3 harvest 1321) | Architect | none | open |
 | site-redeploy | P3 | Редеплой сайта после обеих волн ревью доков (F13) | Owner | none | open |
 | guides-link-lint | P3 | Машинная проверка ссылок гайдов (кандидат C19/v3) | Architect | none | open |
+| guides-img-renders | P3 | img-ссылки гайдов вне каркаса — рендер без иллюстраций (suggestion 2002) | Architect | none | open |
 
 ## Закрытые
 
