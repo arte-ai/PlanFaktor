@@ -5,7 +5,7 @@ Derived-сводка открытых follow-ups из `docs/followups/backlog.md
 не правится. Формат строк носителя — row-грамматика
 `docs/followups/_template.md`.
 
-Счётчик: открытых — 12, закрытых (promoted/handled/cancelled) — 8
+Счётчик: открытых — 13, закрытых (promoted/handled/cancelled) — 9
 (состояние на 2026-11-17).
 
 ## Открытые по приоритетам
@@ -16,7 +16,7 @@ Derived-сводка открытых follow-ups из `docs/followups/backlog.md
 | --- | --- | --- | --- | --- | --- |
 | stale-intake-digest | P2 | Edge «Всегда»: протухший intake-digest после зафиксированной смены контракта не ловится | Architect | none | open |
 
-### P3 (11)
+### P3 (12)
 
 | id | P | summary | to | plan | status |
 | --- | --- | --- | --- | --- | --- |
@@ -31,6 +31,7 @@ Derived-сводка открытых follow-ups из `docs/followups/backlog.md
 | release-automation | P3 | Автоматизация выпуска: релиз-скрипт, автогенерация нот/матрицы (кандидат v2) | Architect | none | open |
 | supply-chain-pinning | P3 | Supply-chain hardening CI: SHA-пиннинг checkout + checksum бинарников (вкл. finding R1 плана 261115_2254) | Architect | none | open |
 | c15-shallow-fail-loud | P3 | C15: явная диагностика shallow-истории (fetch-depth) вместо каскада not-in-set | Architect | none | open |
+| role-tier-norming | P3 | Нормирование расхода по ролям/проходам (per-role тиры; harvest 261117_0221) | Owner | none | open |
 
 ## Закрытые
 
@@ -39,6 +40,6 @@ Derived-сводка открытых follow-ups из `docs/followups/backlog.md
 - ci-hygiene — P3 — status=handled — plan=261113_1944 (CI-гигиена: checkout@v5, permissions, concurrency, матрица ОС, таймаут; disposition — merge 6596b7f, `.github/workflows/corpus.yml`; терминально закрыто при closeout 2026-11-15)
 - release-node — P2 — status=handled — plan=261115_2252 (Релизный узел конвейера: конвенция тегов/сборок/release-notes и статус released в реестре; disposition — merge c5371e7; терминально закрыто при closeout 2026-11-16)
 - ci-v2-static — P2 — status=handled — plan=261115_2254 (CI v2 static-джоба: shellcheck + actionlint + smoke `--smoke`; disposition — merge 62563c7; терминально закрыто при closeout 2026-11-16)
-- token-budgets — P1 — status=promoted — plan=261117_0221 (Токен-бюджеты: тиры warn/discuss, предупреждения на гейтах; промоушен при активации 2026-11-17)
+- token-budgets — P1 — status=handled — plan=261117_0221 (Токен-бюджеты: тиры warn=28M/discuss=42M, бюджетные заметки на гейтах; disposition — merge 812d860; терминально закрыто при closeout 2026-11-17)
 - lint-v2-digest-verify — P2 — status=handled — plan=261116_1321 (Corpus lint v2: digest-verify intake-цитат — чек C15; disposition — merge 579863f; терминально закрыто при closeout 2026-11-16)
 - qa-lint — P2 — status=handled — plan=261116_1321 (Q&A-линт: пары Q#n→A#n — чек C16; disposition — merge 579863f; терминально закрыто при closeout 2026-11-16)
