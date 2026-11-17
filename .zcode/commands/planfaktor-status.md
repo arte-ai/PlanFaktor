@@ -65,7 +65,7 @@ Routine основной сессии (Manager). Только чтение: ни
                    for (k in c) { v=(k in s)?s[k]:0; w=(k in u)?u[k]:0
                                   printf "%s | %s | %s\n", k, c[k], v; t+=v; tu+=w }
                    printf "итог: >= %d (+unknown: %d) [%s]\n", t, tu,
-                     (t<28000000) ? "ок" : (t<42000000) ? "warn" : "discuss" }'
+                     (t<27000000) ? "ок" : (t<40000000) ? "warn" : "discuss" }'
    grep -cE '^- [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} — usage: manager-context checkpoint ~[0-9]+ tokens-left — approximate$' "$PLAN"
    ```
 
@@ -113,7 +113,7 @@ Routine основной сессии (Manager). Только чтение: ни
      B=$(basename "$PLAN" .md); R=${B#*_}; PID="${B%%_*}_${R%%_*}"
      PRE=$(awk -v a="$PID" -v b="261112_0111" 'BEGIN{print (a<b) ? 1 : 0}')
      if [ "$TOK" -gt 0 ]; then
-       TIER=$(awk -v t="$TOK" 'BEGIN{print (t<28000000) ? "ок" : (t<42000000) ? "warn" : "discuss"}')
+       TIER=$(awk -v t="$TOK" 'BEGIN{print (t<27000000) ? "ок" : (t<40000000) ? "warn" : "discuss"}')
        T="$TOK [$TIER]"
      elif [ "$PRE" -eq 1 ]; then T="нет данных (pre-261112_0111)"
      elif [ "$UNK" -gt 0 ]; then T="нет данных (unknown: $UNK)"
