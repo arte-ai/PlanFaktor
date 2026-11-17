@@ -5,16 +5,10 @@ Derived-сводка открытых follow-ups из `docs/followups/backlog.md
 не правится. Формат строк носителя — row-грамматика
 `docs/followups/_template.md`.
 
-Счётчик: открытых — 13, закрытых (promoted/handled/cancelled) — 7
+Счётчик: открытых — 12, закрытых (promoted/handled/cancelled) — 8
 (состояние на 2026-11-17).
 
 ## Открытые по приоритетам
-
-### P1 (1)
-
-| id | P | summary | to | plan | status |
-| --- | --- | --- | --- | --- | --- |
-| token-budgets | P1 | Бюджеты/алерты/лимиты расхода токенов на план | Owner | none | open |
 
 ### P2 (1)
 
@@ -45,5 +39,6 @@ Derived-сводка открытых follow-ups из `docs/followups/backlog.md
 - ci-hygiene — P3 — status=handled — plan=261113_1944 (CI-гигиена: checkout@v5, permissions, concurrency, матрица ОС, таймаут; disposition — merge 6596b7f, `.github/workflows/corpus.yml`; терминально закрыто при closeout 2026-11-15)
 - release-node — P2 — status=handled — plan=261115_2252 (Релизный узел конвейера: конвенция тегов/сборок/release-notes и статус released в реестре; disposition — merge c5371e7; терминально закрыто при closeout 2026-11-16)
 - ci-v2-static — P2 — status=handled — plan=261115_2254 (CI v2 static-джоба: shellcheck + actionlint + smoke `--smoke`; disposition — merge 62563c7; терминально закрыто при closeout 2026-11-16)
+- token-budgets — P1 — status=promoted — plan=261117_0221 (Токен-бюджеты: тиры warn/discuss, предупреждения на гейтах; промоушен при активации 2026-11-17)
 - lint-v2-digest-verify — P2 — status=handled — plan=261116_1321 (Corpus lint v2: digest-verify intake-цитат — чек C15; disposition — merge 579863f; терминально закрыто при closeout 2026-11-16)
 - qa-lint — P2 — status=handled — plan=261116_1321 (Q&A-линт: пары Q#n→A#n — чек C16; disposition — merge 579863f; терминально закрыто при closeout 2026-11-16)
